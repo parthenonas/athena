@@ -49,7 +49,7 @@ export class Account {
   /**
    * Account status
    */
-  @Column({ enum: Status, default: Status.Active })
+  @Column({ type: "varchar", enum: Status, default: Status.Active })
   status!: Status;
 
   /**

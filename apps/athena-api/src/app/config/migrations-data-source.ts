@@ -11,7 +11,7 @@ const options = {
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
   entities: ["**/*.entity{.ts,.js}"],
-  migrations: [join(__dirname, "migrations", "*{.ts,.js}")],
+  migrations: [join(__dirname, "../../migrations/*{.ts,.js}")],
 } satisfies TypeOrmModuleOptions;
 
 export default new DataSource(options);
