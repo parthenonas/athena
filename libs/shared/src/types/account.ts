@@ -1,8 +1,5 @@
-export enum AccountRole {
-  Student = "student",
-  Teacher = "teacher",
-  Admin = "admin",
-  SuperAdmin = "superadmin",
+export enum Status {
+  Active = "active",
+  Blocked = "blocked",
+  TemporaryBlocked = "temporary_blocked",
 }
-
-export const ALL_ACCOUNT_ROLES = Object.values(AccountRole);

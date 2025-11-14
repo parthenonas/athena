@@ -1,10 +1,14 @@
-import { AccountRole } from "@athena-lms/shared";
-import { Transform, Type } from "class-transformer";
-import { IsBoolean, IsEnum, IsIn, IsInt, IsOptional, IsString, Max, Min } from "class-validator";
+import { Type } from "class-transformer";
+import { IsIn, IsInt, IsOptional, IsString, Max, Min } from "class-validator";
 
 /**
- * DTO for filtering/pagination of accounts list.
- * Supports: search (by login ILIKE), role, isActive, page/limit, sorting.
+ * @class FilterAccountDto
+ * DTO for listing/filtering/paginating accounts in the admin panel.
+ *
+ * Supports:
+ * - ILIKE search by search term
+ * - Pagination (page, limit)
+ * - Sorting (sortBy, sortOrder)
  */
 export class FilterAccountDto {
   /** Full-text search by login (ILIKE %search%). */
@@ -12,32 +16,14 @@ export class FilterAccountDto {
   @IsString()
   search?: string;
 
-  /** Filter by role. */
-  @IsOptional()
-  @IsEnum(AccountRole)
-  role?: AccountRole;
-
-  /** Filter by active flag. */
-  @IsOptional()
-  @Transform(({ value }) => {
-    if (value === undefined || value === null || value === "") return undefined;
-    if (typeof value === "boolean") return value;
-    const v = String(value).toLowerCase();
-    if (["true", "1", "yes"].includes(v)) return true;
-    if (["false", "0", "no"].includes(v)) return false;
-    return value; // даст валидации упасть, если мусор
-  })
-  @IsBoolean()
-  isActive?: boolean;
-
-  /** Page number (1-based). */
+  /** Page number (1-based). Default: 1. */
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
   page: number = 1;
 
-  /** Page size. */
+  /** Page size. Default: 20, max: 100. */
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -45,12 +31,12 @@ export class FilterAccountDto {
   @Max(100)
   limit: number = 20;
 
-  /** Sort field. */
+  /** Sorting field. */
   @IsOptional()
-  @IsIn(["login", "role", "isActive", "createdAt", "updatedAt"])
-  sortBy: "login" | "role" | "isActive" | "createdAt" | "updatedAt" = "createdAt";
+  @IsIn(["login", "status", "createdAt", "updatedAt"])
+  sortBy: "login" | "status" | "createdAt" | "updatedAt" = "createdAt";
 
-  /** Sort order. */
+  /** Sorting direction. */
   @IsOptional()
   @IsIn(["ASC", "DESC", "asc", "desc"])
   sortOrder: "ASC" | "DESC" | "asc" | "desc" = "DESC";

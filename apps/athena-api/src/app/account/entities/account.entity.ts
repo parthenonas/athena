@@ -1,14 +1,18 @@
-import { AccountRole, ALL_ACCOUNT_ROLES } from "@athena-lms/shared";
+import { Status } from "@athena-lms/shared";
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from "typeorm";
 
+import { Role } from "../../acl";
 import { ProfileRecord } from "../../profile-record";
 
 /**
@@ -17,14 +21,15 @@ import { ProfileRecord } from "../../profile-record";
  * Personal data is stored as dynamic key-value records (ProfileRecord).
  */
 @Entity("accounts")
+@Unique("accounts__login__uk", ["login"])
 export class Account {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn("uuid", { primaryKeyConstraintName: "accounts__id__pk" })
   id!: string;
 
   /**
    * Unique login for authentication.
    */
-  @Column({ unique: true })
+  @Column()
   login!: string;
 
   /**
@@ -37,18 +42,15 @@ export class Account {
   /**
    * System role.
    */
-  @Column({
-    type: "enum",
-    enum: ALL_ACCOUNT_ROLES,
-    default: AccountRole.Student,
-  })
-  role!: AccountRole;
+  @ManyToOne(() => Role, role => role.accounts)
+  @JoinColumn({ name: "role_id", foreignKeyConstraintName: "accounts__role_id__fk" })
+  role!: Role;
 
   /**
-   * Account active status (used for bans/suspensions).
+   * Account status
    */
-  @Column({ default: true })
-  isActive!: boolean;
+  @Column({ enum: Status, default: Status.Active })
+  status!: Status;
 
   /**
    * One-to-many relationship to profile records.
