@@ -1,11 +1,10 @@
-import { classes } from "@automapper/classes";
-import { AutomapperModule } from "@automapper/nestjs";
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { CommandModule } from "nestjs-command";
 
 import { AccountModule } from "./account";
-import { AclModule } from "./acl/acl.module";
+import { AclModule } from "./acl";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { ProfileRecordModule } from "./profile-record";
@@ -27,9 +26,7 @@ import { ProfileRecordModule } from "./profile-record";
       }),
       inject: [ConfigService],
     }),
-    AutomapperModule.forRoot({
-      strategyInitializer: classes(),
-    }),
+    CommandModule,
     AccountModule,
     ProfileRecordModule,
     AclModule,

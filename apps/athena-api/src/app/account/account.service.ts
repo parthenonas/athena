@@ -43,7 +43,7 @@ import { Account } from "./entities/account.entity";
  * ```
  */
 @Injectable()
-export class AccountService extends BaseService<Account, ReadAccountDto> {
+export class AccountService extends BaseService<Account> {
   private readonly logger = new Logger(AccountService.name);
 
   private readonly accessTtl: number;
@@ -128,6 +128,35 @@ export class AccountService extends BaseService<Account, ReadAccountDto> {
       return this.toDto(account, ReadAccountDto);
     } catch (error: unknown) {
       this.logger.error(`findOne() | ${(error as Error).message}`, (error as Error).stack);
+      throw new BadRequestException("Failed to fetch account");
+    }
+  }
+
+  /**
+   * Retrieves a single account by its unique identifier.
+   *
+   * @param login - The account login
+   * @returns Account as `ReadAccountDto`
+   *
+   * @throws {NotFoundException} if account does not exist
+   * @throws {BadRequestException} if query fails
+   */
+  async findOneByLogin(login: string): Promise<ReadAccountDto> {
+    this.logger.log(`findOneByLogin() | login=${login}`);
+
+    try {
+      const account = await this.repo.findOne({
+        where: { login },
+      });
+
+      if (!account) {
+        this.logger.warn(`findOneByLogin() | Account not found | login=${login}`);
+        throw new NotFoundException("Account not found");
+      }
+
+      return this.toDto(account, ReadAccountDto);
+    } catch (error: unknown) {
+      this.logger.error(`findOneByLogin() | ${(error as Error).message}`, (error as Error).stack);
       throw new BadRequestException("Failed to fetch account");
     }
   }

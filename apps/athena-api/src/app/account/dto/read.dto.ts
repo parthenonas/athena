@@ -14,6 +14,7 @@ import { Expose } from "class-transformer";
  */
 export class ReadAccountDto {
   /** Account UUID. */
+
   @Expose()
   id!: string;
 

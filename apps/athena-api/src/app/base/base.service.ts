@@ -3,18 +3,14 @@ import { plainToInstance } from "class-transformer";
 /**
  * BaseService
  *
- * Generic base class providing helper methods for mapping entities to DTOs
- * using `class-transformer`. Ensures only `@Expose()` fields are included
- * and supports nested DTO transformation.
+ * Generic helper for mapping TypeORM entities → DTOs using class-transformer.
+ * Works with ANY DTO class passed explicitly to `toDto()` or `toDtoArray()`.
  */
-export abstract class BaseService<TEntity, TDto> {
+export abstract class BaseService<TEntity> {
   /**
-   * Maps a single entity to the given DTO class.
-   *
-   * @param entity - The source entity (TypeORM or plain object)
-   * @param dtoClass - The DTO class constructor (with @Expose decorators)
+   * Map a single entity to a DTO.
    */
-  protected toDto(entity: TEntity, dtoClass: new () => TDto): TDto {
+  protected toDto<T>(entity: TEntity, dtoClass: new () => T): T {
     return plainToInstance(dtoClass, entity, {
       excludeExtraneousValues: true,
       enableImplicitConversion: true,
@@ -22,12 +18,9 @@ export abstract class BaseService<TEntity, TDto> {
   }
 
   /**
-   * Maps an array of entities to DTOs.
-   *
-   * @param entities - Array of entities
-   * @param dtoClass - The DTO class constructor
+   * Map an array of entities to an array of DTOs.
    */
-  protected toDtoArray(entities: TEntity[], dtoClass: new () => TDto): TDto[] {
+  protected toDtoArray<T>(entities: TEntity[], dtoClass: new () => T): T[] {
     return entities.map(e => this.toDto(e, dtoClass));
   }
 }

@@ -5,13 +5,14 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { Role } from "../acl";
 import { ProfileRecord } from "../profile-record";
+import { AccountCommand } from "./account.command";
 import { AccountController } from "./account.controller";
 import { AccountService } from "./account.service";
 import { Account } from "./entities/account.entity";
 
 @Module({
   imports: [TypeOrmModule.forFeature([Account, Role, ProfileRecord]), JwtModule, ConfigModule],
-  providers: [AccountService],
+  providers: [AccountService, AccountCommand],
   exports: [AccountService],
   controllers: [AccountController],
 })

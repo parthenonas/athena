@@ -21,7 +21,7 @@ export interface AccessTokenPayload {
   username: string;
   role: string;
   permissions: Permission[];
-  policies: Record<Permission, Policy[]>;
+  policies: Partial<Record<Permission, Policy[]>>;
   iat?: number;
   exp?: number;
 }

@@ -54,7 +54,7 @@ export class Role {
    * Policies impose additional object-level constraints and refine access rules.
    */
   @Column({ type: "jsonb", default: {} })
-  policies!: Record<Permission, Policy[]>;
+  policies!: Partial<Record<Permission, Policy[]>>;
 
   /**
    * One-to-many relationship:
