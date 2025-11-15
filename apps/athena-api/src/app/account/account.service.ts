@@ -1,11 +1,11 @@
-import { Pageable } from "@athena-lms/shared";
+import { Pageable, PostgresErrorCode, PostgresQueryError } from "@athena-lms/shared";
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as argon2 from "argon2";
 import { Response } from "express";
-import { Repository } from "typeorm";
+import { QueryFailedError, Repository } from "typeorm";
 
 import { BaseService } from "../base/base.service";
 import { AccessTokenPayload } from "../types/express";
@@ -178,13 +178,11 @@ export class AccountService extends BaseService<Account> {
     this.logger.log(`create() | login=${dto.login}`);
 
     try {
-      const exists = await this.repo.exists({ where: { login: dto.login } });
-      if (exists) throw new ConflictException("Login already in use");
-
       const passwordHash = await argon2.hash(dto.password);
       const entity = this.repo.create({
         login: dto.login,
         passwordHash,
+        roleId: dto.roleId,
       });
 
       const saved = await this.repo.save(entity);
@@ -192,6 +190,9 @@ export class AccountService extends BaseService<Account> {
       return this.toDto(saved, ReadAccountDto);
     } catch (error: unknown) {
       this.logger.error(`create() | ${(error as Error).message}`, (error as Error).stack);
+      if (error instanceof QueryFailedError) {
+        this.handleAccountConstraintError(error);
+      }
       throw new BadRequestException("Failed to create account");
     }
   }
@@ -219,18 +220,19 @@ export class AccountService extends BaseService<Account> {
       if (!account) throw new NotFoundException("Account not found");
 
       if (dto.login && dto.login !== account.login) {
-        const loginTaken = await this.repo.exists({ where: { login: dto.login } });
-        if (loginTaken) throw new ConflictException("Login already in use");
         account.login = dto.login;
       }
-
       if (dto.password) account.passwordHash = await argon2.hash(dto.password);
+      if (dto.roleId) account.roleId = dto.roleId;
 
       const updated = await this.repo.save(account);
       this.logger.log(`update() | Account updated | id=${updated.id}`);
       return this.toDto(updated, ReadAccountDto);
     } catch (error: unknown) {
       this.logger.error(`update() | ${(error as Error).message}`, (error as Error).stack);
+      if (error instanceof QueryFailedError) {
+        this.handleAccountConstraintError(error);
+      }
       throw new BadRequestException("Failed to update account");
     }
   }
@@ -344,5 +346,44 @@ export class AccountService extends BaseService<Account> {
       path: "/",
       maxAge: refreshMaxAge,
     });
+  }
+
+  /**
+   * Maps low-level PostgreSQL database constraint violations
+   * to domain-specific HTTP exceptions.
+   *
+   * This method inspects the `QueryFailedError` thrown by TypeORM
+   * and checks the SQLSTATE error `code` and violated `constraint`
+   * to determine the exact cause of the failure.
+   *
+   * ## How it works
+   * - PostgreSQL uses SQLSTATE codes (e.g. `23505`, `23503`) to
+   *   identify error categories such as unique violation or
+   *   foreign key violation.
+   * - TypeORM exposes these fields at runtime (via the pg driver),
+   *   but not via TypeScript typings.
+   * - This method interprets those codes and throws:
+   *   - `409 Conflict` for unique constraint violations
+   *   - `409 Conflict` for missing foreign key targets
+   *   - `400 Bad Request` for all other cases
+   *
+   * @throws ConflictException | BadRequestException
+   *
+   * @see https://www.postgresql.org/docs/current/errcodes-appendix.html
+   */
+  private handleAccountConstraintError(error: QueryFailedError): never {
+    const pgError = error as QueryFailedError & PostgresQueryError;
+
+    const { code, constraint } = pgError;
+
+    if (code === PostgresErrorCode.UNIQUE_VIOLATION && constraint === "accounts__login__uk") {
+      throw new ConflictException("Login already in use");
+    }
+
+    if (code === PostgresErrorCode.FOREIGN_KEY_VIOLATION && constraint === "accounts__role_id__fk") {
+      throw new ConflictException("Role not found");
+    }
+
+    throw new BadRequestException("Failed to persist account");
   }
 }

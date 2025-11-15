@@ -47,6 +47,12 @@ export class Account {
   role!: Role;
 
   /**
+   * System role id.
+   */
+  @Column({ name: "role_id" })
+  roleId!: string;
+
+  /**
    * Account status
    */
   @Column({ type: "varchar", enum: Status, default: Status.Active })

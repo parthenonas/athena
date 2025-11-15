@@ -21,13 +21,6 @@
           }
         }
       },
-      "build:cli": {
-        "executor": "nx:run-commands",
-        "options": {
-          "command": "webpack-cli --config webpack.cli.config.js",
-          "cwd": "apps/athena-api"
-        }
-      },
       "prune-lockfile": {
         "dependsOn": [
           "build"
@@ -108,17 +101,6 @@
         "options": {
           "command": "ts-node --project tsconfig.app.json ../../node_modules/typeorm/cli migration:run -d src/app/config/migrations-data-source.ts",
           "cwd": "{projectRoot}"
-        }
-      },
-      "command": {
-        "executor": "nx:run-commands",
-        "dependsOn": [
-          "build:cli"
-        ],
-        "options": {
-          "cwd": "apps/athena-api",
-          "command": "node dist/cli.js {args._}",
-          "forwardAllArgs": true
         }
       }
     }
