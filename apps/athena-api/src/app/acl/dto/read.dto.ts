@@ -1,4 +1,4 @@
-import { Permission, Policy } from "@athena-lms/shared/types/acl";
+import { Permission } from "@athena-lms/shared/types/acl";
 import { Expose } from "class-transformer";
 
 /**
@@ -20,7 +20,7 @@ export class ReadRoleDto {
 
   /** Metadata for fine-grained rules. */
   @Expose()
-  policies!: Partial<Record<Permission, Policy[]>>;
+  policies!: Record<string, string[]>;
 
   /** Timestamp of creation. */
   @Expose()

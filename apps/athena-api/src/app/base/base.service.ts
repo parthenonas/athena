@@ -13,7 +13,6 @@ export abstract class BaseService<TEntity> {
   protected toDto<T>(entity: TEntity, dtoClass: new () => T): T {
     return plainToInstance(dtoClass, entity, {
       excludeExtraneousValues: true,
-      enableImplicitConversion: true,
     });
   }
 

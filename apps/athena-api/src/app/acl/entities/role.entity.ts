@@ -1,5 +1,5 @@
 import { Permission, Policy } from "@athena-lms/shared/types/acl";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 
 import { Account } from "../../account/entities/account.entity";
 
@@ -62,4 +62,13 @@ export class Role {
    */
   @OneToMany(() => Account, account => account.role)
   accounts!: Account[];
+
+  /**
+   * Timestamps.
+   */
+  @CreateDateColumn({ name: "created_at" })
+  readonly createdAt!: Date;
+
+  @UpdateDateColumn({ name: "updated_at" })
+  readonly updatedAt!: Date;
 }
