@@ -428,8 +428,6 @@ describe("AccountService", () => {
         cookie: jest.fn(),
       };
 
-      (service as any).config.get.mockReturnValue(7 * 24 * 3600 * 1000);
-
       service.setRefreshCookie(res, "refresh-token");
 
       expect(res.cookie).toHaveBeenCalledWith(

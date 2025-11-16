@@ -348,7 +348,7 @@ export class AccountService extends BaseService<Account> {
    * @param token - Refresh token
    */
   setRefreshCookie(res: Response, token: string): void {
-    const refreshMaxAge = this.config.get<number>("JWT_REFRESH_MAX_AGE_MS", 7 * 24 * 3600 * 1000);
+    const refreshMaxAge = this.refreshTtl * 1000;
 
     res.cookie("refresh_token", token, {
       httpOnly: true,
