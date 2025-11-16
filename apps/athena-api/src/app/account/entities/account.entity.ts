@@ -12,8 +12,8 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 
-import { Role } from "../../acl";
-import { ProfileRecord } from "../../profile-record";
+import { Role } from "../../acl/entities/role.entity";
+import { ProfileRecord } from "../../profile-record/entities/profile-record.entity";
 
 /**
  * @Entity Account

@@ -3,8 +3,8 @@ import { ConfigModule } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
-import { Role } from "../acl";
-import { ProfileRecord } from "../profile-record";
+import { Role } from "../acl/entities/role.entity";
+import { ProfileRecord } from "../profile-record/entities/profile-record.entity";
 import { AccountController } from "./account.controller";
 import { AccountService } from "./account.service";
 import { Account } from "./entities/account.entity";

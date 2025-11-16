@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 
-import { Account } from "../../account";
+import { Account } from "../../account/entities/account.entity";
 
 /**
  * @Entity ProfileRecord

@@ -2,10 +2,10 @@ import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
-import { AccountModule } from "./account";
-import { AclModule } from "./acl";
+import { AccountModule } from "./account/account.module";
+import { AclModule } from "./acl/acl.module";
 import { AppService } from "./app.service";
-import { ProfileRecordModule } from "./profile-record";
+import { ProfileRecordModule } from "./profile-record/profile-record.module";
 
 @Module({
   imports: [

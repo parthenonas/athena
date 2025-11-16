@@ -80,7 +80,7 @@ export class AccountService extends BaseService<Account> {
     this.logger.log(`findAll() | page=${page}, limit=${limit}, search="${search}"`);
 
     try {
-      const qb = this.repo.createQueryBuilder("a").leftJoinAndSelect("a.profileRecords", "r");
+      const qb = this.repo.createQueryBuilder("a");
 
       if (search?.trim()) qb.andWhere("a.login ILIKE :search", { search: `%${search.trim()}%` });
 
@@ -117,7 +117,6 @@ export class AccountService extends BaseService<Account> {
     try {
       const account = await this.repo.findOne({
         where: { id },
-        relations: ["profileRecords"],
       });
 
       if (!account) {
@@ -127,6 +126,9 @@ export class AccountService extends BaseService<Account> {
 
       return this.toDto(account, ReadAccountDto);
     } catch (error: unknown) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       this.logger.error(`findOne() | ${(error as Error).message}`, (error as Error).stack);
       throw new BadRequestException("Failed to fetch account");
     }
@@ -156,6 +158,9 @@ export class AccountService extends BaseService<Account> {
 
       return this.toDto(account, ReadAccountDto);
     } catch (error: unknown) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       this.logger.error(`findOneByLogin() | ${(error as Error).message}`, (error as Error).stack);
       throw new BadRequestException("Failed to fetch account");
     }
@@ -216,7 +221,7 @@ export class AccountService extends BaseService<Account> {
     this.logger.log(`update() | id=${id}`);
 
     try {
-      const account = await this.repo.findOne({ where: { id }, relations: ["profileRecords"] });
+      const account = await this.repo.findOne({ where: { id } });
       if (!account) throw new NotFoundException("Account not found");
 
       if (dto.login && dto.login !== account.login) {
@@ -230,6 +235,9 @@ export class AccountService extends BaseService<Account> {
       return this.toDto(updated, ReadAccountDto);
     } catch (error: unknown) {
       this.logger.error(`update() | ${(error as Error).message}`, (error as Error).stack);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       if (error instanceof QueryFailedError) {
         this.handleAccountConstraintError(error);
       }
@@ -258,6 +266,9 @@ export class AccountService extends BaseService<Account> {
       this.logger.log(`softDelete() | Account soft-deleted | id=${id}`);
       return { success: true };
     } catch (error: unknown) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
       this.logger.error(`softDelete() | ${(error as Error).message}`, (error as Error).stack);
       throw new BadRequestException("Failed to delete account");
     }

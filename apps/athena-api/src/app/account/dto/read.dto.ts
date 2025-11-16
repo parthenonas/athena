@@ -1,3 +1,4 @@
+import { Status } from "@athena-lms/shared/types/account";
 import { Expose } from "class-transformer";
 
 /**
@@ -24,11 +25,11 @@ export class ReadAccountDto {
 
   /** Role name associated with the account. */
   @Expose()
-  role!: string;
+  roleId!: string;
 
-  /** Whether account is active (not banned). */
+  /** Account status. */
   @Expose()
-  isActive!: boolean;
+  status!: Status;
 
   /** Timestamp of creation. */
   @Expose()

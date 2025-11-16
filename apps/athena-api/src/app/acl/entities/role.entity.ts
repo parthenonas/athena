@@ -1,7 +1,7 @@
 import { Permission, Policy } from "@athena-lms/shared/types/acl";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
 
-import { Account } from "../../account";
+import { Account } from "../../account/entities/account.entity";
 
 /**
  * @Entity Role

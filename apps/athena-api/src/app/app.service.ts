@@ -2,7 +2,7 @@ import { Permission } from "@athena-lms/shared";
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 
 import { AccountService } from "./account/account.service";
-import { RoleService } from "./acl";
+import { RoleService } from "./acl/role.service";
 
 @Injectable()
 /**
