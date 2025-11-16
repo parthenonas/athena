@@ -1,8 +1,8 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
-import { PERMISSION_KEY } from "./decorators/require-permission.decorator";
-import { POLICIES_KEY } from "./decorators/require-policies.decorator";
+import { PERMISSION_KEY } from "../acl/decorators/require-permission.decorator";
+import { POLICIES_KEY } from "../acl/decorators/require-policy.decorator";
 
 @Injectable()
 export class AclGuard implements CanActivate {

@@ -1,6 +1,6 @@
-import { Permission, Policy } from "@athena-lms/shared";
+import type { Permission, Policy } from "@athena-lms/shared";
 
-declare module "express-serve-static-core" {
+declare global {
   interface Request {
     user: {
       id: string;
