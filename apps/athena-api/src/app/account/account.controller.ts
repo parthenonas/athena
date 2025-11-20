@@ -2,16 +2,16 @@ import { Permission } from "@athena-lms/shared/types/acl";
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Res, UseGuards } from "@nestjs/common";
 import type { Response } from "express";
 
+import { AccountService } from "./account.service";
 import { CurrentUser } from "../../shared/decorators/current-user.decorator";
 import { AclGuard } from "../acl/acl.guard";
-import { RequirePermission } from "../acl/decorators/require-permission.decorator";
-import { AccountService } from "./account.service";
 import { CreateAccountDto } from "./dto/create.dto";
 import { FilterAccountDto } from "./dto/filter.dto";
 import { LoginDto } from "./dto/login.dto";
 import { TokenResponseDto } from "./dto/token.dto";
 import { UpdateAccountDto } from "./dto/update.dto";
 import { JwtAuthGuard } from "./guards/jwt.guard";
+import { RequirePermission } from "../acl/decorators/require-permission.decorator";
 
 /**
  * @Controller AccountController
