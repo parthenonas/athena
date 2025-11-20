@@ -4,15 +4,6 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/athena-learn"
-    },
-    {
-      "path": "./apps/athena-studio"
-    },
-    {
-      "path": "./apps/athena-control"
-    },
-    {
       "path": "./apps/athena-api"
     },
     {

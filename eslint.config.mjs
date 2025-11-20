@@ -1,8 +1,6 @@
 import nx from "@nx/eslint-plugin";
 import importPlugin from "eslint-plugin-import";
 import prettier from "eslint-plugin-prettier";
-import react from "eslint-plugin-react";
-import reactHooks from "eslint-plugin-react-hooks";
 
 export default [
   ...nx.configs["flat/base"],
@@ -64,8 +62,6 @@ export default [
         "error",
         {
           groups: ["builtin", "external", "internal", ["parent", "sibling", "index"]],
-          pathGroups: [{ pattern: "react", group: "external", position: "before" }],
-          pathGroupsExcludedImportTypes: ["react"],
           "newlines-between": "always",
           alphabetize: { order: "asc", caseInsensitive: true },
         },
@@ -74,19 +70,6 @@ export default [
       "import/no-duplicates": "error",
       "import/no-self-import": "error",
       "import/no-mutable-exports": "error",
-    },
-  },
-
-  {
-    files: ["**/*.tsx", "**/*.jsx"],
-    plugins: { react, reactHooks },
-    rules: {
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
-      "react/jsx-uses-react": "off",
-      "react/react-in-jsx-scope": "off",
-      "react/jsx-no-useless-fragment": "warn",
-      "react/self-closing-comp": "error",
     },
   },
 
