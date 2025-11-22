@@ -20,6 +20,10 @@ export class AclGuard implements CanActivate {
 
     if (!requiredPermission) return true;
 
+    if (user.permissions.includes(Permission.ADMIN)) {
+      return true;
+    }
+
     if (!user.permissions.includes(requiredPermission as Permission)) {
       throw new ForbiddenException("Missing permission");
     }

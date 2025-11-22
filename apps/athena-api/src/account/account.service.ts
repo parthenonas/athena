@@ -58,8 +58,8 @@ export class AccountService extends BaseService<Account> {
     private readonly config: ConfigService,
   ) {
     super();
-    this.accessTtl = this.config.get<number>("JWT_ACCESS_TTL_SECONDS", 900);
-    this.refreshTtl = this.config.get<number>("JWT_REFRESH_TTL_SECONDS", 604800);
+    this.accessTtl = +this.config.get<number>("JWT_ACCESS_TTL_SECONDS", 900);
+    this.refreshTtl = +this.config.get<number>("JWT_REFRESH_TTL_SECONDS", 604800);
     this.accessSecret = this.config.get<string>("JWT_ACCESS_SECRET", "");
     this.refreshSecret = this.config.get<string>("JWT_REFRESH_SECRET", "");
   }
@@ -257,14 +257,13 @@ export class AccountService extends BaseService<Account> {
    * @throws {NotFoundException} if account not found
    * @throws {BadRequestException} if deletion fails
    */
-  async softDelete(id: string): Promise<{ success: boolean }> {
+  async softDelete(id: string): Promise<void> {
     this.logger.log(`softDelete() | id=${id}`);
 
     try {
       const res = await this.repo.softDelete(id);
       if (!res.affected) throw new NotFoundException("Account not found");
       this.logger.log(`softDelete() | Account soft-deleted | id=${id}`);
-      return { success: true };
     } catch (error: unknown) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -284,7 +283,7 @@ export class AccountService extends BaseService<Account> {
    * @throws {NotFoundException} if credentials are invalid
    */
   async validateCredentials(login: string, password: string): Promise<Account> {
-    const account = await this.repo.findOne({ where: { login } });
+    const account = await this.repo.findOne({ where: { login }, relations: ["role"] });
     if (!account) throw new NotFoundException("Invalid credentials");
 
     const valid = await argon2.verify(account.passwordHash, password);

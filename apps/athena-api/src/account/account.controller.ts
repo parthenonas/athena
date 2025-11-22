@@ -137,8 +137,9 @@ export class AccountController {
   @Delete("me")
   @UseGuards(JwtAuthGuard, AclGuard)
   @RequirePermission(Permission.ACCOUNTS_DELETE)
-  async deleteMe(@CurrentUser("sub") id: string) {
-    return this.service.softDelete(id);
+  async deleteMe(@CurrentUser("sub") id: string, @Res({ passthrough: true }) res: Response) {
+    await this.service.softDelete(id);
+    res.sendStatus(204);
   }
 
   /**
@@ -151,8 +152,9 @@ export class AccountController {
   @Delete(":id")
   @UseGuards(JwtAuthGuard, AclGuard)
   @RequirePermission(Permission.ACCOUNTS_DELETE)
-  async delete(@Param("id") id: string) {
-    return this.service.softDelete(id);
+  async delete(@Param("id") id: string, @Res({ passthrough: true }) res: Response) {
+    await this.service.softDelete(id);
+    res.sendStatus(204);
   }
 
   /**
@@ -167,6 +169,7 @@ export class AccountController {
     const account = await this.service.validateCredentials(dto.login, dto.password);
     const accessToken = await this.service.generateAccessToken(account);
     const refreshToken = await this.service.generateRefreshToken(account);
+
     this.service.setRefreshCookie(res, refreshToken);
 
     return { accessToken };

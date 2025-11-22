@@ -1,13 +1,20 @@
 import { AccessTokenPayload } from "@athena/types";
 import { CanActivate, ExecutionContext, Injectable, Logger, UnauthorizedException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import type { Request } from "express";
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   private readonly logger = new Logger(JwtAuthGuard.name);
+  private readonly accessSecret: string;
 
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {
+    this.accessSecret = this.configService.get<string>("JWT_ACCESS_SECRET", "");
+  }
 
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<Request>();
@@ -28,7 +35,7 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      const payload = this.jwtService.verify<AccessTokenPayload>(token);
+      const payload = this.jwtService.verify<AccessTokenPayload>(token, { secret: this.accessSecret });
       request.user = payload;
       return true;
     } catch (error: unknown) {

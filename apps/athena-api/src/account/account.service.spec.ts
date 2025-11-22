@@ -335,10 +335,9 @@ describe("AccountService", () => {
         affected: 1,
       });
 
-      const result = await service.softDelete(mockAccount.id);
+      await service.softDelete(mockAccount.id);
 
       expect(repo.softDelete).toHaveBeenCalledWith(mockAccount.id);
-      expect(result).toEqual({ success: true });
     });
 
     it("should throw NotFoundException if account was not deleted", async () => {
@@ -367,7 +366,7 @@ describe("AccountService", () => {
 
       const result = await service.validateCredentials("admin", "password");
 
-      expect(repo.findOne).toHaveBeenCalledWith({ where: { login: "admin" } });
+      expect(repo.findOne).toHaveBeenCalledWith({ where: { login: "admin" }, relations: ["role"] });
       expect(result).toEqual(mockAccount);
     });
 
