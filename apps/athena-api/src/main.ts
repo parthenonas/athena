@@ -1,12 +1,7 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
-
 import { Logger, ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 
-import { AppModule } from "./app/app.module";
+import { AppModule } from "./app.module";
 import { ErrorLoggingInterceptor } from "./shared/interceptors/error-logging.interceptor";
 
 async function bootstrap() {

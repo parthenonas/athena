@@ -1,112 +1,99 @@
-import nx from "@nx/eslint-plugin";
-import importPlugin from "eslint-plugin-import";
+import eslint from "@eslint/js";
+import globals from "globals";
+import tseslint from "typescript-eslint";
 import prettier from "eslint-plugin-prettier";
+import importPlugin from "eslint-plugin-import";
 
-export default [
-  ...nx.configs["flat/base"],
-  ...nx.configs["flat/typescript"],
-  ...nx.configs["flat/javascript"],
-
+export default tseslint.config(
   {
     ignores: [
+      "eslint.config.js",
+      "eslint.config.mjs",
       "**/dist",
-      "**/.next",
-      "**/coverage",
-      "**/vite.config.*.timestamp*",
-      "**/vitest.config.*.timestamp*",
-      "**/*.d.ts",
+      "**/node_modules",
+      "**/coverage"
     ],
   },
-
+  eslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
   {
-    files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.cjs", "**/*.mjs"],
-    plugins: { import: importPlugin },
+    plugins: { prettier },
     rules: {
-      "@nx/enforce-module-boundaries": [
+      "prettier/prettier": "error"
+    }
+  },
+  {
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+        ...globals.es2022,
+      }
+    }
+  },
+  {
+    plugins: { import: importPlugin },
+    settings: {
+      "import/resolver": {
+        typescript: {}
+      }
+    },
+    rules: {
+      "import/no-self-import": "error",
+      "import/no-duplicates": "error",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-argument": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/no-unsafe-return": "off",
+      "import/newline-after-import": ["error", { count: 1 }],
+      "@typescript-eslint/no-explicit-any": [
         "error",
-        {
-          enforceBuildableLibDependency: true,
-          allow: ["^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$"],
-          depConstraints: [
-            { sourceTag: "type:app", onlyDependOnLibsWithTags: ["type:ui", "type:feature", "type:util"] },
-            { sourceTag: "type:ui", onlyDependOnLibsWithTags: ["type:util"] },
-            { sourceTag: "type:feature", onlyDependOnLibsWithTags: ["type:util"] },
-            { sourceTag: "*", onlyDependOnLibsWithTags: ["*"] },
-          ],
-        },
+        { ignoreRestArgs: true }
       ],
-
-      "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
-      "@typescript-eslint/array-type": ["error", { default: "array-simple" }],
-      "@typescript-eslint/no-inferrable-types": "off",
-
-      "prefer-const": "error",
-      "no-var": "error",
-      eqeqeq: ["error", "smart"],
-      curly: ["error", "multi-line"],
-      "no-console": ["warn", { allow: ["warn", "error", "info", "time", "timeEnd"] }],
-      "no-debugger": "error",
-      "no-shadow": "error",
-      "no-param-reassign": "warn",
-      "no-multiple-empty-lines": ["error", { max: 1 }],
-      "object-curly-spacing": ["error", "always"],
-      "array-bracket-spacing": ["error", "never"],
-      "comma-dangle": ["error", "always-multiline"],
-      "spaced-comment": ["warn", "always", { exceptions: ["-", "+"] }],
-      "arrow-body-style": ["warn", "as-needed"],
-      "prefer-template": "warn",
-      "no-return-await": "error",
-
       "import/order": [
         "error",
         {
           groups: ["builtin", "external", "internal", ["parent", "sibling", "index"]],
           "newlines-between": "always",
-          alphabetize: { order: "asc", caseInsensitive: true },
-        },
-      ],
-      "import/newline-after-import": ["error", { count: 1 }],
-      "import/no-duplicates": "error",
-      "import/no-self-import": "error",
-      "import/no-mutable-exports": "error",
-    },
+          alphabetize: { order: "asc", caseInsensitive: true }
+        }
+      ]
+    }
   },
-
   {
-    files: ["apps/**/src/**/*.ts"],
+    files: ["apps/athena-api/**/*.ts"],
     rules: {
-      "@typescript-eslint/no-floating-promises": "error",
-      "@typescript-eslint/no-misused-promises": ["error", { checksVoidReturn: false }],
-      "no-console": ["warn", { allow: ["warn", "error", "info"] }],
-    },
+      "@typescript-eslint/no-floating-promises": "warn",
+    }
   },
-
   {
-    files: ["**/*.spec.ts", "**/*.test.ts"],
+    files: ["apps/*/src/**/*.ts"],
+    languageOptions: {
+        parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname
+        }
+    },
     rules: {
+        "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }]
+    }
+  },
+  {
+  files: ["apps/athena-api/src/main.ts", "apps/*/src/main.ts"],
+    rules: {
+      "@typescript-eslint/no-floating-promises": "off"
+    }
+  },
+  {
+  files: ["**/*.spec.ts", "**/*.test.ts"],
+    rules: {
+      "@typescript-eslint/unbound-method": "off",
       "@typescript-eslint/no-explicit-any": "off",
-      "no-console": "off",
-    },
-  },
-
-  {
-    plugins: { prettier },
-    rules: {
-      "prettier/prettier": [
-        "error",
-        {
-          printWidth: 120,
-          tabWidth: 2,
-          singleQuote: false,
-          bracketSpacing: true,
-          bracketSameLine: true,
-          semi: true,
-          trailingComma: "all",
-          arrowParens: "avoid",
-          endOfLine: "auto",
-        },
-      ],
-    },
-  },
-];
+    }
+  }
+);
