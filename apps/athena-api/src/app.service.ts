@@ -1,5 +1,6 @@
 import { Permission } from "@athena/types";
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import { AccountService } from "./account/account.service";
 import { RoleService } from "./acl/role.service";
@@ -20,10 +21,19 @@ import { RoleService } from "./acl/role.service";
 export class AppService implements OnModuleInit {
   private readonly logger = new Logger(AppService.name);
 
+  private readonly initialAdminUsername: string;
+  private readonly initialAdminPassword: string;
+  private readonly initialAdminRoleName: string;
+
   constructor(
     private readonly accountService: AccountService,
     private readonly roleService: RoleService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.initialAdminUsername = this.configService.get<string>("INITIAL_ADMIN_USERNAME") || "admin";
+    this.initialAdminPassword = this.configService.get<string>("INITIAL_ADMIN_PASSWORD") || "admin";
+    this.initialAdminRoleName = this.configService.get<string>("INITIAL_ADMIN_ROLE_NAME") || "admin";
+  }
 
   /**
    * @method onModuleInit
@@ -38,40 +48,40 @@ export class AppService implements OnModuleInit {
     this.logger.log("Application bootstrap started");
 
     try {
-      this.logger.log("Checking for existing admin role");
+      this.logger.log(`Checking for existing admin role '${this.initialAdminRoleName}'`);
 
-      let adminRole = await this.roleService.findByName("admin");
+      let adminRole = await this.roleService.findByName(this.initialAdminRoleName);
 
       if (!adminRole) {
-        this.logger.warn("Admin role not found — creating new role");
+        this.logger.warn(`Admin role '${this.initialAdminRoleName}' not found — creating new role`);
 
         adminRole = await this.roleService.create({
-          name: "admin",
+          name: this.initialAdminRoleName,
           permissions: [Permission.ADMIN],
           policies: {},
         });
 
-        this.logger.log(`Admin role created | id=${adminRole.id}`);
+        this.logger.log(`Admin role '${this.initialAdminRoleName}' created | id=${adminRole.id}`);
       } else {
-        this.logger.log(`Admin role already exists | id=${adminRole.id}`);
+        this.logger.log(`Admin role '${this.initialAdminRoleName}' already exists | id=${adminRole.id}`);
       }
 
-      this.logger.log('Checking for "admin" account');
+      this.logger.log(`Checking for '${this.initialAdminUsername}' account`);
 
-      let admin = await this.accountService.findOneByLogin("admin").catch(() => null);
+      let admin = await this.accountService.findOneByLogin(this.initialAdminUsername).catch(() => null);
 
       if (!admin) {
-        this.logger.warn("Admin account not found — creating default admin account");
+        this.logger.warn(`Admin account '${this.initialAdminUsername}' not found — creating default admin account`);
 
         admin = await this.accountService.create({
-          login: "admin",
-          password: "admin",
+          login: this.initialAdminUsername,
+          password: this.initialAdminPassword,
           roleId: adminRole.id,
         });
 
-        this.logger.log(`Admin account created | id=${admin.id}`);
+        this.logger.log(`Admin account '${this.initialAdminUsername}' created | id=${admin.id}`);
       } else {
-        this.logger.log(`Admin account already exists | id=${admin.id}`);
+        this.logger.log(`Admin account '${this.initialAdminUsername}' already exists | id=${admin.id}`);
       }
 
       this.logger.log("Application bootstrap completed successfully");

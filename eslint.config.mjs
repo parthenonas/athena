@@ -90,7 +90,7 @@ export default tseslint.config(
     }
   },
   {
-  files: ["**/*.spec.ts", "**/*.test.ts"],
+  files: ["**/*.spec.ts", "**/*.test.ts", "**/*.e2e-spec.ts", "**/*.e2e-test.ts"],
     rules: {
       "@typescript-eslint/unbound-method": "off",
       "@typescript-eslint/no-explicit-any": "off",

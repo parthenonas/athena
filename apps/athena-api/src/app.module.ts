@@ -19,7 +19,7 @@ import { ProfileRecordModule } from "./profile-record/profile-record.module";
         username: configService.get("DATABASE_USERNAME"),
         password: configService.get("DATABASE_PASSWORD"),
         database: configService.get("DATABASE_NAME"),
-        synchronize: false,
+        synchronize: configService.get("TEST_E2E") === "true",
         autoLoadEntities: true,
       }),
       inject: [ConfigService],

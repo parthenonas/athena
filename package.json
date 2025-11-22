@@ -29,6 +29,7 @@
     "lint:libs": "npm --workspaces --if-present --include-workspace-root=false --workspace libs run lint",
     "test:all": "npm run test:api && npm run test:studio && npm run test:learn && npm run test:control",
     "test:api": "npm --workspace apps/athena-api run test",
+    "test:api:e2e": "npm --workspace apps/athena-api run test:e2e",
     "test:studio": "npm --workspace apps/athena-studio run test",
     "test:learn": "npm --workspace apps/athena-learn run test",
     "test:control": "npm --workspace apps/athena-control run test",
@@ -44,12 +45,15 @@
     "typecheck:libs": "npm --workspaces --if-present --workspace libs run typecheck"
   },
   "devDependencies": {
+    "@testcontainers/postgresql": "^11.8.1",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^10.0.0",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.4",
     "prettier": "^3.0.0",
+    "supertest": "^7.1.4",
+    "testcontainers": "^11.8.1",
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.47.0"
   }
