@@ -1,0 +1,126 @@
+import { Permission, Policy } from "@athena/types";
+import { ConfigService } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
+import { Test, TestingModule } from "@nestjs/testing";
+import { Response } from "express";
+
+import { RoleController } from "./role.controller";
+import { RoleService } from "./role.service";
+import { JwtAuthGuard } from "../account/guards/jwt.guard";
+import { AclGuard } from "../acl/acl.guard";
+import { CreateRoleDto } from "./dto/create.dto";
+import { ReadRoleDto } from "./dto/read.dto";
+
+describe("RoleController", () => {
+  let controller: RoleController;
+  let service: jest.Mocked<RoleService>;
+
+  const mockRole: ReadRoleDto = {
+    id: "role-1",
+    name: "admin",
+    permissions: [Permission.ADMIN],
+    policies: {
+      [Permission.ADMIN]: [Policy.OWN_ONLY],
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  const mockCreateDto: CreateRoleDto = {
+    name: "admin",
+    permissions: [Permission.ADMIN],
+    policies: mockRole.policies,
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [RoleController],
+      providers: [
+        {
+          provide: JwtService,
+          useValue: {
+            signAsync: jest.fn(),
+            verifyAsync: jest.fn(),
+          },
+        },
+        {
+          provide: ConfigService,
+          useValue: { get: jest.fn() },
+        },
+        {
+          provide: RoleService,
+          useValue: {
+            findAll: jest.fn(),
+            findById: jest.fn(),
+            create: jest.fn(),
+            update: jest.fn(),
+            delete: jest.fn(),
+          },
+        },
+        { provide: JwtAuthGuard, useValue: { canActivate: jest.fn(() => true) } },
+        { provide: AclGuard, useValue: { canActivate: jest.fn(() => true) } },
+      ],
+    }).compile();
+
+    controller = module.get<RoleController>(RoleController);
+    service = module.get(RoleService);
+  });
+
+  describe("findAll", () => {
+    it("should return all roles", async () => {
+      service.findAll.mockResolvedValue([mockRole]);
+
+      const result = await controller.findAll();
+
+      expect(service.findAll).toHaveBeenCalled();
+      expect(result).toEqual([mockRole]);
+    });
+  });
+
+  describe("findOne", () => {
+    it("should return a role by id", async () => {
+      service.findById.mockResolvedValue(mockRole);
+
+      const result = await controller.findOne("role-1");
+
+      expect(service.findById).toHaveBeenCalledWith("role-1");
+      expect(result).toEqual(mockRole);
+    });
+  });
+
+  describe("create", () => {
+    it("should create a role", async () => {
+      service.create.mockResolvedValue(mockRole);
+
+      const result = await controller.create(mockCreateDto);
+
+      expect(service.create).toHaveBeenCalledWith(mockCreateDto);
+      expect(result).toEqual(mockRole);
+    });
+  });
+
+  describe("update", () => {
+    it("should update a role", async () => {
+      const updated = { ...mockRole, name: "updated" };
+      service.update.mockResolvedValue(updated);
+
+      const result = await controller.update("role-1", { name: "updated" });
+
+      expect(service.update).toHaveBeenCalledWith("role-1", { name: "updated" });
+      expect(result).toEqual(updated);
+    });
+  });
+
+  describe("delete", () => {
+    it("should delete a role and send 204", async () => {
+      const res = { sendStatus: jest.fn() } as unknown as Response;
+
+      service.delete.mockResolvedValue(undefined);
+
+      await controller.delete("role-1", res);
+
+      expect(service.delete).toHaveBeenCalledWith("role-1");
+      expect(res.sendStatus).toHaveBeenCalledWith(204);
+    });
+  });
+});

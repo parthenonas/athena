@@ -2,11 +2,12 @@ jest.mock("../account/entities/account.entity", () => ({
   Account: class MockAccount {},
 }));
 
+import { PostgresErrorCode } from "@athena/common";
 import { Permission, Policy } from "@athena/types";
-import { NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, NotFoundException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { QueryFailedError, Repository } from "typeorm";
 
 import { CreateRoleDto } from "./dto/create.dto";
 import { ReadRoleDto } from "./dto/read.dto";
@@ -88,25 +89,19 @@ describe("RoleService", () => {
       expect(repo.save).toHaveBeenCalled();
       expect(result).toEqual(mockReadRole);
     });
-  });
 
-  describe("ensureExists", () => {
-    it("should return existing role", async () => {
-      jest.spyOn(service, "findByName").mockResolvedValue(mockReadRole);
-      const result = await service.ensureExists("admin");
-      expect(result).toEqual(mockReadRole);
-    });
+    it("should throw ConflictException on duplicate name", async () => {
+      const pgError: any = new QueryFailedError("duplicate", [], new Error());
+      pgError.code = PostgresErrorCode.UNIQUE_VIOLATION;
+      pgError.constraint = "roles__name__uk";
 
-    it("should create role if not exists", async () => {
-      jest.spyOn(service, "findByName").mockResolvedValue(null);
-      jest.spyOn(service, "create").mockResolvedValue(mockReadRole);
-      const result = await service.ensureExists("admin");
-      expect(service.create).toHaveBeenCalledWith({
-        name: "admin",
-        permissions: [],
-        policies: {},
+      repo.create.mockReturnValue(mockRole);
+      repo.save.mockRejectedValue(pgError);
+
+      await expect(service.create(mockCreateDto)).rejects.toMatchObject({
+        constructor: ConflictException,
+        message: "Role name already in use",
       });
-      expect(result).toEqual(mockReadRole);
     });
   });
 
@@ -139,16 +134,86 @@ describe("RoleService", () => {
         ...mockRole,
         name: "updated",
       };
-      jest.spyOn(service, "findById").mockResolvedValue(mockReadRole);
+
+      repo.findOne.mockResolvedValue(mockRole);
+
       repo.save.mockResolvedValue(updated);
+
       const result = await service.update("role-1", { name: "updated" });
-      expect(repo.save).toHaveBeenCalled();
+
+      expect(repo.findOne).toHaveBeenCalledWith({ where: { id: "role-1" } });
+      expect(repo.save).toHaveBeenCalledWith(updated);
       expect(result.name).toBe("updated");
     });
 
     it("should throw NotFoundException if role not found", async () => {
-      jest.spyOn(service, "findById").mockRejectedValue(new NotFoundException());
+      repo.findOne.mockResolvedValue(null);
+
       await expect(service.update("x", { name: "z" })).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it("should throw ConflictException on duplicate role name", async () => {
+      repo.findOne.mockResolvedValue(mockRole);
+
+      const pgError: any = new QueryFailedError("duplicate", [], new Error());
+      pgError.code = PostgresErrorCode.UNIQUE_VIOLATION;
+      pgError.constraint = "roles__name__uk";
+
+      repo.save.mockRejectedValue(pgError);
+
+      await expect(service.update("role-1", { name: "duplicate" })).rejects.toMatchObject({
+        constructor: ConflictException,
+        message: "Role name already in use",
+      });
+    });
+
+    it("should throw BadRequestException on other DB errors", async () => {
+      repo.findOne.mockResolvedValue(mockRole);
+
+      const pgError: any = new QueryFailedError("weird error", [], new Error());
+      pgError.code = "99999";
+
+      repo.save.mockRejectedValue(pgError);
+
+      await expect(service.update("role-1", { name: "new" })).rejects.toBeInstanceOf(BadRequestException);
+    });
+  });
+
+  describe("delete", () => {
+    it("should delete a role", async () => {
+      repo.delete = jest.fn().mockResolvedValue({ affected: 1 });
+
+      await expect(service.delete("role-1")).resolves.toBeUndefined();
+
+      expect(repo.delete).toHaveBeenCalledWith("role-1");
+    });
+
+    it("should throw NotFoundException if role does not exist", async () => {
+      repo.delete = jest.fn().mockResolvedValue({ affected: 0 });
+
+      await expect(service.delete("x")).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it("should throw ConflictException on FK violation", async () => {
+      const pgError: any = new QueryFailedError("fk error", [], new Error());
+      pgError.code = PostgresErrorCode.FOREIGN_KEY_VIOLATION;
+      pgError.constraint = "accounts__role_id__fk";
+
+      repo.delete = jest.fn().mockRejectedValue(pgError);
+
+      await expect(service.delete("role-1")).rejects.toMatchObject({
+        constructor: ConflictException,
+        message: "Cannot delete role: it is used by existing accounts",
+      });
+    });
+
+    it("should throw BadRequestException on other db errors", async () => {
+      const pgError: any = new Error("some db error");
+      pgError.code = "99999";
+
+      repo.delete = jest.fn().mockRejectedValue(pgError);
+
+      await expect(service.delete("role-1")).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 });

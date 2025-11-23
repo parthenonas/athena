@@ -12,7 +12,7 @@ import { ProfileRecord } from "../profile-record/entities/profile-record.entity"
 @Module({
   imports: [TypeOrmModule.forFeature([Account, Role, ProfileRecord]), JwtModule, ConfigModule],
   providers: [AccountService],
-  exports: [AccountService],
+  exports: [AccountService, JwtModule],
   controllers: [AccountController],
 })
 export class AccountModule {}
