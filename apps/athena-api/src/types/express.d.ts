@@ -1,4 +1,4 @@
-import { AccessTokenPayload, Policy } from "libs/types/src";
+import { AccessTokenPayload, Policy } from "@athena/types";
 
 declare global {
   namespace Express {

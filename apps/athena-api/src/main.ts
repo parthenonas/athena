@@ -1,5 +1,6 @@
 import { Logger, ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import cookieParser from "cookie-parser";
 
 import { AppModule } from "./app.module";
 import { ErrorLoggingInterceptor } from "./shared/interceptors/error-logging.interceptor";
@@ -17,6 +18,8 @@ async function bootstrap() {
     origin: process.env.FRONTEND_URL ?? "http://localhost:4200",
     credentials: true,
   });
+  app.use(cookieParser());
+
   await app.listen(port);
   Logger.log(`Application is running on: http://localhost:${port}/${globalPrefix}`);
 }

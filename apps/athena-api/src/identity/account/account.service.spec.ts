@@ -6,6 +6,7 @@ jest.mock("argon2", () => ({
   verify: jest.fn(),
   hash: jest.fn(),
 }));
+
 import { PostgresErrorCode } from "@athena/common";
 import { Permission } from "@athena/types";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
@@ -30,7 +31,15 @@ describe("AccountService", () => {
     login: "admin",
     passwordHash: "hashed",
     roleId: "role-1",
-    role: undefined as any,
+    role: {
+      id: "1",
+      name: "admin",
+      permissions: [Permission.ADMIN],
+      policies: {},
+      accounts: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
     status: "active" as any,
     profileRecords: [],
     createdAt: new Date(),
@@ -87,12 +96,26 @@ describe("AccountService", () => {
           provide: JwtService,
           useValue: {
             signAsync: jest.fn(),
+            verifyAsync: jest.fn(),
           },
         },
         {
           provide: ConfigService,
           useValue: {
-            get: jest.fn(),
+            get: jest.fn((key: string) => {
+              switch (key) {
+                case "JWT_ACCESS_TTL_SECONDS":
+                  return 900;
+                case "JWT_REFRESH_TTL_SECONDS":
+                  return 604800;
+                case "JWT_ACCESS_SECRET":
+                  return "ACCESS_SECRET";
+                case "JWT_REFRESH_SECRET":
+                  return "REFRESH_SECRET";
+                default:
+                  return null;
+              }
+            }),
           },
         },
       ],
@@ -442,5 +465,42 @@ describe("AccountService", () => {
         }),
       );
     });
+  });
+
+  it("should generate a new access token when refresh token is valid", async () => {
+    const mockPayload = { sub: "user-123" };
+
+    (service as any).jwt.verifyAsync.mockResolvedValue(mockPayload);
+    service.generateAccessToken = jest.fn().mockReturnValue("NEW_ACCESS_TOKEN");
+    repo.findOne.mockResolvedValue(mockAccount);
+
+    const result = await service.refresh("VALID_REFRESH_TOKEN");
+
+    expect((service as any).jwt.verifyAsync).toHaveBeenCalledWith("VALID_REFRESH_TOKEN", {
+      secret: "REFRESH_SECRET",
+    });
+
+    expect(repo.findOne).toHaveBeenCalledWith({
+      where: { id: "user-123" },
+      relations: ["role"],
+    });
+
+    expect(service.generateAccessToken).toHaveBeenCalledWith(mockAccount);
+    expect(result).toBe("NEW_ACCESS_TOKEN");
+  });
+
+  it("should throw BadRequestException when refresh token is invalid", async () => {
+    (service as any).jwt.verifyAsync.mockRejectedValue(new Error("invalid token"));
+
+    await expect(service.refresh("BAD_TOKEN")).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it("should throw NotFoundException when account does not exist", async () => {
+    const mockPayload = { sub: "missing-id" };
+
+    (service as any).jwt.verifyAsync.mockResolvedValue(mockPayload);
+    repo.findOne.mockResolvedValue(null);
+
+    await expect(service.refresh("VALID_REFRESH_TOKEN")).rejects.toBeInstanceOf(NotFoundException);
   });
 });

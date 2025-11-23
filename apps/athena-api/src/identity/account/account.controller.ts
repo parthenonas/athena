@@ -1,6 +1,19 @@
 import { Permission } from "@athena/types";
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Res, UseGuards } from "@nestjs/common";
-import type { Response } from "express";
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+} from "@nestjs/common";
+import type { Response, Request } from "express";
 
 import { AccountService } from "./account.service";
 import { AclGuard } from "../acl/acl.guard";
@@ -68,6 +81,25 @@ export class AccountController {
   @RequirePermission(Permission.ACCOUNTS_READ)
   async findMe(@CurrentUser("sub") id: string) {
     return this.service.findOne(id);
+  }
+
+  /**
+   * GET /accounts/refresh
+   * Refreshes access token using a valid refresh token.
+   *
+   * Requires refresh token in HTTP-only cookie.
+   */
+  @Get("refresh")
+  async refresh(@Req() req: Request) {
+    const token = req.cookies?.["refresh_token"];
+
+    if (!token) {
+      throw new BadRequestException("Missing refresh token");
+    }
+
+    const accessToken = await this.service.refresh(token);
+
+    return { accessToken };
   }
 
   /**

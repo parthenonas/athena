@@ -1,5 +1,6 @@
 import { INestApplication, ValidationPipe } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
+import cookieParser from "cookie-parser";
 import { DataSource } from "typeorm";
 
 import { TestFixtures } from "./fixtures";
@@ -22,6 +23,8 @@ export async function bootstrapE2E() {
       transform: true,
     }),
   );
+
+  app.use(cookieParser());
 
   await app.init();
 

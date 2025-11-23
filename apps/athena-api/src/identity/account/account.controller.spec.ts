@@ -63,6 +63,7 @@ describe("AccountController", () => {
             generateAccessToken: jest.fn(),
             generateRefreshToken: jest.fn(),
             setRefreshCookie: jest.fn(),
+            refresh: jest.fn(),
           },
         },
         {
@@ -216,6 +217,32 @@ describe("AccountController", () => {
       expect(service.setRefreshCookie).toHaveBeenCalledWith(res, "REFRESH");
 
       expect(result).toEqual({ accessToken: "ACCESS" });
+    });
+  });
+
+  describe("refresh", () => {
+    it("should refresh access token when cookie is present", async () => {
+      const req: any = {
+        cookies: {
+          refresh_token: "REFRESH_TOKEN",
+        },
+      };
+
+      service.refresh.mockResolvedValue("NEW_ACCESS_TOKEN");
+
+      const result = await controller.refresh(req);
+
+      expect(service.refresh).toHaveBeenCalledWith("REFRESH_TOKEN");
+
+      expect(result).toEqual({ accessToken: "NEW_ACCESS_TOKEN" });
+    });
+
+    it("should throw BadRequestException when refresh token is missing", async () => {
+      const req: any = {
+        cookies: {},
+      };
+
+      await expect(controller.refresh(req)).rejects.toThrow("Missing refresh token");
     });
   });
 });

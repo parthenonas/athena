@@ -1,5 +1,5 @@
 import { PostgresErrorCode } from "@athena/common";
-import { Pageable, PostgresQueryError, AccessTokenPayload } from "@athena/types";
+import { Pageable, PostgresQueryError, AccessTokenPayload, RefreshTokenPayload } from "@athena/types";
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
@@ -334,10 +334,11 @@ export class AccountService extends BaseService<Account> {
    * @returns Promise<string> - Signed JWT refresh token
    */
   async generateRefreshToken(account: Account): Promise<string> {
-    return this.jwt.signAsync(
-      { sub: account.id, username: account.login },
-      { expiresIn: this.refreshTtl, secret: this.refreshSecret },
-    );
+    const payload: RefreshTokenPayload = {
+      sub: account.id,
+      username: account.login,
+    };
+    return this.jwt.signAsync(payload, { expiresIn: this.refreshTtl, secret: this.refreshSecret });
   }
 
   /**
@@ -395,5 +396,47 @@ export class AccountService extends BaseService<Account> {
     }
 
     throw new BadRequestException("Failed to persist account");
+  }
+
+  /**
+   * Refreshes the access token using a valid refresh token stored
+   * in an HTTP-only cookie.
+   *
+   * Flow:
+   * 1. Extract refresh token from cookie
+   * 2. Validate signature & expiration
+   * 3. Load the account from DB
+   * 4. Issue a new access token
+   * 5. (Optional) Issue a new refresh token + set cookie again
+   *
+   * @param refreshToken - Token from "refresh_token" cookie
+   * @returns New access token string
+   *
+   * @throws NotFoundException if account does not exist
+   * @throws BadRequestException if token is invalid or expired
+   */
+  async refresh(refreshToken: string): Promise<string> {
+    try {
+      const payload = await this.jwt.verifyAsync<RefreshTokenPayload>(refreshToken, {
+        secret: this.refreshSecret,
+      });
+
+      const account = await this.repo.findOne({
+        where: { id: payload.sub },
+        relations: ["role"],
+      });
+
+      if (!account) {
+        throw new NotFoundException("Account not found");
+      }
+
+      return this.generateAccessToken(account);
+    } catch (e: unknown) {
+      if (e instanceof NotFoundException) {
+        throw e;
+      }
+      this.logger.warn(`refresh() | Invalid refresh token`);
+      throw new BadRequestException("Invalid or expired refresh token");
+    }
   }
 }
