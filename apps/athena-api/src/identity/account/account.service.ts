@@ -8,12 +8,12 @@ import * as argon2 from "argon2";
 import { Response } from "express";
 import { QueryFailedError, Repository } from "typeorm";
 
-import { BaseService } from "../base/base.service";
 import { CreateAccountDto } from "./dto/create.dto";
 import { FilterAccountDto } from "./dto/filter.dto";
 import { ReadAccountDto } from "./dto/read.dto";
 import { UpdateAccountDto } from "./dto/update.dto";
 import { Account } from "./entities/account.entity";
+import { BaseService } from "../../base/base.service";
 
 /**
  * @class AccountService

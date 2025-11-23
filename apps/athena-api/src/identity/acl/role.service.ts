@@ -3,10 +3,10 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
-import { BaseService } from "../base/base.service";
 import { CreateRoleDto } from "./dto/create.dto";
 import { ReadRoleDto } from "./dto/read.dto";
 import { Role } from "./entities/role.entity";
+import { BaseService } from "../../base/base.service";
 
 @Injectable()
 export class RoleService extends BaseService<Role> {

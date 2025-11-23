@@ -10,8 +10,8 @@ import { LoginDto } from "./dto/login.dto";
 import { TokenResponseDto } from "./dto/token.dto";
 import { UpdateAccountDto } from "./dto/update.dto";
 import { JwtAuthGuard } from "./guards/jwt.guard";
+import { CurrentUser } from "../../shared/decorators/current-user.decorator";
 import { RequirePermission } from "../acl/decorators/require-permission.decorator";
-import { CurrentUser } from "../shared/decorators/current-user.decorator";
 
 /**
  * @Controller AccountController

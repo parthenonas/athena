@@ -2,8 +2,7 @@ import { Permission } from "@athena/types";
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { AccountService } from "./account/account.service";
-import { RoleService } from "./acl/role.service";
+import { IdentityService } from "./identity";
 
 @Injectable()
 /**
@@ -26,8 +25,7 @@ export class AppService implements OnModuleInit {
   private readonly initialAdminRoleName: string;
 
   constructor(
-    private readonly accountService: AccountService,
-    private readonly roleService: RoleService,
+    private readonly identityService: IdentityService,
     private readonly configService: ConfigService,
   ) {
     this.initialAdminUsername = this.configService.get<string>("INITIAL_ADMIN_USERNAME") || "admin";
@@ -50,12 +48,12 @@ export class AppService implements OnModuleInit {
     try {
       this.logger.log(`Checking for existing admin role '${this.initialAdminRoleName}'`);
 
-      let adminRole = await this.roleService.findByName(this.initialAdminRoleName);
+      let adminRole = await this.identityService.findRoleByName(this.initialAdminRoleName);
 
       if (!adminRole) {
         this.logger.warn(`Admin role '${this.initialAdminRoleName}' not found — creating new role`);
 
-        adminRole = await this.roleService.create({
+        adminRole = await this.identityService.createRole({
           name: this.initialAdminRoleName,
           permissions: [Permission.ADMIN],
           policies: {},
@@ -68,12 +66,12 @@ export class AppService implements OnModuleInit {
 
       this.logger.log(`Checking for '${this.initialAdminUsername}' account`);
 
-      let admin = await this.accountService.findOneByLogin(this.initialAdminUsername).catch(() => null);
+      let admin = await this.identityService.findAccountByLogin(this.initialAdminUsername).catch(() => null);
 
       if (!admin) {
         this.logger.warn(`Admin account '${this.initialAdminUsername}' not found — creating default admin account`);
 
-        admin = await this.accountService.create({
+        admin = await this.identityService.createAccount({
           login: this.initialAdminUsername,
           password: this.initialAdminPassword,
           roleId: adminRole.id,

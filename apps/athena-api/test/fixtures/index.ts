@@ -3,15 +3,13 @@ import { INestApplication } from "@nestjs/common";
 import request from "supertest";
 import { DataSource } from "typeorm";
 
-import { AccountService } from "../../src/account/account.service";
-import { RoleService } from "../../src/acl/role.service";
+import { IdentityService } from "../../src/identity";
 
 export class TestFixtures {
   constructor(
     private readonly app: INestApplication,
     private readonly dataSource: DataSource,
-    private readonly accountService: AccountService,
-    private readonly roleService: RoleService,
+    private readonly identityService: IdentityService,
   ) {}
 
   async resetDatabase() {
@@ -23,18 +21,18 @@ export class TestFixtures {
   }
 
   async seedAdmin({ login = "admin", password = "admin" } = {}) {
-    let adminRole = await this.roleService.findByName("admin").catch(() => null);
+    let adminRole = await this.identityService.findRoleByName("admin").catch(() => null);
     if (!adminRole) {
-      adminRole = await this.roleService.create({
+      adminRole = await this.identityService.createRole({
         name: "admin",
         permissions: [Permission.ADMIN],
         policies: {},
       });
     }
 
-    let admin = await this.accountService.findOneByLogin(login).catch(() => null);
+    let admin = await this.identityService.findAccountByLogin(login).catch(() => null);
     if (!admin) {
-      admin = await this.accountService.create({
+      admin = await this.identityService.createAccount({
         login: login,
         password: password,
         roleId: adminRole.id,
@@ -55,12 +53,12 @@ export class TestFixtures {
   }
 
   async createRole({ name = "user", permissions = [], policies = {} } = {}) {
-    const role = await this.roleService.create({ name, permissions, policies });
+    const role = await this.identityService.createRole({ name, permissions, policies });
     return role;
   }
 
   async createUser({ login = "user1", password = "pass", roleId }) {
-    const user = await this.accountService.create({
+    const user = await this.identityService.createAccount({
       login,
       password,
       roleId,

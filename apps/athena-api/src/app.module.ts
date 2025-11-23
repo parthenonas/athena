@@ -2,10 +2,8 @@ import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
-import { AccountModule } from "./account/account.module";
-import { AclModule } from "./acl/acl.module";
 import { AppService } from "./app.service";
-import { ProfileRecordModule } from "./profile-record/profile-record.module";
+import { IdentityModule } from "./identity";
 
 @Module({
   imports: [
@@ -24,9 +22,7 @@ import { ProfileRecordModule } from "./profile-record/profile-record.module";
       }),
       inject: [ConfigService],
     }),
-    AccountModule,
-    ProfileRecordModule,
-    AclModule,
+    IdentityModule,
   ],
   providers: [AppService],
 })
