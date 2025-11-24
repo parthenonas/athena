@@ -1,50 +1,70 @@
-# 🧠 Athena LMS
+# Athena LMS
 
-Athena is a modern **Learning Management System (LMS)** designed for educators, students, and administrators.  
-It combines an interactive learning experience, real-time collaboration, and powerful analytics — all within a monorepo powered by **Nx**.
+Athena is a modular Learning Management System (LMS) built as a TypeScript monorepo.
+The project is under active development and not production-ready yet.
 
-> 🚧 **Work in progress.** Most of the system is not production-ready yet.
+> **Work in progress.** Most of the system is not production-ready yet.
 
----
 
-## 🧰 Tech Stack
+## Tech Stack
 
-| Layer             | Technology                |
-| ----------------- | ------------------------- |
-| **Backend**       | NestJS (TypeScript, REST) |
-| **Frontend**      | React (Vite, shadcn/ui)   |
-| **Monorepo**      | Nx                        |
-| **Database**      | PostgreSQL                |
-| **Cache / Queue** | Redis                     |
-| **Storage**       | MinIO                     |
-| **CI/CD**         | GitHub Actions            |
+### Backend
+NestJS, TypeORM, PostgreSQL, JWT, Argon2, MinIO (planned), Full test setup with Jest and Testcontainers
 
----
+### Frontend
+React with MUI, Vite, Redux Toolkit, React Hook Form, Zod
 
-## 🧪 Development
+### Monorepo
+npm workspaces
+
+### Applications:
+- apps/athena-api (backend)
+- apps/athena-learn (student UI)
+- apps/athena-studio (teacher UI)
+- apps/athena-control (admin UI)
+
+
+## Development
 
 ```bash
-# Install dependencies
+# Install dependencies:
 npm install
 
-# Lint, test, build, and typecheck all projects
-npx nx run-many -t lint test build typecheck
+# Build shared libraries:
+npm run build:types
+npm run build:common
 
-# Start backend
-npx nx serve athena-api
+# Start backend:
+npm run dev:api
 
-# Start frontends
-npx nx serve athena-learn
-npx nx serve athena-studio
-npx nx serve athena-control
+# Start frontends:
+npm run dev:learn
+npm run dev:studio
+npm run dev:control
 ```
 
----
 
-## 🧱 CI/CD
+## Testing
 
-The project uses GitHub Actions for automated linting, testing, and auditing on every push or pull request to main and develop branches.
+```bash
+# Unit tests:
+npm run test:api
 
-## ⚖️ License
+# E2E tests (Testcontainers):
+npm run test:api:e2e
+
+# Static checks:
+npm audit
+npm run lint:api
+npm run typecheck:api
+```
+
+
+## CI
+
+GitHub Actions run audit, linting, typechecking, unit tests, e2e tests (API only), and build checks.
+Triggered on pull requests and pushes to main and develop branches.
+
+## License
 
 MIT License Copyright © 2025 [Sergei Shekshuev](https://github.com/shekshuev)
