@@ -55,6 +55,8 @@ describe("RoleController", () => {
             create: jest.fn(),
             update: jest.fn(),
             delete: jest.fn(),
+            updatePermissions: jest.fn(),
+            updatePolicies: jest.fn(),
           },
         },
         { provide: JwtAuthGuard, useValue: { canActivate: jest.fn(() => true) } },
@@ -121,6 +123,48 @@ describe("RoleController", () => {
 
       expect(service.delete).toHaveBeenCalledWith("role-1");
       expect(res.sendStatus).toHaveBeenCalledWith(204);
+    });
+  });
+
+  describe("updatePermissions", () => {
+    it("should update permissions for a role", async () => {
+      const newPermissions = [Permission.COURSES_CREATE, Permission.COURSES_UPDATE];
+
+      const updated: ReadRoleDto = {
+        ...mockRole,
+        permissions: newPermissions,
+      };
+
+      service.updatePermissions.mockResolvedValue(updated);
+
+      const result = await controller.updatePermissions("role-1", {
+        permissions: newPermissions,
+      });
+
+      expect(service.updatePermissions).toHaveBeenCalledWith("role-1", newPermissions);
+      expect(result).toEqual(updated);
+    });
+  });
+
+  describe("updatePolicies", () => {
+    it("should update policies for a role", async () => {
+      const newPolicies = {
+        [Permission.COURSES_READ]: [Policy.OWN_ONLY],
+      };
+
+      const updated: ReadRoleDto = {
+        ...mockRole,
+        policies: newPolicies,
+      };
+
+      service.updatePolicies.mockResolvedValue(updated);
+
+      const result = await controller.updatePolicies("role-1", {
+        policies: newPolicies,
+      });
+
+      expect(service.updatePolicies).toHaveBeenCalledWith("role-1", newPolicies);
+      expect(result).toEqual(updated);
     });
   });
 });

@@ -1,6 +1,5 @@
 import { Permission, Policy } from "@athena/types";
-import { Type } from "class-transformer";
-import { IsArray, IsEnum, IsOptional, IsString, MinLength, ValidateNested } from "class-validator";
+import { IsArray, IsEnum, IsObject, IsOptional, IsString, MinLength } from "class-validator";
 
 /**
  * @class UpdateRoleDto
@@ -18,14 +17,13 @@ export class UpdateRoleDto {
   @IsOptional()
   @IsArray()
   @IsEnum(Permission, { each: true })
-  permissions?: Permission[];
+  permissions!: Permission[];
 
   /**
    * Updated policies (optional).
    * Passing `{}` removes all policies.
    */
   @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => Object)
-  policies?: Partial<Record<Permission, Policy[]>>;
+  @IsObject()
+  policies!: Partial<Record<Permission, Policy[]>>;
 }

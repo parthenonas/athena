@@ -1,5 +1,5 @@
 import { PostgresErrorCode } from "@athena/common";
-import { PostgresQueryError } from "@athena/types";
+import { Permission, Policy, PostgresQueryError } from "@athena/types";
 import { Injectable, Logger, NotFoundException, BadRequestException, ConflictException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { QueryFailedError, Repository } from "typeorm";
@@ -184,5 +184,64 @@ export class RoleService extends BaseService<Role> {
     }
 
     throw new BadRequestException("Failed to persist role");
+  }
+
+  /**
+   * Updates the permission list of a specific role.
+   *
+   * This method fully replaces the existing permission set with the
+   * provided array. It does not validate whether the permissions belong
+   * to a known enum — this responsibility lies in DTO validation.
+   *
+   * @param id - Role ID
+   * @param permissions - New permission list
+   *
+   * @throws NotFoundException if the role does not exist
+   */
+  async updatePermissions(id: string, permissions: Permission[]): Promise<ReadRoleDto> {
+    this.logger.log(`updatePermissions() | id=${id}`);
+    const role = await this.repo.findOne({ where: { id } });
+    if (!role) {
+      this.logger.warn(`updatePermissions() | Role not found | id=${id}`);
+      throw new NotFoundException("Role not found");
+    }
+
+    role.permissions = permissions;
+    try {
+      const saved = await this.repo.save(role);
+      return this.toDto(saved, ReadRoleDto);
+    } catch (error: unknown) {
+      this.logger.error(`updatePermissions() | ${(error as Error).message}`, (error as Error).stack);
+
+      throw new BadRequestException("Failed to update policy");
+    }
+  }
+
+  /**
+   * Updates object-level policies for a role.
+   *
+   * @param id - Role ID
+   * @param policies - Map of permission → list of policies
+   *
+   * @throws NotFoundException if the role does not exist
+   */
+  async updatePolicies(id: string, policies: Partial<Record<Permission, Policy[]>>): Promise<ReadRoleDto> {
+    this.logger.log(`updatePolicies() | id=${id}`);
+
+    const role = await this.repo.findOne({ where: { id } });
+    if (!role) {
+      this.logger.warn(`updatePolicies() | Role not found | id=${id}`);
+      throw new NotFoundException("Role not found");
+    }
+
+    role.policies = policies;
+    try {
+      const saved = await this.repo.save(role);
+      return this.toDto(saved, ReadRoleDto);
+    } catch (error: unknown) {
+      this.logger.error(`updatePolicies() | ${(error as Error).message}`, (error as Error).stack);
+
+      throw new BadRequestException("Failed to update policy");
+    }
   }
 }

@@ -1,6 +1,5 @@
 import { Permission, Policy } from "@athena/types";
-import { Type } from "class-transformer";
-import { IsArray, IsEnum, IsOptional, IsString, MinLength, ValidateNested } from "class-validator";
+import { IsArray, IsEnum, IsObject, IsOptional, IsString, MinLength } from "class-validator";
 
 /**
  * @class CreateRoleDto
@@ -47,7 +46,6 @@ export class CreateRoleDto {
    * Only permissions listed in this object get additional restrictions.
    */
   @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => Object)
-  policies?: Partial<Record<Permission, Policy[]>>;
+  @IsObject()
+  policies!: Partial<Record<Permission, Policy[]>>;
 }

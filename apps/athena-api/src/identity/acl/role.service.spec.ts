@@ -216,4 +216,82 @@ describe("RoleService", () => {
       await expect(service.delete("role-1")).rejects.toBeInstanceOf(BadRequestException);
     });
   });
+
+  describe("updatePermissions", () => {
+    it("should update permissions", async () => {
+      const updated = {
+        ...mockRole,
+        permissions: [Permission.ADMIN],
+      };
+
+      repo.findOne.mockResolvedValue(mockRole);
+      repo.save.mockResolvedValue(updated);
+
+      const result = await service.updatePermissions("role-1", [Permission.ADMIN]);
+
+      expect(repo.findOne).toHaveBeenCalledWith({ where: { id: "role-1" } });
+      expect(repo.save).toHaveBeenCalledWith(updated);
+      expect(result.permissions).toEqual([Permission.ADMIN]);
+    });
+
+    it("should throw NotFoundException if role not found", async () => {
+      repo.findOne.mockResolvedValue(null);
+
+      await expect(service.updatePermissions("xxx", [Permission.ADMIN])).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it("should throw BadRequestException on db error", async () => {
+      repo.findOne.mockResolvedValue(mockRole);
+
+      const pgError: any = new Error("db error");
+      pgError.code = "99999";
+
+      repo.save.mockRejectedValue(pgError);
+
+      await expect(service.updatePermissions("role-1", [Permission.ADMIN])).rejects.toBeInstanceOf(BadRequestException);
+    });
+  });
+
+  describe("updatePolicies", () => {
+    it("should update policies", async () => {
+      const newPolicies = {
+        [Permission.COURSES_DELETE]: [Policy.NOT_PUBLISHED],
+      };
+
+      const updated = {
+        ...mockRole,
+        policies: newPolicies,
+      };
+
+      repo.findOne.mockResolvedValue(mockRole);
+      repo.save.mockResolvedValue(updated);
+
+      const result = await service.updatePolicies("role-1", newPolicies);
+
+      expect(repo.findOne).toHaveBeenCalledWith({ where: { id: "role-1" } });
+      expect(repo.save).toHaveBeenCalledWith(updated);
+      expect(result.policies).toEqual(newPolicies);
+    });
+
+    it("should throw NotFoundException if role not found", async () => {
+      repo.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.updatePolicies("xxx", { [Permission.COURSES_UPDATE]: [Policy.OWN_ONLY] }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it("should throw BadRequestException on db error", async () => {
+      repo.findOne.mockResolvedValue(mockRole);
+
+      const pgError: any = new Error("db failure");
+      pgError.code = "99999";
+
+      repo.save.mockRejectedValue(pgError);
+
+      await expect(
+        service.updatePolicies("role-1", { [Permission.COURSES_UPDATE]: [Policy.OWN_ONLY] }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+  });
 });
