@@ -2,22 +2,32 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
 
 permissions:
-  actions: read
   contents: read
 
 jobs:
   ci:
-    name: Lint, Test, Build, Audit
+    name: Athena API – lint, typecheck, tests, e2e
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_DB: athena_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+        options: >-
+          --health-cmd="pg_isready -U test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
       - name: Checkout repository
@@ -29,17 +39,34 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "npm"
+          cache: npm
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Security audit
-        run: npm audit --audit-level=moderate
+      - name: Build libs:common
+        run: npm --workspace libs/common run build
 
-      - name: Run Nx tasks
-        run: npx nx run-many -t lint test build typecheck --parallel=3
+      - name: Build libs:types
+        run: npm --workspace libs/types run build
 
-      - name: Nx fix CI cache
-        if: always()
-        run: npx nx fix-ci
+      - name: Audit
+        run: npm audit
+
+      - name: Lint API
+        run: npm --workspace apps/athena-api run lint
+
+      - name: Typecheck API
+        run: npm --workspace apps/athena-api run typecheck
+
+      - name: Run unit tests (API)
+        run: npm --workspace apps/athena-api run test
+
+      - name: Run e2e tests (API)
+        env:
+          DATABASE_URL: postgres://test:test@localhost:5432/athena_test
+        run: npm --workspace apps/athena-api run test:e2e
+
+      - name: Build API
+        run: npm --workspace apps/athena-api run build
+
