@@ -56,16 +56,26 @@ jobs:
       - name: Lint API
         run: npm --workspace apps/athena-api run lint
 
-      # TODO: Add typecheck, it fails on gh actions
-      # - name: Typecheck API
-      #   run: npm --workspace apps/athena-api run typecheck
+      - name: Typecheck API
+        run: npm --workspace apps/athena-api run typecheck
 
       - name: Run unit tests (API)
         run: npm --workspace apps/athena-api run test
 
       - name: Run e2e tests (API)
         env:
-          DATABASE_URL: postgres://test:test@localhost:5432/athena_test
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+          DATABASE_USERNAME: test
+          DATABASE_PASSWORD: test
+          DATABASE_NAME: athena_test
+          INITIAL_ADMIN_USERNAME: admin
+          INITIAL_ADMIN_PASSWORD: admin
+          INITIAL_ADMIN_ROLE_NAME: admin
+          JWT_ACCESS_SECRET: JWT_ACCESS_SECRET
+          JWT_REFRESH_SECRET: JWT_REFRESH_SECRET
+          JWT_ACCESS_TTL_SECONDS: 900
+          JWT_REFRESH_TTL_SECONDS: 604800
         run: npm --workspace apps/athena-api run test:e2e
 
       - name: Build API
