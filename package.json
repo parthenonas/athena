@@ -10,6 +10,7 @@
     "./libs/*"
   ],
   "scripts": {
+    "prepare": "npm run build:types && npm run build:common",
     "dev:api": "npm --workspace apps/athena-api run start:dev",
     "dev:studio": "npm --workspace apps/athena-studio run start",
     "dev:learn": "npm --workspace apps/athena-learn run start",
