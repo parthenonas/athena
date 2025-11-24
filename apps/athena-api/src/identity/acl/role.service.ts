@@ -1,5 +1,5 @@
 import { PostgresErrorCode } from "@athena/common";
-import { Pageable, Permission, Policy, PostgresQueryError } from "@athena/types";
+import { Pageable, Permission, Policy } from "@athena/types";
 import { Injectable, Logger, NotFoundException, BadRequestException, ConflictException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { QueryFailedError, Repository } from "typeorm";
@@ -9,6 +9,7 @@ import { FilterRoleDto } from "./dto/filter.dto";
 import { ReadRoleDto } from "./dto/read.dto";
 import { Role } from "./entities/role.entity";
 import { BaseService } from "../../base/base.service";
+import { isPostgresQueryError } from "../../shared/helpers/errors";
 
 /**
  * @class RoleService
@@ -208,15 +209,16 @@ export class RoleService extends BaseService<Role> {
    * - FK constraint from accounts.role_id
    */
   private handleRoleConstraintError(error: QueryFailedError): never {
-    const pgError = error as QueryFailedError & PostgresQueryError;
-    const { code, constraint } = pgError;
+    if (isPostgresQueryError(error)) {
+      const { code, constraint } = error;
 
-    if (code === PostgresErrorCode.UNIQUE_VIOLATION && constraint === "roles__name__uk") {
-      throw new ConflictException("Role name already in use");
-    }
+      if (code === PostgresErrorCode.UNIQUE_VIOLATION && constraint === "roles__name__uk") {
+        throw new ConflictException("Role name already in use");
+      }
 
-    if (code === PostgresErrorCode.FOREIGN_KEY_VIOLATION && constraint === "accounts__role_id__fk") {
-      throw new ConflictException("Cannot delete role: it is used by existing accounts");
+      if (code === PostgresErrorCode.FOREIGN_KEY_VIOLATION && constraint === "accounts__role_id__fk") {
+        throw new ConflictException("Cannot delete role: it is used by existing accounts");
+      }
     }
 
     throw new BadRequestException("Failed to persist role");

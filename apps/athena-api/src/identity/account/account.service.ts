@@ -1,5 +1,5 @@
 import { PostgresErrorCode } from "@athena/common";
-import { Pageable, PostgresQueryError, AccessTokenPayload, RefreshTokenPayload } from "@athena/types";
+import { Pageable, AccessTokenPayload, RefreshTokenPayload } from "@athena/types";
 import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
@@ -14,6 +14,7 @@ import { ReadAccountDto } from "./dto/read.dto";
 import { UpdateAccountDto } from "./dto/update.dto";
 import { Account } from "./entities/account.entity";
 import { BaseService } from "../../base/base.service";
+import { isPostgresQueryError } from "../../shared/helpers/errors";
 
 /**
  * @class AccountService
@@ -383,16 +384,16 @@ export class AccountService extends BaseService<Account> {
    * @see https://www.postgresql.org/docs/current/errcodes-appendix.html
    */
   private handleAccountConstraintError(error: QueryFailedError): never {
-    const pgError = error as QueryFailedError & PostgresQueryError;
+    if (isPostgresQueryError(error)) {
+      const { code, constraint } = error;
 
-    const { code, constraint } = pgError;
+      if (code === PostgresErrorCode.UNIQUE_VIOLATION && constraint === "accounts__login__uk") {
+        throw new ConflictException("Login already in use");
+      }
 
-    if (code === PostgresErrorCode.UNIQUE_VIOLATION && constraint === "accounts__login__uk") {
-      throw new ConflictException("Login already in use");
-    }
-
-    if (code === PostgresErrorCode.FOREIGN_KEY_VIOLATION && constraint === "accounts__role_id__fk") {
-      throw new ConflictException("Role not found");
+      if (code === PostgresErrorCode.FOREIGN_KEY_VIOLATION && constraint === "accounts__role_id__fk") {
+        throw new ConflictException("Role not found");
+      }
     }
 
     throw new BadRequestException("Failed to persist account");
