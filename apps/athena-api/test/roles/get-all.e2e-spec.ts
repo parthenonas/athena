@@ -3,10 +3,9 @@ import request from "supertest";
 
 import { bootstrapE2E, shutdownE2E } from "../bootstrap-e2e";
 
-describe("RoleController (e2e)", () => {
+describe("GET /roles (e2e)", () => {
   let app: INestApplication;
   let fixtures: any;
-
   let adminToken: string;
 
   beforeAll(async () => {
@@ -22,34 +21,56 @@ describe("RoleController (e2e)", () => {
     await shutdownE2E(app);
   });
 
-  describe("GET /roles", () => {
-    it("should return 401 when no token provided", async () => {
-      const res = await request(app.getHttpServer()).get("/roles");
-      expect(res.status).toBe(401);
+  it("should return list of roles", async () => {
+    const http = request(app.getHttpServer());
+
+    const res = await http.get("/roles").set("Authorization", `Bearer ${adminToken}`);
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.body).toHaveProperty("meta");
+  });
+
+  it("should reject without token (401)", async () => {
+    const http = request(app.getHttpServer());
+    const res = await http.get("/roles");
+
+    expect(res.status).toBe(401);
+  });
+
+  it("should reject without Permission.ADMIN (403)", async () => {
+    const http = request(app.getHttpServer());
+
+    const role = await fixtures.createRole({
+      name: "role_without_admin",
+      permissions: [],
     });
 
-    it("should return 403 when user has no Permission.ADMIN", async () => {
-      const role = await fixtures.createRole({
-        name: "normal_user",
-        permissions: [],
-      });
+    const login = "no_admin_user";
+    const password = "123456";
 
-      const login = "u1";
-      const password = "12345678";
+    await fixtures.createUser({ login, password, roleId: role.id });
+    const token = await fixtures.login(login, password);
 
-      await fixtures.createUser({ login, password, roleId: role.id });
-      const token = await fixtures.login(login, password);
+    const res = await http.get("/roles").set("Authorization", `Bearer ${token}`);
 
-      const res = await request(app.getHttpServer()).get("/roles").set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(403);
+  });
 
-      expect(res.status).toBe(403);
-    });
+  it("should support pagination", async () => {
+    const http = request(app.getHttpServer());
 
-    it("should return list of roles (admin)", async () => {
-      const res = await request(app.getHttpServer()).get("/roles").set("Authorization", `Bearer ${adminToken}`);
+    const res = await http.get("/roles?page=1&limit=2").set("Authorization", `Bearer ${adminToken}`);
 
-      expect(res.status).toBe(200);
-      expect(Array.isArray(res.body)).toBe(true);
-    });
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty("data");
+    expect(res.body).toHaveProperty("meta");
+
+    expect(Array.isArray(res.body.data)).toBe(true);
+
+    expect(res.body.meta.page).toBe(1);
+    expect(res.body.meta.limit).toBe(2);
+    expect(res.body.meta.pages).toBeGreaterThan(0);
+    expect(res.body.meta.total).toBeGreaterThan(0);
   });
 });

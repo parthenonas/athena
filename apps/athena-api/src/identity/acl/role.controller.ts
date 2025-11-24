@@ -1,8 +1,21 @@
-import { Permission, Policy } from "@athena/types";
-import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Res, UseGuards } from "@nestjs/common";
+import { Pageable, Permission, Policy } from "@athena/types";
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Res,
+  UseGuards,
+} from "@nestjs/common";
 import type { Response } from "express";
 
 import { CreateRoleDto } from "./dto/create.dto";
+import { FilterRoleDto } from "./dto/filter.dto";
 import { ReadRoleDto } from "./dto/read.dto";
 import { UpdateRolePermissionsDto } from "./dto/update-permissions.dto";
 import { UpdateRolePoliciesDto } from "./dto/update-policies.dto";
@@ -45,8 +58,8 @@ export class RoleController {
   @Get()
   @UseGuards(JwtAuthGuard, AclGuard)
   @RequirePermission(Permission.ADMIN)
-  async findAll(): Promise<ReadRoleDto[]> {
-    return this.service.findAll();
+  async findAll(@Query() filters: FilterRoleDto): Promise<Pageable<ReadRoleDto>> {
+    return this.service.findAll(filters);
   }
 
   /**

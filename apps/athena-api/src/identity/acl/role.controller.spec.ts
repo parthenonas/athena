@@ -1,4 +1,4 @@
-import { Permission, Policy } from "@athena/types";
+import { Pageable, Permission, Policy } from "@athena/types";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
@@ -69,13 +69,31 @@ describe("RoleController", () => {
   });
 
   describe("findAll", () => {
-    it("should return all roles", async () => {
-      service.findAll.mockResolvedValue([mockRole]);
+    it("should call service.findAll with filters and return pageable result", async () => {
+      const filters: any = {
+        page: 1,
+        limit: 20,
+        sortBy: "name",
+        sortOrder: "ASC",
+        search: "",
+      };
 
-      const result = await controller.findAll();
+      const pageable: Pageable<ReadRoleDto> = {
+        data: [mockRole],
+        meta: {
+          total: 1,
+          page: 1,
+          limit: 20,
+          pages: 1,
+        },
+      };
 
-      expect(service.findAll).toHaveBeenCalled();
-      expect(result).toEqual([mockRole]);
+      service.findAll.mockResolvedValue(pageable);
+
+      const result = await controller.findAll(filters);
+
+      expect(service.findAll).toHaveBeenCalledWith(filters);
+      expect(result).toEqual(pageable);
     });
   });
 

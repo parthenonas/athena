@@ -80,6 +80,7 @@
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
+    "setupFilesAfterEnv": ["../test/setup.ts"],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   }

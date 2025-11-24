@@ -1,10 +1,11 @@
 import { PostgresErrorCode } from "@athena/common";
-import { Permission, Policy, PostgresQueryError } from "@athena/types";
+import { Pageable, Permission, Policy, PostgresQueryError } from "@athena/types";
 import { Injectable, Logger, NotFoundException, BadRequestException, ConflictException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { QueryFailedError, Repository } from "typeorm";
 
 import { CreateRoleDto } from "./dto/create.dto";
+import { FilterRoleDto } from "./dto/filter.dto";
 import { ReadRoleDto } from "./dto/read.dto";
 import { Role } from "./entities/role.entity";
 import { BaseService } from "../../base/base.service";
@@ -78,13 +79,48 @@ export class RoleService extends BaseService<Role> {
   }
 
   /**
-   * Returns all roles.
+   * Returns paginated list of roles with search & sorting.
+   *
+   * Supports:
+   * - search by role name (ILIKE)
+   * - pagination
+   * - sorting
+   *
+   * @param filters - DTO with pagination/filter options
    */
-  async findAll(): Promise<ReadRoleDto[]> {
-    this.logger.log("findAll()");
+  async findAll(filters: FilterRoleDto): Promise<Pageable<ReadRoleDto>> {
+    const { page, limit, sortBy, sortOrder, search } = filters;
 
-    const records = await this.repo.find();
-    return this.toDtoArray(records, ReadRoleDto);
+    this.logger.log(
+      `findAll() | page=${page}, limit=${limit}, search="${search}", sortBy=${sortBy}, sortOrder=${sortOrder}`,
+    );
+
+    try {
+      const qb = this.repo.createQueryBuilder("r");
+
+      if (search?.trim()) {
+        qb.where("r.name ILIKE :search", { search: `%${search.trim()}%` });
+      }
+
+      qb.orderBy(`r.${sortBy}`, sortOrder.toUpperCase() as "ASC" | "DESC");
+      qb.skip((page - 1) * limit).take(limit);
+
+      const [entities, total] = await qb.getManyAndCount();
+      const data = this.toDtoArray(entities, ReadRoleDto);
+
+      return {
+        data,
+        meta: {
+          total,
+          page,
+          limit,
+          pages: Math.ceil(total / limit),
+        },
+      };
+    } catch (error: unknown) {
+      this.logger.error(`findAll() | ${(error as Error).message}`, (error as Error).stack);
+      throw new BadRequestException("Failed to fetch roles");
+    }
   }
 
   /**

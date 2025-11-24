@@ -10,6 +10,7 @@ import { getRepositoryToken } from "@nestjs/typeorm";
 import { QueryFailedError, Repository } from "typeorm";
 
 import { CreateRoleDto } from "./dto/create.dto";
+import { FilterRoleDto } from "./dto/filter.dto";
 import { ReadRoleDto } from "./dto/read.dto";
 import { Role } from "./entities/role.entity";
 import { RoleService } from "./role.service";
@@ -45,13 +46,30 @@ describe("RoleService", () => {
     policies: mockRole.policies,
   };
 
+  const createQueryBuilderMock = () => {
+    const qb: any = {
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      take: jest.fn().mockReturnThis(),
+      getManyAndCount: jest.fn(),
+    };
+    return qb;
+  };
+
+  let qbMock: ReturnType<typeof createQueryBuilderMock>;
+
   beforeEach(async () => {
+    qbMock = createQueryBuilderMock();
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RoleService,
         {
           provide: getRepositoryToken(Role),
           useValue: {
+            createQueryBuilder: jest.fn().mockReturnValue(qbMock),
             findOne: jest.fn(),
             find: jest.fn(),
             create: jest.fn(),
@@ -63,6 +81,67 @@ describe("RoleService", () => {
 
     service = module.get<RoleService>(RoleService);
     repo = module.get(getRepositoryToken(Role));
+  });
+
+  describe("findAll (pagination + search + sort)", () => {
+    it("should return paginated roles", async () => {
+      qbMock.getManyAndCount.mockResolvedValue([[mockRole], 1]);
+
+      const filters: FilterRoleDto = {
+        page: 1,
+        limit: 10,
+        sortBy: "name",
+        sortOrder: "ASC",
+        search: "",
+      };
+
+      const result = await service.findAll(filters);
+
+      expect(repo.createQueryBuilder).toHaveBeenCalledWith("r");
+      expect(qbMock.orderBy).toHaveBeenCalledWith("r.name", "ASC");
+      expect(qbMock.skip).toHaveBeenCalledWith(0);
+      expect(qbMock.take).toHaveBeenCalledWith(10);
+
+      expect(result.data).toEqual([mockReadRole]);
+      expect(result.meta).toEqual({
+        total: 1,
+        page: 1,
+        limit: 10,
+        pages: 1,
+      });
+    });
+
+    it("should apply search filter", async () => {
+      qbMock.getManyAndCount.mockResolvedValue([[], 0]);
+
+      const filters: FilterRoleDto = {
+        page: 1,
+        limit: 20,
+        sortBy: "name",
+        sortOrder: "ASC",
+        search: "adm",
+      };
+
+      await service.findAll(filters);
+
+      expect(qbMock.where).toHaveBeenCalledWith("r.name ILIKE :search", {
+        search: "%adm%",
+      });
+    });
+
+    it("should throw BadRequestException on DB error", async () => {
+      qbMock.getManyAndCount.mockRejectedValue(new Error("db crashed"));
+
+      const filters: FilterRoleDto = {
+        page: 1,
+        limit: 10,
+        sortBy: "name",
+        sortOrder: "ASC",
+        search: "",
+      };
+
+      await expect(service.findAll(filters)).rejects.toBeInstanceOf(BadRequestException);
+    });
   });
 
   describe("findByName", () => {
@@ -102,15 +181,6 @@ describe("RoleService", () => {
         constructor: ConflictException,
         message: "Role name already in use",
       });
-    });
-  });
-
-  describe("findAll", () => {
-    it("should return all roles", async () => {
-      repo.find.mockResolvedValue([mockRole]);
-      const result = await service.findAll();
-      expect(repo.find).toHaveBeenCalled();
-      expect(result).toEqual([mockReadRole]);
     });
   });
 
