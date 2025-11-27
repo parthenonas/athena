@@ -5,6 +5,7 @@ import {
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from "typeorm";
 
@@ -21,6 +22,7 @@ import { Lesson } from "../../lesson/entities/lesson.entity";
  * Lessons and blocks are stored separately.
  */
 @Entity("courses")
+@Unique("courses__title__uk", ["title"])
 export class Course {
   @PrimaryGeneratedColumn("uuid", { primaryKeyConstraintName: "courses__id__pk" })
   id!: string;
@@ -40,8 +42,8 @@ export class Course {
   /**
    * Author of the course (Account.id).
    */
-  @Column({ name: "author_id" })
-  authorId!: string;
+  @Column({ name: "owner_id" })
+  ownerId!: string;
 
   /**
    * Optional tags for search and filtering.
