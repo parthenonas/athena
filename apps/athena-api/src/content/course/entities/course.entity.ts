@@ -1,3 +1,4 @@
+import { Ownable, Publishable } from "@athena/types";
 import {
   Column,
   CreateDateColumn,
@@ -23,7 +24,7 @@ import { Lesson } from "../../lesson/entities/lesson.entity";
  */
 @Entity("courses")
 @Unique("courses__title__uk", ["title"])
-export class Course {
+export class Course implements Publishable, Ownable {
   @PrimaryGeneratedColumn("uuid", { primaryKeyConstraintName: "courses__id__pk" })
   id!: string;
 

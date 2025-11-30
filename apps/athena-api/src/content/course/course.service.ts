@@ -1,6 +1,13 @@
 import { PostgresErrorCode } from "@athena/common";
-import { Pageable } from "@athena/types";
-import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { Pageable, Policy } from "@athena/types";
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { QueryFailedError, Repository } from "typeorm";
 
@@ -10,6 +17,7 @@ import { ReadCourseDto } from "./dto/read.dto";
 import { UpdateCourseDto } from "./dto/update.dto";
 import { Course } from "./entities/course.entity";
 import { BaseService } from "../../base/base.service";
+import { IdentityService } from "../../identity";
 import { isPostgresQueryError } from "../../shared/helpers/errors";
 
 /**
@@ -35,6 +43,7 @@ export class CourseService extends BaseService<Course> {
   constructor(
     @InjectRepository(Course)
     private readonly repo: Repository<Course>,
+    private readonly identityService: IdentityService,
   ) {
     super();
   }
@@ -42,13 +51,19 @@ export class CourseService extends BaseService<Course> {
   /**
    * Returns paginated list of courses.
    */
-  async findAll(filters: FilterCourseDto): Promise<Pageable<ReadCourseDto>> {
+  async findAll(
+    filters: FilterCourseDto,
+    ownerId: string,
+    appliedPolicies: Policy[] = [],
+  ): Promise<Pageable<ReadCourseDto>> {
     const { page, limit, search, sortBy, sortOrder } = filters;
 
     this.logger.log(`findAll() | page=${page}, limit=${limit}, search="${search}", sort=${sortBy} ${sortOrder}`);
 
     try {
       const qb = this.repo.createQueryBuilder("c");
+
+      this.identityService.applyPoliciesToQuery(qb, ownerId, appliedPolicies);
 
       if (search?.trim()) {
         qb.andWhere("c.title ILIKE :q", { q: `%${search.trim()}%` });
@@ -78,19 +93,26 @@ export class CourseService extends BaseService<Course> {
   /**
    * Returns a single course by UUID.
    */
-  async findOne(id: string): Promise<ReadCourseDto> {
+  async findOne(id: string, ownerId: string, appliedPolicies: Policy[] = []): Promise<ReadCourseDto> {
     this.logger.log(`findOne() | id=${id}`);
 
     try {
       const course = await this.repo.findOne({ where: { id } });
+
       if (!course) {
         this.logger.warn(`findOne() | Course not found | id=${id}`);
         throw new NotFoundException("Course not found");
       }
 
+      for (const policy of appliedPolicies) {
+        if (!this.identityService.checkAbility(policy, ownerId, course)) {
+          throw new ForbiddenException("You are not allowed to view this course");
+        }
+      }
+
       return this.toDto(course, ReadCourseDto);
     } catch (err: unknown) {
-      if (err instanceof NotFoundException) throw err;
+      if (err instanceof NotFoundException || err instanceof ForbiddenException) throw err;
       this.logger.error(`findOne() | ${(err as Error).message}`, (err as Error).stack);
       throw new BadRequestException("Failed to fetch course");
     }
@@ -99,14 +121,16 @@ export class CourseService extends BaseService<Course> {
   /**
    * Creates a course.
    */
-  async create(dto: CreateCourseDto): Promise<ReadCourseDto> {
+  async create(dto: CreateCourseDto, ownerId: string): Promise<ReadCourseDto> {
     this.logger.log(`create() | title="${dto.title}"`);
+
+    await this.identityService.findAccountById(ownerId);
 
     try {
       const entity = this.repo.create({
         title: dto.title,
         description: dto.description ?? null,
-        ownerId: dto.ownerId,
+        ownerId: ownerId,
         tags: dto.tags ?? [],
         isPublished: dto.isPublished ?? false,
       });
@@ -128,12 +152,23 @@ export class CourseService extends BaseService<Course> {
   /**
    * Updates a course.
    */
-  async update(id: string, dto: UpdateCourseDto): Promise<ReadCourseDto> {
+  async update(
+    id: string,
+    dto: UpdateCourseDto,
+    ownerId: string,
+    appliedPolicies: Policy[] = [],
+  ): Promise<ReadCourseDto> {
     this.logger.log(`update() | id=${id}`);
 
     try {
       const course = await this.repo.findOne({ where: { id } });
       if (!course) throw new NotFoundException("Course not found");
+
+      for (const policy of appliedPolicies) {
+        if (!this.identityService.checkAbility(policy, ownerId, course)) {
+          throw new ForbiddenException("You are not allowed to view this course");
+        }
+      }
 
       if (dto.title !== undefined) course.title = dto.title;
       if (dto.description !== undefined) course.description = dto.description;
@@ -146,7 +181,7 @@ export class CourseService extends BaseService<Course> {
     } catch (error: unknown) {
       this.logger.error(`update() | ${(error as Error).message}`, (error as Error).stack);
 
-      if (error instanceof NotFoundException) throw error;
+      if (error instanceof NotFoundException || error instanceof ForbiddenException) throw error;
       if (error instanceof QueryFailedError) {
         this.handleCourseConstraintError(error);
       }
@@ -158,8 +193,17 @@ export class CourseService extends BaseService<Course> {
   /**
    * Soft deletes a course.
    */
-  async softDelete(id: string): Promise<void> {
+  async softDelete(id: string, ownerId: string, appliedPolicies: Policy[] = []): Promise<void> {
     this.logger.log(`softDelete() | id=${id}`);
+
+    const course = await this.repo.findOne({ where: { id } });
+    if (!course) throw new NotFoundException("Course not found");
+
+    for (const policy of appliedPolicies) {
+      if (!this.identityService.checkAbility(policy, ownerId, course)) {
+        throw new ForbiddenException("You are not allowed to view this course");
+      }
+    }
 
     try {
       const res = await this.repo.softDelete(id);

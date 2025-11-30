@@ -1,4 +1,4 @@
-import { IsArray, IsBoolean, IsOptional, IsString, IsUUID, MinLength } from "class-validator";
+import { IsArray, IsBoolean, IsOptional, IsString, MinLength } from "class-validator";
 
 /**
  * @class CreateCourseDto
@@ -21,10 +21,6 @@ export class CreateCourseDto {
   @IsOptional()
   @IsString()
   description?: string;
-
-  /** Author (Account.id). */
-  @IsUUID()
-  ownerId!: string;
 
   /** Tags for filtering and organization. */
   @IsOptional()

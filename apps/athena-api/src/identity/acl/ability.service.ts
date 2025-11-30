@@ -1,18 +1,69 @@
 import { Ownable, Policy, Publishable } from "@athena/types";
 import { Injectable } from "@nestjs/common";
+import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 
 @Injectable()
 export class AbilityService {
-  check(policy: Policy, user: { id: string }, resource: unknown) {
+  /**
+   * @method check
+   * Checks if a single resource satisfies a specific object-level policy.
+   *
+   * @param policy - The policy rule to check (e.g., OWN_ONLY, NOT_PUBLISHED).
+   * @param user - Object containing the ID of the authenticated user.
+   * @param resource - The resource entity (must implement Ownable or Publishable).
+   * @returns boolean - True if the policy is satisfied, false otherwise.
+   *
+   * @example
+   * this.abilityService.check(Policy.OWN_ONLY, user, course);
+   */
+  check(policy: Policy, userId: string, resource: unknown): boolean {
     switch (policy) {
       case Policy.OWN_ONLY:
-        return (resource as Ownable).ownerId === user.id;
+        return (resource as Ownable).ownerId === userId;
 
       case Policy.NOT_PUBLISHED:
-        return (resource as Publishable).published;
+        return (resource as Publishable).isPublished === false;
 
       default:
         return true;
+    }
+  }
+
+  /**
+   * @method applyPoliciesToQuery
+   * Dynamically modifies a TypeORM QueryBuilder by applying filtering conditions
+   * based on the list of policies assigned to the user's role.
+   *
+   * This ensures that lists and collections fetched from the database comply with
+   * object-level security constraints (e.g., a teacher only sees their own courses).
+   *
+   * @param qb - The TypeORM SelectQueryBuilder instance. Assumed to use alias 'c'.
+   * @param userId - ID of the currently authenticated user (used for OWN_ONLY checks).
+   * @param appliedPolicies - Array of policy enums required for the current route.
+   *
+   * @example
+   * const qb = this.repo.createQueryBuilder('c');
+   * this.abilityService.applyPoliciesToQuery(qb, userId, policies);
+   */
+  applyPoliciesToQuery<T extends ObjectLiteral>(
+    qb: SelectQueryBuilder<T>,
+    userId: string,
+    appliedPolicies: Policy[],
+  ): void {
+    if (!appliedPolicies || appliedPolicies.length === 0) {
+      return;
+    }
+
+    for (const policy of appliedPolicies) {
+      switch (policy) {
+        case Policy.OWN_ONLY:
+          qb.andWhere("c.ownerId = :policyUserId", { policyUserId: userId });
+          break;
+
+        case Policy.NOT_PUBLISHED:
+          qb.andWhere("c.isPublished = :isPublishedStatus", { isPublishedStatus: false });
+          break;
+      }
     }
   }
 }
