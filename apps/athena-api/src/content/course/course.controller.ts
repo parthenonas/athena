@@ -1,6 +1,19 @@
 import { Pageable, Permission, Policy } from "@athena/types";
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Req, UseGuards } from "@nestjs/common";
-import type { Request } from "express";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+} from "@nestjs/common";
+import type { Request, Response } from "express";
 
 import { CourseService } from "./course.service";
 import { CreateCourseDto } from "./dto/create.dto";
@@ -109,8 +122,14 @@ export class CourseController {
   @HttpCode(204)
   @RequirePermission(Permission.COURSES_DELETE)
   @RequirePolicy(Policy.OWN_ONLY)
-  async softDelete(@CurrentUser("sub") userId: string, @Param("id") id: string, @Req() req: Request): Promise<void> {
+  async softDelete(
+    @CurrentUser("sub") userId: string,
+    @Param("id") id: string,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
     const appliedPolicies = req.appliedPolicies || [];
     await this.service.softDelete(id, userId, appliedPolicies);
+    res.sendStatus(204);
   }
 }

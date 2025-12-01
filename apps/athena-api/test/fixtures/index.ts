@@ -3,6 +3,7 @@ import { INestApplication } from "@nestjs/common";
 import request from "supertest";
 import { DataSource } from "typeorm";
 
+import { ContentService } from "../../src/content";
 import { IdentityService } from "../../src/identity";
 
 export class TestFixtures {
@@ -10,6 +11,7 @@ export class TestFixtures {
     private readonly app: INestApplication,
     private readonly dataSource: DataSource,
     private readonly identityService: IdentityService,
+    private readonly contentService: ContentService,
   ) {}
 
   async resetDatabase() {
@@ -70,5 +72,10 @@ export class TestFixtures {
     const http = request(this.app.getHttpServer());
     const res = await http.post("/accounts/login").send({ login, password });
     return res.body.accessToken;
+  }
+
+  async createCourse({ title = "Test Course", ownerId = "user-1", isPublished = false, description = "desc" } = {}) {
+    const course = await this.contentService.createCourse({ title, description, isPublished }, ownerId);
+    return course;
   }
 }
