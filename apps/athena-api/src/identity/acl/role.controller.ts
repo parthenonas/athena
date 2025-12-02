@@ -152,7 +152,6 @@ export class RoleController {
   }
 
   private manualPoliciesCheck(policy?: Partial<Record<Permission, Policy[]>>) {
-    // manual validation of policies map
     for (const [perm, policies] of Object.entries(policy ?? {})) {
       if (!Object.values(Permission).includes(perm as Permission)) {
         throw new BadRequestException(`Invalid permission key: ${perm}`);
