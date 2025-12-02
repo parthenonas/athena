@@ -53,6 +53,58 @@ describe("AbilityService", () => {
     });
   });
 
+  describe("ONLY_PUBLISHED policy check (check method)", () => {
+    it("should return true when resource IS published", () => {
+      const resource: Publishable = { isPublished: true };
+
+      const result = service.check(Policy.ONLY_PUBLISHED, USER_ID, resource);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return false when resource is NOT published", () => {
+      const resource: Publishable = { isPublished: false };
+
+      const result = service.check(Policy.ONLY_PUBLISHED, USER_ID, resource);
+
+      expect(result).toBe(false);
+    });
+  });
+
+  describe("PUBLISHED_OR_OWNER policy check (check method)", () => {
+    it("should return true when resource is published (even if not owner)", () => {
+      const resource = { isPublished: true, ownerId: OTHER_USER_ID };
+
+      const result = service.check(Policy.PUBLISHED_OR_OWNER, USER_ID, resource);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return true when user is owner (even if not published)", () => {
+      const resource = { isPublished: false, ownerId: USER_ID };
+
+      const result = service.check(Policy.PUBLISHED_OR_OWNER, USER_ID, resource);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return true when user is owner AND resource is published", () => {
+      const resource = { isPublished: true, ownerId: USER_ID };
+
+      const result = service.check(Policy.PUBLISHED_OR_OWNER, USER_ID, resource);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return false when resource is NOT published AND user is NOT owner", () => {
+      const resource = { isPublished: false, ownerId: OTHER_USER_ID };
+
+      const result = service.check(Policy.PUBLISHED_OR_OWNER, USER_ID, resource);
+
+      expect(result).toBe(false);
+    });
+  });
+
   describe("default policy", () => {
     it("should return true for any unhandled policy", () => {
       const result = service.check("UNKNOWN_POLICY" as Policy, USER_ID, {});

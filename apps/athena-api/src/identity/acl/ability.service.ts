@@ -1,6 +1,6 @@
 import { Ownable, Policy, Publishable } from "@athena/types";
 import { Injectable } from "@nestjs/common";
-import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
+import { Brackets, ObjectLiteral, SelectQueryBuilder } from "typeorm";
 
 @Injectable()
 export class AbilityService {
@@ -23,6 +23,12 @@ export class AbilityService {
 
       case Policy.NOT_PUBLISHED:
         return (resource as Publishable).isPublished === false;
+
+      case Policy.ONLY_PUBLISHED:
+        return (resource as Publishable).isPublished === true;
+
+      case Policy.PUBLISHED_OR_OWNER:
+        return (resource as Publishable).isPublished === true || (resource as Ownable).ownerId === userId;
 
       default:
         return true;
@@ -61,7 +67,21 @@ export class AbilityService {
           break;
 
         case Policy.NOT_PUBLISHED:
-          qb.andWhere("c.isPublished = :isPublishedStatus", { isPublishedStatus: false });
+          qb.andWhere("c.isPublished = :isPublishedTrue", { isPublishedTrue: false });
+          break;
+
+        case Policy.ONLY_PUBLISHED:
+          qb.andWhere("c.isPublished = :isPublishedFalse", { isPublishedFalse: true });
+          break;
+
+        case Policy.PUBLISHED_OR_OWNER:
+          qb.andWhere(
+            new Brackets(subQb => {
+              subQb
+                .where("c.isPublished = :isPublishedTrue", { isPublishedTrue: true })
+                .orWhere("c.ownerId = :policyUserId", { policyUserId: userId });
+            }),
+          );
           break;
       }
     }
