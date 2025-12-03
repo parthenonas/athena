@@ -46,15 +46,17 @@ export class AbilityService {
    * @param qb - The TypeORM SelectQueryBuilder instance. Assumed to use alias 'c'.
    * @param userId - ID of the currently authenticated user (used for OWN_ONLY checks).
    * @param appliedPolicies - Array of policy enums required for the current route.
+   * @param targetAlias - The alias of the entity/table that holds the 'ownerId' and 'isPublished' columns.
    *
    * @example
    * const qb = this.repo.createQueryBuilder('c');
-   * this.abilityService.applyPoliciesToQuery(qb, userId, policies);
+   * this.abilityService.applyPoliciesToQuery(qb, userId, policies, 'c');
    */
   applyPoliciesToQuery<T extends ObjectLiteral>(
     qb: SelectQueryBuilder<T>,
     userId: string,
     appliedPolicies: Policy[],
+    targetAlias: string,
   ): void {
     if (!appliedPolicies || appliedPolicies.length === 0) {
       return;
@@ -63,23 +65,24 @@ export class AbilityService {
     for (const policy of appliedPolicies) {
       switch (policy) {
         case Policy.OWN_ONLY:
-          qb.andWhere("c.ownerId = :policyUserId", { policyUserId: userId });
+          // Теперь мы используем динамический алиас!
+          qb.andWhere(`${targetAlias}.ownerId = :policyUserId`, { policyUserId: userId });
           break;
 
         case Policy.NOT_PUBLISHED:
-          qb.andWhere("c.isPublished = :isPublishedTrue", { isPublishedTrue: false });
+          qb.andWhere(`${targetAlias}.isPublished = :isPublishedFalse`, { isPublishedFalse: false });
           break;
 
         case Policy.ONLY_PUBLISHED:
-          qb.andWhere("c.isPublished = :isPublishedFalse", { isPublishedFalse: true });
+          qb.andWhere(`${targetAlias}.isPublished = :isPublishedTrue`, { isPublishedTrue: true });
           break;
 
         case Policy.PUBLISHED_OR_OWNER:
           qb.andWhere(
             new Brackets(subQb => {
               subQb
-                .where("c.isPublished = :isPublishedTrue", { isPublishedTrue: true })
-                .orWhere("c.ownerId = :policyUserId", { policyUserId: userId });
+                .where(`${targetAlias}.isPublished = :isPublishedTrue`, { isPublishedTrue: true })
+                .orWhere(`${targetAlias}.ownerId = :policyUserId`, { policyUserId: userId });
             }),
           );
           break;

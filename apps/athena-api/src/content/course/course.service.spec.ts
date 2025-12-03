@@ -131,7 +131,12 @@ describe("CourseService", () => {
       );
 
       expect(repo.createQueryBuilder).toHaveBeenCalledWith("c");
-      expect(identityService.applyPoliciesToQuery).toHaveBeenCalledWith(expect.anything(), USER_ID, APPLIED_OWN_ONLY);
+      expect(identityService.applyPoliciesToQuery).toHaveBeenCalledWith(
+        expect.anything(),
+        USER_ID,
+        APPLIED_OWN_ONLY,
+        "c",
+      );
       expect(result.meta.total).toBe(1);
     });
 

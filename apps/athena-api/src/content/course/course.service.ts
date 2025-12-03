@@ -63,7 +63,7 @@ export class CourseService extends BaseService<Course> {
     try {
       const qb = this.repo.createQueryBuilder("c");
 
-      this.identityService.applyPoliciesToQuery(qb, ownerId, appliedPolicies);
+      this.identityService.applyPoliciesToQuery(qb, ownerId, appliedPolicies, "c");
 
       if (search?.trim()) {
         qb.andWhere("c.title ILIKE :q", { q: `%${search.trim()}%` });

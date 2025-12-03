@@ -15,14 +15,12 @@ import { Course } from "../../course/entities/course.entity";
 
 /**
  * @Entity Lesson
- * A structural unit of a course.
+ * Represents a structural unit (chapter) within a Course.
  *
- * Lessons contain:
- * - title
- * - goals / description
- * - order (position inside the course)
- * - draft flag
- * - a tree of blocks (content)
+ * A Lesson serves as a container for content Blocks and holds metadata:
+ * - Title and learning goals.
+ * - Order/Position within the parent Course.
+ * - Publication status (Draft).
  */
 @Entity("lessons")
 export class Lesson {
@@ -30,44 +28,47 @@ export class Lesson {
   id!: string;
 
   /**
-   * Parent course.
+   * Reference to the parent Course.
+   * If the Course is deleted, all associated Lessons are removed (Cascade).
    */
-  @ManyToOne(() => Course, course => course.lessons)
+  @ManyToOne(() => Course, course => course.lessons, { onDelete: "CASCADE" })
   @JoinColumn({ name: "course_id", foreignKeyConstraintName: "lessons__course_id__fk" })
   course!: Course;
 
   /**
-   * Course ID.
+   * Foreign Key for the Course.
    */
   @Column({ name: "course_id" })
   courseId!: string;
 
   /**
-   * Lesson title.
+   * Human-readable title of the lesson.
    */
   @Column()
   title!: string;
 
   /**
-   * Learning goals for this lesson.
+   * Optional description or learning objectives for this lesson.
    */
   @Column({ type: "text", nullable: true })
   goals!: string | null;
 
   /**
-   * Position inside the course.
+   * Sequential index determining the lesson's position in the course.
+   * Lower values appear first.
    */
   @Column({ type: "int" })
   order!: number;
 
   /**
-   * Whether the lesson is still being edited.
+   * Indicates whether the lesson is a draft (invisible to students).
+   * Defaults to true.
    */
   @Column({ name: "is_draft", default: true })
   isDraft!: boolean;
 
   /**
-   * Content blocks (Notion-style tree).
+   * Collection of content blocks (Text, Video, Code, etc.) belonging to this lesson.
    */
   @OneToMany(() => Block, block => block.lesson, {
     cascade: ["remove"],
@@ -75,14 +76,20 @@ export class Lesson {
   blocks!: Block[];
 
   /**
-   * Timestamps.
+   * Timestamp of creation.
    */
   @CreateDateColumn({ name: "created_at" })
   readonly createdAt!: Date;
 
+  /**
+   * Timestamp of the last update.
+   */
   @UpdateDateColumn({ name: "updated_at" })
   readonly updatedAt!: Date;
 
+  /**
+   * Timestamp of soft deletion.
+   */
   @DeleteDateColumn({ name: "deleted_at" })
   deletedAt!: Date | null;
 }

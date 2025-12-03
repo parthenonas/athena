@@ -130,7 +130,8 @@ export class IdentityService {
     qb: SelectQueryBuilder<T>,
     userId: string,
     appliedPolicies: Policy[],
+    targetAlias: string,
   ): void {
-    this.abilityService.applyPoliciesToQuery(qb, userId, appliedPolicies);
+    this.abilityService.applyPoliciesToQuery(qb, userId, appliedPolicies, targetAlias);
   }
 }
