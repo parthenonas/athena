@@ -2,7 +2,6 @@ import { Pageable } from "@athena/types";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
-import { Response } from "express";
 
 import { AccountController } from "./account.controller";
 import { AccountService } from "./account.service";
@@ -179,23 +178,17 @@ describe("AccountController", () => {
 
   describe("deleteMe", () => {
     it("should call service.softDelete with current user id and send 204", async () => {
-      const res = { sendStatus: jest.fn() } as unknown as Response;
-
-      await controller.deleteMe("123", res);
+      await controller.deleteMe("123");
 
       expect(service.softDelete).toHaveBeenCalledWith("123");
-      expect(res.sendStatus).toHaveBeenCalledWith(204);
     });
   });
 
   describe("delete", () => {
     it("should soft delete by id and return 204", async () => {
-      const res = { sendStatus: jest.fn() } as unknown as Response;
-
-      await controller.delete("999", res);
+      await controller.delete("999");
 
       expect(service.softDelete).toHaveBeenCalledWith("999");
-      expect(res.sendStatus).toHaveBeenCalledWith(204);
     });
   });
 

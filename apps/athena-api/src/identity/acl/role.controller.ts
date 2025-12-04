@@ -5,14 +5,14 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
   Query,
-  Res,
   UseGuards,
 } from "@nestjs/common";
-import type { Response } from "express";
 
 import { CreateRoleDto } from "./dto/create.dto";
 import { FilterRoleDto } from "./dto/filter.dto";
@@ -113,11 +113,11 @@ export class RoleController {
    * Requires: admin-level access (Permission.ADMIN)
    */
   @Delete(":id")
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard, AclGuard)
   @RequirePermission(Permission.ADMIN)
-  async delete(@Param("id") id: string, @Res({ passthrough: true }) res: Response): Promise<void> {
+  async delete(@Param("id") id: string): Promise<void> {
     await this.service.delete(id);
-    res.sendStatus(204);
   }
 
   /**

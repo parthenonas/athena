@@ -2,7 +2,6 @@ import { Pageable, Permission, Policy } from "@athena/types";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
-import { Response } from "express";
 
 import { RoleController } from "./role.controller";
 import { RoleService } from "./role.service";
@@ -133,14 +132,11 @@ describe("RoleController", () => {
 
   describe("delete", () => {
     it("should delete a role and send 204", async () => {
-      const res = { sendStatus: jest.fn() } as unknown as Response;
-
       service.delete.mockResolvedValue(undefined);
 
-      await controller.delete("role-1", res);
+      await controller.delete("role-1");
 
       expect(service.delete).toHaveBeenCalledWith("role-1");
-      expect(res.sendStatus).toHaveBeenCalledWith(204);
     });
   });
 

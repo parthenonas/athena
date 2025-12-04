@@ -2,7 +2,6 @@ import { Policy, Pageable } from "@athena/types";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
-import { Response } from "express";
 
 import { CourseController } from "./course.controller";
 import { CourseService } from "./course.service";
@@ -134,12 +133,9 @@ describe("CourseController", () => {
     it("should call service.softDelete and send 204 status", async () => {
       service.softDelete.mockResolvedValue(undefined);
 
-      const res = { sendStatus: jest.fn() } as unknown as Response;
-
-      await controller.softDelete(MOCK_USER_ID, MOCK_COURSE_ID, mockReq, res);
+      await controller.softDelete(MOCK_USER_ID, MOCK_COURSE_ID, mockReq);
 
       expect(service.softDelete).toHaveBeenCalledWith(MOCK_COURSE_ID, MOCK_USER_ID, MOCK_APPLIED_POLICIES);
-      expect(res.sendStatus).toHaveBeenCalledWith(204);
     });
   });
 });
