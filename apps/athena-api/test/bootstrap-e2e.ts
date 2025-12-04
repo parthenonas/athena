@@ -6,7 +6,6 @@ import { DataSource } from "typeorm";
 import { TestFixtures } from "./fixtures";
 import { startTestPostgres, stopTestPostgres } from "./test-postgres";
 import { AppModule } from "../src/app.module";
-import { ContentService } from "../src/content";
 import { IdentityService } from "../src/identity";
 
 export async function bootstrapE2E() {
@@ -33,7 +32,7 @@ export async function bootstrapE2E() {
 
   await dataSource.runMigrations();
 
-  const fixtures = new TestFixtures(app, dataSource, moduleRef.get(IdentityService), moduleRef.get(ContentService));
+  const fixtures = new TestFixtures(app, dataSource, moduleRef.get(IdentityService));
 
   await fixtures.resetDatabase();
 

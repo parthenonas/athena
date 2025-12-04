@@ -1,18 +1,25 @@
 import { Permission } from "@athena/types";
 import { INestApplication } from "@nestjs/common";
+import { getRepositoryToken } from "@nestjs/typeorm";
 import request from "supertest";
-import { DataSource } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 
-import { ContentService } from "../../src/content";
+import { Course } from "../../src/content/course/entities/course.entity";
+import { Lesson } from "../../src/content/lesson/entities/lesson.entity";
 import { IdentityService } from "../../src/identity";
 
 export class TestFixtures {
+  private readonly lessonRepo: Repository<Lesson>;
+  private readonly courseRepo: Repository<Course>;
+
   constructor(
     private readonly app: INestApplication,
     private readonly dataSource: DataSource,
     private readonly identityService: IdentityService,
-    private readonly contentService: ContentService,
-  ) {}
+  ) {
+    this.lessonRepo = this.app.get(getRepositoryToken(Lesson));
+    this.courseRepo = this.app.get(getRepositoryToken(Course));
+  }
 
   async resetDatabase() {
     const entities = this.dataSource.entityMetadatas;
@@ -74,8 +81,26 @@ export class TestFixtures {
     return res.body.accessToken;
   }
 
-  async createCourse({ title = "Test Course", ownerId = "user-1", isPublished = false, description = "desc" } = {}) {
-    const course = await this.contentService.createCourse({ title, description, isPublished }, ownerId);
-    return course;
+  async createCourse(args: Partial<Course> = {}): Promise<Course> {
+    const defaultData = {
+      title: "Test Course",
+      description: "Default Desc",
+      isPublished: false,
+      ownerId: "user-1",
+    };
+
+    const entity = this.courseRepo.create({ ...defaultData, ...args });
+    return this.courseRepo.save(entity);
+  }
+
+  async createLesson(args: Partial<Lesson> = {}): Promise<Lesson> {
+    const defaultData = {
+      title: "Test Lesson",
+      order: 1,
+      isDraft: true,
+    };
+
+    const entity = this.lessonRepo.create({ ...defaultData, ...args });
+    return this.lessonRepo.save(entity);
   }
 }
