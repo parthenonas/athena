@@ -1,19 +1,10 @@
 {
-  "extends": "./tsconfig.base.json",
-  "compileOnSave": false,
-  "files": [],
-  "references": [
-    {
-      "path": "./apps/athena-learn"
-    },
-    {
-      "path": "./apps/athena-studio"
-    },
-    {
-      "path": "./apps/athena-control"
-    },
-    {
-      "path": "./apps/athena-api"
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@athena/types": ["libs/types"],
+      "@athena/common": ["libs/common"],
+      "@athena/ui": ["libs/ui"]
     }
-  ]
+  }
 }
