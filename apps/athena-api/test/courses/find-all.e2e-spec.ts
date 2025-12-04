@@ -158,7 +158,6 @@ describe("GET /courses (e2e)", () => {
     const res = await http.get("/courses").set("Authorization", `Bearer ${publishedReaderToken}`);
 
     expect(res.status).toBe(200);
-    console.log(res.body);
     expect(res.body.data.some(c => c.id === coursePublishedId)).toBe(true);
     expect(res.body.data.some(c => c.id === courseOtherUserId)).toBe(true);
     expect(res.body.data.some(c => c.id === courseUnpublishedId)).toBe(false);
@@ -169,7 +168,6 @@ describe("GET /courses (e2e)", () => {
     const res = await http.get("/courses").set("Authorization", `Bearer ${publishedOwnerReaderToken}`);
 
     expect(res.status).toBe(200);
-    console.log(res.body);
     expect(res.body.data.some(c => c.id === coursePublishedId)).toBe(true);
     expect(res.body.data.some(c => c.id === courseOtherUserId)).toBe(true);
     expect(res.body.data.some(c => c.id === courseUnpublishedId)).toBe(false);
