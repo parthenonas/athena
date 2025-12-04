@@ -3,5 +3,5 @@ export interface Ownable {
 }
 
 export interface Publishable {
-  published: boolean;
+  isPublished: boolean;
 }

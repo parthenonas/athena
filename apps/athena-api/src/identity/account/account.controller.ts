@@ -5,6 +5,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -167,11 +169,11 @@ export class AccountController {
    * Self-delete only.
    */
   @Delete("me")
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard, AclGuard)
   @RequirePermission(Permission.ACCOUNTS_DELETE)
-  async deleteMe(@CurrentUser("sub") id: string, @Res({ passthrough: true }) res: Response) {
+  async deleteMe(@CurrentUser("sub") id: string) {
     await this.service.softDelete(id);
-    res.sendStatus(204);
   }
 
   /**
@@ -182,11 +184,11 @@ export class AccountController {
    * Admin-only route.
    */
   @Delete(":id")
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard, AclGuard)
   @RequirePermission(Permission.ACCOUNTS_DELETE)
-  async delete(@Param("id") id: string, @Res({ passthrough: true }) res: Response) {
+  async delete(@Param("id") id: string) {
     await this.service.softDelete(id);
-    res.sendStatus(204);
   }
 
   /**

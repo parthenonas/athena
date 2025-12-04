@@ -1,9 +1,9 @@
 import {
-  BadRequestException,
   CallHandler,
   ExecutionContext,
   HttpException,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NestInterceptor,
 } from "@nestjs/common";
@@ -27,7 +27,7 @@ export class ErrorLoggingInterceptor implements NestInterceptor {
           return throwError(() => err);
         }
 
-        return throwError(() => new BadRequestException("Request error"));
+        return throwError(() => new InternalServerErrorException("Internal Server Error"));
       }),
     );
   }

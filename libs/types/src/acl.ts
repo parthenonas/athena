@@ -57,4 +57,6 @@ export enum Permission {
 export enum Policy {
   OWN_ONLY = "own_only",
   NOT_PUBLISHED = "not_published",
+  ONLY_PUBLISHED = "only_published",
+  PUBLISHED_OR_OWNER = "published_or_owner",
 }

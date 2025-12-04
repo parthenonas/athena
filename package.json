@@ -42,7 +42,10 @@
     "typecheck:studio": "npm --workspace apps/athena-studio run typecheck",
     "typecheck:learn": "npm --workspace apps/athena-learn run typecheck",
     "typecheck:control": "npm --workspace apps/athena-control run typecheck",
-    "typecheck:libs": "npm --workspaces --if-present --workspace libs run typecheck"
+    "typecheck:libs": "npm --workspaces --if-present --workspace libs run typecheck",
+    "migration:generate": "npm --workspace apps/athena-api run migration:generate",
+    "migration:run": "npm --workspace apps/athena-api run migration:run",
+    "migration:revert": "npm --workspace apps/athena-api run migration:revert"
   },
   "devDependencies": {
     "@testcontainers/postgresql": "^11.8.1",
@@ -59,6 +62,7 @@
     "typescript-eslint": "^8.47.0"
   },
   "dependencies": {
+    "@nestjs/mapped-types": "^2.1.0",
     "cookie-parser": "^1.4.7"
   }
 }
