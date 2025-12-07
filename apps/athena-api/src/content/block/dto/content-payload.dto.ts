@@ -10,12 +10,14 @@ import {
   SurveyQuestionType,
   TextBlockContent,
   VideoBlockContent,
-} from "@athena/types"; // Assuming your types are exported from here
+  CodeExecutionMode,
+} from "@athena/types";
 import { Type } from "class-transformer";
 import {
   ArrayMinSize,
   IsBoolean,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -24,6 +26,7 @@ import {
   IsUUID,
   Max,
   Min,
+  ValidateIf,
   ValidateNested,
 } from "class-validator";
 
@@ -133,7 +136,7 @@ export class ImageBlockContentDto implements ImageBlockContent {
 
 /**
  * @class CodeBlockContentDto
- * @description Payload for executable code snippets (or read-only code examples).
+ * @description Payload for executable code snippets/exercises.
  */
 export class CodeBlockContentDto implements CodeBlockContent {
   /**
@@ -150,12 +153,59 @@ export class CodeBlockContentDto implements CodeBlockContent {
   initialCode!: string;
 
   /**
-   * Hidden unit tests or assertion logic used to verify the student's solution.
-   * This is NOT sent to the frontend during simple read operations, only during edit.
+   * Execution strategy.
+   * Determines how the code will be validated (IO check vs Unit Tests).
+   * Defaults to IoCheck.
    */
+  @IsOptional()
+  @IsEnum(CodeExecutionMode)
+  executionMode: CodeExecutionMode = CodeExecutionMode.IoCheck;
+
+  /**
+   * Hidden unit tests code.
+   * Required ONLY if executionMode is UnitTest.
+   */
+  @ValidateIf(o => o.executionMode === CodeExecutionMode.UnitTest)
   @IsString()
   @IsNotEmpty()
-  testCasesCode!: string;
+  testCasesCode?: string;
+
+  /**
+   * Standard input (stdin) data to be passed to the program.
+   * Required ONLY if executionMode is IoCheck.
+   */
+  @ValidateIf(o => o.executionMode === CodeExecutionMode.IoCheck)
+  @IsOptional()
+  @IsString()
+  inputData?: string;
+
+  /**
+   * Expected standard output (stdout).
+   * If provided in IoCheck mode, strict equality check is performed.
+   * If empty in IoCheck mode, the block acts as a playground (no validation).
+   */
+  @ValidateIf(o => o.executionMode === CodeExecutionMode.IoCheck)
+  @IsOptional()
+  @IsString()
+  outputData?: string;
+
+  /**
+   * Execution time limit in seconds.
+   * Default: 5s
+   */
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  timeLimit: number = 5;
+
+  /**
+   * Execution memory limit in megabytes.
+   * Default: 128MB
+   */
+  @IsOptional()
+  @IsInt()
+  @Min(16)
+  memoryLimit: number = 128;
 }
 
 /**

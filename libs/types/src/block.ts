@@ -7,6 +7,11 @@ export enum BlockType {
   Survey = "survey",
 }
 
+export enum CodeExecutionMode {
+  IoCheck = "io_check",
+  UnitTest = "unit_test",
+}
+
 export enum ProgrammingLanguage {
   Python = "python",
   JavaScript = "javascript",
@@ -50,7 +55,12 @@ export interface ImageBlockContent {
 export interface CodeBlockContent {
   language: ProgrammingLanguage;
   initialCode: string;
-  testCasesCode: string;
+  executionMode: CodeExecutionMode;
+  inputData?: string;
+  outputData?: string;
+  testCasesCode?: string;
+  timeLimit?: number;
+  memoryLimit?: number;
 }
 
 export interface QuizOption {
