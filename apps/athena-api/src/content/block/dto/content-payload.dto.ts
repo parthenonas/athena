@@ -11,6 +11,8 @@ import {
   TextBlockContent,
   VideoBlockContent,
   CodeExecutionMode,
+  SurveyContent,
+  SurveyOption,
 } from "@athena/types";
 import { Type } from "class-transformer";
 import {
@@ -291,6 +293,25 @@ export class QuizContentDto implements QuizContent {
 }
 
 /**
+ * @class SurveyOptionDto
+ * @description Represents an option for Single/Multiple choice survey questions.
+ */
+export class SurveyOptionDto implements SurveyOption {
+  /**
+   * Unique ID of the option (generated on frontend usually).
+   */
+  @IsUUID()
+  id!: string;
+
+  /**
+   * Text of the option.
+   */
+  @IsString()
+  @IsNotEmpty()
+  text!: string;
+}
+
+/**
  * @class SurveyQuestionDto
  * @description Represents a question in a survey/feedback form.
  */
@@ -312,6 +333,18 @@ export class SurveyQuestionDto implements SurveyQuestion {
    * Predefined options for Single/Multiple choice survey questions.
    */
   @IsOptional()
-  @IsString({ each: true })
-  options?: string[];
+  @ValidateNested({ each: true })
+  @Type(() => SurveyOptionDto)
+  options?: SurveyOptionDto[];
+}
+
+/**
+ * @class SurveyContentDto
+ * @description Top-level payload for a Survey Block.
+ */
+export class SurveyContentDto implements SurveyContent {
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => SurveyQuestionDto)
+  questions!: SurveyQuestionDto[];
 }

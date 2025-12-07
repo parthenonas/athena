@@ -81,8 +81,17 @@ export interface QuizContent {
   passPercentage: number;
 }
 
+export interface SurveyContent {
+  questions: SurveyQuestion[];
+}
+
+export interface SurveyOption {
+  id: string;
+  text: string;
+}
+
 export interface SurveyQuestion {
   question: string;
   type: SurveyQuestionType;
-  options?: string[];
+  options?: SurveyOption[];
 }
