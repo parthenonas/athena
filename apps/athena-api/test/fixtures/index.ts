@@ -1,9 +1,10 @@
-import { Permission } from "@athena/types";
+import { Permission, BlockType } from "@athena/types";
 import { INestApplication } from "@nestjs/common";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import request from "supertest";
 import { DataSource, Repository } from "typeorm";
 
+import { Block } from "../../src/content/block/entities/block.entity";
 import { Course } from "../../src/content/course/entities/course.entity";
 import { Lesson } from "../../src/content/lesson/entities/lesson.entity";
 import { IdentityService } from "../../src/identity";
@@ -11,6 +12,7 @@ import { IdentityService } from "../../src/identity";
 export class TestFixtures {
   private readonly lessonRepo: Repository<Lesson>;
   private readonly courseRepo: Repository<Course>;
+  private readonly blockRepo: Repository<Block>;
 
   constructor(
     private readonly app: INestApplication,
@@ -19,6 +21,7 @@ export class TestFixtures {
   ) {
     this.lessonRepo = this.app.get(getRepositoryToken(Lesson));
     this.courseRepo = this.app.get(getRepositoryToken(Course));
+    this.blockRepo = this.app.get(getRepositoryToken(Block));
   }
 
   async resetDatabase() {
@@ -102,5 +105,17 @@ export class TestFixtures {
 
     const entity = this.lessonRepo.create({ ...defaultData, ...args });
     return this.lessonRepo.save(entity);
+  }
+
+  async createBlock(args: Partial<Block> = {}): Promise<Block> {
+    const defaultData = {
+      lessonId: args.lessonId || "temp-lesson-id-for-block",
+      orderIndex: 1024,
+      type: BlockType.Text,
+      content: { json: { default: true } },
+    };
+
+    const entity = this.blockRepo.create({ ...defaultData, ...args });
+    return this.blockRepo.save(entity);
   }
 }
