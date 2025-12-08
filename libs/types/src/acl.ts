@@ -20,21 +20,7 @@ export enum Permission {
   LESSONS_UPDATE = "lessons.update",
   LESSONS_DELETE = "lessons.delete",
 
-  STEPS_CREATE = "steps.create",
-  STEPS_READ = "steps.read",
-  STEPS_UPDATE = "steps.update",
-  STEPS_DELETE = "steps.delete",
-
-  BLOCKS_CREATE = "blocks.create",
-  BLOCKS_READ = "blocks.read",
-  BLOCKS_UPDATE = "blocks.update",
-  BLOCKS_DELETE = "blocks.delete",
   BLOCKS_EXECUTE = "blocks.execute",
-
-  BLOCK_TRANSITIONS_CREATE = "block_transitions.create",
-  BLOCK_TRANSITIONS_READ = "block_transitions.read",
-  BLOCK_TRANSITIONS_UPDATE = "block_transitions.update",
-  BLOCK_TRANSITIONS_DELETE = "block_transitions.delete",
 
   PROGRESS_CREATE = "progress.create",
   PROGRESS_READ = "progress.read",
