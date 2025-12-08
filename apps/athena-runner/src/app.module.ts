@@ -1,0 +1,41 @@
+import { Module } from '@nestjs/common';
+import { BullModule } from '@nestjs/bull';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import SandboxModule from './sandbox/sandbox.module';
+import SubmissionModule from './submission/submission.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        redis: {
+          host: configService.get<string>('REDIS_HOST') || 'localhost',
+          port: configService.get<number>('REDIS_PORT') || 6379,
+        },
+        defaultJobOptions: {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 5000,
+          },
+        },
+      }),
+      inject: [ConfigService],
+    }),
+    BullModule.registerQueueAsync({
+      imports: [ConfigModule],
+      name: 'execution',
+      useFactory: (configService: ConfigService) => ({
+        name: configService.get<string>('EXECUTION_QUEUE_NAME') || 'execution',
+      }),
+      inject: [ConfigService],
+    }),
+    SandboxModule,
+    SubmissionModule,
+  ],
+  controllers: [],
+  providers: [],
+})
+export class AppModule {}
