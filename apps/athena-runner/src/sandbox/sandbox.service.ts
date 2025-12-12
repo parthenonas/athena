@@ -243,11 +243,20 @@ export class SandboxService implements OnModuleInit {
    * Retrieves values from the main application config (process.env).
    */
   private getEnvArgs(): string[] {
-    const dbHost = this.configService.get<string>('DB_HOST', 'localhost');
-    const dbUser = this.configService.get<string>('DB_USER', 'postgres');
-    const dbPass = this.configService.get<string>('DB_PASSWORD', 'postgres');
-    const dbName = this.configService.get<string>('DB_NAME', 'postgres');
-    const dbPort = this.configService.get<string>('DB_PORT', '5432');
+    const dbHost = this.configService.get<string>(
+      'RUNNER_DB_HOST',
+      'localhost',
+    );
+    const dbUser = this.configService.get<string>('RUNNER_DB_USER', 'runner');
+    const dbPass = this.configService.get<string>(
+      'RUNNER_DB_PASSWORD',
+      'runner',
+    );
+    const dbName = this.configService.get<string>(
+      'RUNNER_DB_NAME',
+      'runner_db',
+    );
+    const dbPort = this.configService.get<string>('RUNNER_DB_PORT', '5432');
 
     return [
       `--env=DB_HOST=${dbHost}`,

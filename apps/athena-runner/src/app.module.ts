@@ -15,6 +15,14 @@ import { SubmissionModule } from './submission/submission.module';
           host: configService.get<string>('REDIS_HOST') || 'localhost',
           port: configService.get<number>('REDIS_PORT') || 6379,
         },
+        removeOnComplete: {
+          age: 3600,
+          count: 1000,
+        },
+        removeOnFail: {
+          age: 24 * 3600,
+          count: 5000,
+        },
         defaultJobOptions: {
           attempts: 3,
           backoff: {

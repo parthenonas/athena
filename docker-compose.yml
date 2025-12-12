@@ -16,6 +16,21 @@ services:
     networks:
       - athena-network
 
+  postgres-runner:
+    image: postgres:15-alpine
+    container_name: athena-postgres-runner
+    restart: always
+    environment:
+      POSTGRES_USER: ${RUNNER_DB_USER}
+      POSTGRES_PASSWORD: ${RUNNER_DB_PASSWORD}
+      POSTGRES_DB: ${RUNNER_DB_NAME}
+    ports:
+      - "${RUNNER_DB_PORT}:5432"
+    volumes:
+      - postgres_runner_data:/var/lib/postgresql/data
+    networks:
+      - athena-network
+
   redis:
     image: redis:alpine
     container_name: athena-redis
@@ -51,5 +66,6 @@ networks:
 
 volumes:
   postgres_data:
+  postgres_runner_data:
   redis_data:
   minio_data:
