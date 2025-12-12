@@ -1,3 +1,5 @@
+import { CodeBlockContent } from "./block";
+
 export enum ExecutionStatus {
   Accepted = "ac",
   WrongAnswer = "wa",
@@ -11,6 +13,11 @@ export enum ExecutionStatus {
   InQueue = "queue",
 }
 
+export interface SubmissionMetadata {
+  socketId?: string;
+  [key: string]: string;
+}
+
 export interface SubmissionResult {
   submissionId: string;
   status: ExecutionStatus;
@@ -20,5 +27,13 @@ export interface SubmissionResult {
   stderr?: string;
   compileOutput?: string;
   message?: string;
-  metadata?: unknown;
+  metadata?: SubmissionMetadata;
+}
+
+export type SubmissionCompletedEvent = SubmissionResult;
+
+export interface SubmissionPayload {
+  submissionId: string;
+  content: CodeBlockContent;
+  metadata?: SubmissionMetadata;
 }

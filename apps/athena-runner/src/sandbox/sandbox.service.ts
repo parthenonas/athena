@@ -9,7 +9,6 @@ import {
 } from '@athena/types';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-
 import { RunnerJobDataDto } from 'src/submission/dto/runner-job-data.dto';
 import { SubmissionResultDto } from 'src/submission/dto/submission-result.dto';
 

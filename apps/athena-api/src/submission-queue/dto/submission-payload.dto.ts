@@ -1,14 +1,8 @@
-import type { SubmissionMetadata, SubmissionPayload } from '@athena/types';
-import { Type } from 'class-transformer';
-import {
-  IsNotEmpty,
-  IsObject,
-  IsOptional,
-  IsString,
-  ValidateNested,
-} from 'class-validator';
+import type { SubmissionMetadata, SubmissionPayload } from "@athena/types";
+import { Type } from "class-transformer";
+import { IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from "class-validator";
 
-import { RunnerCodeBlockContentDto } from './runner-code-block-content.dto';
+import { RunnerCodeBlockContentDto } from "./runner-code-block-content.dto";
 
 // NOTE: RunnerCodeBlockContentDto must be defined/imported
 
@@ -16,7 +10,7 @@ import { RunnerCodeBlockContentDto } from './runner-code-block-content.dto';
  * @class RunnerJobDataDto
  * DTO for the job payload sent to the BullMQ Execution Queue.
  */
-export class RunnerJobDataDto implements SubmissionPayload {
+export class SubmissionPayloadDto implements SubmissionPayload {
   /** ID of the parent Submission/Attempt entity in the main API for status update. */
   @IsString()
   @IsNotEmpty()

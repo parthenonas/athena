@@ -1,4 +1,8 @@
-import { SubmissionResult, ExecutionStatus } from '@athena/types';
+import type {
+  SubmissionResult,
+  ExecutionStatus,
+  SubmissionMetadata,
+} from '@athena/types';
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 /**
@@ -50,5 +54,5 @@ export class SubmissionResultDto implements SubmissionResult {
    * Runner doesn't touch it, just returns it back with the result.
    */
   @IsOptional()
-  metadata?: unknown;
+  metadata?: SubmissionMetadata;
 }

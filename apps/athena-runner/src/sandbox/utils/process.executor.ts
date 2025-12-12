@@ -15,8 +15,12 @@ export class ProcessExecutor {
    * @param options Spawn options (cwd, env, etc.).
    * @returns A Promise that resolves with the ProcessResult containing stdout, stderr, and exitCode.
    */
-  // eslint-disable-next-line
-  async run(command: string, args: string[], options: SpawnOptionsWithoutStdio = {}): Promise<ProcessResult> {
+
+  async run(
+    command: string,
+    args: string[],
+    options: SpawnOptionsWithoutStdio = {},
+  ): Promise<ProcessResult> {
     return new Promise((resolve, reject) => {
       const child = spawn(command, args, options);
 
