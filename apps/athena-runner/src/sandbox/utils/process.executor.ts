@@ -1,5 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
 import { spawn, SpawnOptionsWithoutStdio } from 'child_process';
+
+import { Injectable, Logger } from '@nestjs/common';
+
 import { ProcessResult } from '../interfaces/process-result.interface';
 
 @Injectable()

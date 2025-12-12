@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { SubmissionResult, ExecutionStatus } from '@athena/types';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 /**
  * @class SubmissionResultDto

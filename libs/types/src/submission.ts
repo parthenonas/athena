@@ -9,10 +9,6 @@ export enum ExecutionStatus {
   SystemError = "syserr",
   Processing = "process",
   InQueue = "queue",
-  BoxError = "boxerr",
-  ExecFormatError = "exeerr",
-  InternalError = "internal_error",
-  SubmissionDelete = "delete",
 }
 
 export interface SubmissionResult {

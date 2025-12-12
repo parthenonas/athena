@@ -1,8 +1,9 @@
+import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { BullModule } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import SandboxModule from './sandbox/sandbox.module';
-import SubmissionModule from './submission/submission.module';
+
+import { SandboxModule } from './sandbox/sandbox.module';
+import { SubmissionModule } from './submission/submission.module';
 
 @Module({
   imports: [
@@ -10,7 +11,7 @@ import SubmissionModule from './submission/submission.module';
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        redis: {
+        connection: {
           host: configService.get<string>('REDIS_HOST') || 'localhost',
           port: configService.get<number>('REDIS_PORT') || 6379,
         },

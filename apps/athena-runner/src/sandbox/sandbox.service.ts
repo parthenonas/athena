@@ -1,4 +1,5 @@
 import * as fs from 'fs/promises';
+import * as os from 'os';
 import path from 'path';
 
 import {
@@ -6,7 +7,7 @@ import {
   ExecutionStatus,
   ProgrammingLanguage,
 } from '@athena/types';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { RunnerJobDataDto } from 'src/submission/dto/runner-job-data.dto';
@@ -18,17 +19,26 @@ import { generateWrapper } from './templates/sql-wrapper.template';
 import { ProcessExecutor } from './utils/process.executor';
 
 @Injectable()
-export class SandboxService {
+export class SandboxService implements OnModuleInit {
   private readonly logger = new Logger(SandboxService.name);
 
   private readonly STDOUT_FILE = 'stdout.txt';
   private readonly STDERR_FILE = 'stderr.txt';
-  private readonly METADATA_FILE = 'metadata.txt';
+
+  private readonly MAX_BOXES = 100;
+  private availableBoxes: number[] = [];
 
   constructor(
     private readonly processExecutor: ProcessExecutor,
     private readonly configService: ConfigService,
   ) {}
+
+  onModuleInit() {
+    for (let i = 0; i < this.MAX_BOXES; i++) {
+      this.availableBoxes.push(i);
+    }
+    this.logger.log(`Sandbox Pool initialized with ${this.MAX_BOXES} boxes.`);
+  }
 
   /**
    * Initializes a new isolate sandbox.
@@ -37,11 +47,11 @@ export class SandboxService {
    * @returns The context containing boxId and paths.
    */
   async initialize(submissionId: string): Promise<BoxContext> {
-    const boxId = this.getBoxIdFromUuid(submissionId);
+    const boxId = this.availableBoxes.pop();
 
-    // --cg: Enable control groups (required for limits)
-    // --box-id: Specify our calculated ID
-    // --init: Initialize the box
+    if (boxId === undefined) {
+      throw new Error('No available sandbox boxes (Worker overloaded)');
+    }
     const args = ['--init', `--box-id=${boxId}`, '--cg'];
 
     this.logger.debug(
@@ -49,31 +59,19 @@ export class SandboxService {
     );
 
     try {
-      // 1. Run isolate --init
-      // The output (stdout) contains the path to the box root directory.
       const result = await this.processExecutor.run('isolate', args);
 
       if (result.exitCode !== 0) {
         throw new Error(`Isolate init failed: ${result.stderr}`);
       }
-
-      // Isolate returns the path with a newline, trim it.
-      // Example output: /var/local/lib/isolate/123
       const workDir = result.stdout.trim();
       const boxDir = `${workDir}/box`;
-
-      // 2. Fix Permissions (Judge0 logic)
-      // Isolate creates directories owned by root. The Node.js process (runner)
-      // needs write access to write source files.
-      // We assume the runner has sudo privileges or is running as root in Docker.
-      // 'chmod 777' is used here for simplicity within the container environment.
-      await this.processExecutor.run('chmod', ['-R', '777', workDir]);
-
+      await this.processExecutor.run('chmod', ['-R', '777', boxDir]);
       return { boxId, boxDir, workDir };
     } catch (error) {
       this.logger.error(`Failed to initialize box ${boxId}`, error);
-      // Try to cleanup immediately if init partially failed
       await this.cleanup(boxId).catch(() => {});
+      this.availableBoxes.push(boxId);
       throw error;
     }
   }
@@ -85,35 +83,28 @@ export class SandboxService {
     let boxContext: BoxContext | null = null;
 
     try {
-      // 1. Initialize Sandbox
       boxContext = await this.initialize(jobData.submissionId);
-
-      // 2. Setup Files (Source, Input, Wrappers)
       const sourceFileName = await this.setupFiles(boxContext, jobData);
-
-      // 3. Run Code (Isolate)
       await this.run(boxContext, jobData, sourceFileName);
-
-      // 4. Verify & Get Result
       const result = await this.verify(boxContext, jobData);
-
       return result;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       this.logger.error(`Execution failed for ${jobData.submissionId}`, error);
-
-      // Return a system error result if something crashed in the runner itself
       return {
         submissionId: jobData.submissionId,
         status: ExecutionStatus.SystemError,
         message: error.message || 'Internal Runner Error',
       } as SubmissionResultDto;
     } finally {
-      // 5. Cleanup (Always!)
       if (boxContext) {
         await this.cleanup(boxContext.boxId);
       }
     }
+  }
+
+  private getMetadataPath(boxId: number): string {
+    return path.join(os.tmpdir(), `isolate_metadata_${boxId}.txt`);
   }
 
   /**
@@ -121,33 +112,19 @@ export class SandboxService {
    * Corresponds to `isolate --cleanup`.
    * * @param boxId The numeric ID of the box to clean.
    */
-  async cleanup(boxId: number): Promise<void> {
+  private async cleanup(boxId: number): Promise<void> {
     this.logger.debug(`Cleaning up box ${boxId}...`);
-
-    // --cleanup: Remove the box directory
     const args = ['--cleanup', `--box-id=${boxId}`, '--cg'];
 
     try {
       await this.processExecutor.run('isolate', args);
     } catch (error) {
-      // We verify cleanup but don't throw, as the execution result
-      // is already determined by this point.
       this.logger.warn(`Cleanup failed for box ${boxId}`, error);
+    } finally {
+      if (!this.availableBoxes.includes(boxId)) {
+        this.availableBoxes.push(boxId);
+      }
     }
-  }
-
-  /**
-   * Converts a UUID string into a numeric ID (0 - 2147483647).
-   * Used because isolate requires integer IDs.
-   */
-  private getBoxIdFromUuid(uuid: string): number {
-    let hash = 0;
-    for (let i = 0; i < uuid.length; i++) {
-      const char = uuid.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash |= 0;
-    }
-    return Math.abs(hash) % 2147483647;
   }
 
   /**
@@ -167,11 +144,8 @@ export class SandboxService {
     if (!langConfig) {
       throw new Error(`Unsupported language: ${content.language}`);
     }
-
-    // 1. Prepare Source Code Content
     let sourceCode = content.initialCode;
 
-    // SQL Strategy: Generate Wrapper
     if (langConfig.isWrapper) {
       this.logger.debug(`Generating SQL wrapper for box ${boxContext.boxId}`);
       sourceCode = generateWrapper(
@@ -182,17 +156,10 @@ export class SandboxService {
       );
     }
 
-    // 2. Write Source File
-    // Example: /var/lib/isolate/0/box/source.py
     const sourceFileName = `source${langConfig.extension}`;
     const sourceFilePath = path.join(boxContext.boxDir, sourceFileName);
 
     await fs.writeFile(sourceFilePath, sourceCode, { encoding: 'utf8' });
-
-    // 3. Write Stdin File (stdin.txt)
-    // For standard languages, we write content.inputData to stdin.
-    // For wrapper languages (SQL), inputData is already embedded in the wrapper,
-    // so we write an empty stdin or specific inputs if needed by the wrapper logic.
     const stdinPath = path.join(boxContext.boxDir, 'stdin.txt');
 
     let stdinContent = '';
@@ -220,80 +187,53 @@ export class SandboxService {
   ): Promise<void> {
     const { content } = jobData;
     const langConfig = LANGUAGES_CONFIG[content.language];
-
-    // 1. Prepare Paths (files live inside the boxDir on host)
-    // We don't write to them, isolate does. We just tell isolate where they are.
-    // Note: Isolate command arguments for redirection expect relative paths inside the box usually,
-    // OR mapped paths. But usually, we let the program output to stdout/stderr,
-    // and tell isolate to redirect its stdout/stderr to files.
-    // However, looking at Judge0 and `isolate --help`, typical usage is:
-    // isolate --run --stdout=stdout.txt --stderr=stderr.txt ...
-    // These files will be created INSIDE the box directory.
-
-    // 2. Base Arguments
+    const metadataPath = this.getMetadataPath(boxContext.boxId);
+    try {
+      await fs.writeFile(metadataPath, '');
+      await fs.chmod(metadataPath, 0o666);
+    } catch (e) {
+      this.logger.warn(`Failed to pre-create metadata file: ${e}`);
+    }
     const args = [
       '--run',
       `--box-id=${boxContext.boxId}`,
-      '--cg', // Use Control Groups for accurate metrics
-      `-M${this.METADATA_FILE}`, // Write metadata to this file (relative to box root)
+      '--cg',
+      `-M${metadataPath}`,
       `--stdout=${this.STDOUT_FILE}`,
       `--stderr=${this.STDERR_FILE}`,
     ];
-
-    // 3. Apply Resource Limits
-    // Time Limit (CPU)
     if (content.timeLimit) {
       args.push(`--time=${content.timeLimit}`);
-      // Wall time is usually slightly higher to account for startup
       args.push(`--wall-time=${content.timeLimit * 2 + 1}`);
     }
 
-    // Memory Limit
     if (content.memoryLimit) {
-      // Isolate expects memory in KB. DTO usually has MB.
       const memInKb = content.memoryLimit * 1024;
       args.push(`--cg-mem=${memInKb}`);
     }
 
-    // 4. Networking & Environment
-    // SQL requires network access to reach the Postgres Sidecar
     if (content.language === ProgrammingLanguage.SQL) {
       args.push('--share-net');
-
-      // Inject DB Credentials into the sandbox environment
       const envArgs = this.getEnvArgs();
       args.push(...envArgs);
     }
 
-    // 5. Construct the actual command to run inside the box
-    // Replace {sourcePath} with the filename relative to the box root.
-    // Example: "/usr/bin/python3 source.py"
     const commandToRun = langConfig.runCmd.replace(
       '{sourcePath}',
       sourceFileName,
     );
 
-    // Split command into executable and args (e.g., ['/usr/bin/python3', 'source.py'])
-    // This is a naive split; complex commands might need better parsing,
-    // but for our config it's sufficient.
     const [executable, ...execArgs] = commandToRun.split(' ');
-
-    // Add "--" separator before the command
     args.push('--', executable, ...execArgs);
 
     this.logger.debug(
       `Running in box ${boxContext.boxId}: isolate ${args.join(' ')}`,
     );
-
-    // 6. Execute!
-    // We verify the exit code of ISOLATE itself, not the user program.
-    // If isolate crashes (exit code != 0), it's a SystemError.
-    // If user program crashes, isolate returns 0 but writes the exit code to metadata.
     const result = await this.processExecutor.run('isolate', args);
 
     if (result.exitCode !== 0) {
-      throw new Error(
-        `Isolate execution failed (System Error): ${result.stderr}`,
+      this.logger.warn(
+        `Isolate exited with code ${result.exitCode} for box ${boxContext.boxId}. This might be a user error (RTE/TLE) or a system error. Verification will decide. Stderr: ${result.stderr}`,
       );
     }
   }
@@ -330,8 +270,6 @@ export class SandboxService {
     jobData: RunnerJobDataDto,
   ): Promise<SubmissionResultDto> {
     const { content } = jobData;
-
-    // 1. Read Artifacts
     const stdout = await this.readFileSafely(
       path.join(boxContext.boxDir, this.STDOUT_FILE),
     );
@@ -339,21 +277,29 @@ export class SandboxService {
       path.join(boxContext.boxDir, this.STDERR_FILE),
     );
     const metadata = await this.parseMetadata(
-      path.join(boxContext.boxDir, this.METADATA_FILE),
+      this.getMetadataPath(boxContext.boxId),
     );
 
-    // 2. Default Result (Populate metrics)
+    console.log('METADATA', metadata);
+
+    if (Object.keys(metadata).length === 0 || metadata['status'] === 'XX') {
+      return {
+        submissionId: jobData.submissionId,
+        status: ExecutionStatus.SystemError,
+        message: 'Isolate failed to execute. No metadata produced.',
+        stdout: stdout,
+        stderr: stderr,
+      };
+    }
     const result: SubmissionResultDto = {
       submissionId: jobData.submissionId,
       status: ExecutionStatus.Processing,
       stdout: stdout,
       stderr: stderr,
       time: metadata['time'] ? parseFloat(metadata['time']) : 0,
-      memory: metadata['cg-mem'] ? parseFloat(metadata['cg-mem']) : 0, // KB
-      message: metadata['message'], // System message from isolate (e.g., "killed by signal")
+      memory: metadata['cg-mem'] ? parseFloat(metadata['cg-mem']) : 0,
+      message: metadata['message'],
     };
-
-    // 3. Determine Status based on Metadata flags (System/Environment level)
     if (metadata['status'] === 'TO') {
       result.status = ExecutionStatus.TimeLimitExceeded;
       return result;
@@ -365,32 +311,32 @@ export class SandboxService {
     }
 
     if (metadata['status'] === 'SG') {
-      // SG = Died on signal (Segfault, etc.)
-      result.status = ExecutionStatus.RuntimeError;
+      const isOom =
+        metadata['exitsig'] === '9' ||
+        (result.message && result.message.includes('signal 9'));
+
+      if (isOom) {
+        result.status = ExecutionStatus.MemoryLimitExceeded;
+
+        if (result.memory === 0 && content.memoryLimit) {
+          result.memory = content.memoryLimit * 1024;
+        }
+      } else {
+        result.status = ExecutionStatus.RuntimeError;
+      }
       return result;
     }
-
-    // 4. Determine Status based on Exit Code (Application level)
     const exitCode = metadata['exitcode']
       ? parseInt(metadata['exitcode'], 10)
       : 0;
 
     if (exitCode !== 0) {
-      // Non-zero exit code usually means Runtime Error or Compilation Error (if we compiled).
-      // For interpreted languages, syntax error is also a runtime error here.
       result.status = ExecutionStatus.RuntimeError;
-
-      // Specifc check for SQL/Wrapper assertions
       if (stderr.includes('Test Failed') || stderr.includes('AssertionError')) {
-        // If our wrapper threw an assertion error, it's effectively a Wrong Answer
         result.status = ExecutionStatus.WrongAnswer;
       }
       return result;
     }
-
-    // 5. Logic Verification (If exit code is 0)
-    // Scenario A: Wrapper / Unit Test Mode
-    // If it's a wrapper (SQL) or Unit Test, and exitCode is 0, it means all assertions passed.
     const langConfig = LANGUAGES_CONFIG[content.language];
     if (
       langConfig?.isWrapper ||
@@ -399,9 +345,6 @@ export class SandboxService {
       result.status = ExecutionStatus.Accepted;
       return result;
     }
-
-    // Scenario B: IO Check (Standard stdout comparison)
-    // Compare actual stdout with expected output.
     if (content.outputData) {
       const actual = this.normalizeOutput(stdout);
       const expected = this.normalizeOutput(content.outputData);
@@ -413,8 +356,6 @@ export class SandboxService {
       }
       return result;
     }
-
-    // Fallback: If no checks required and exited with 0
     result.status = ExecutionStatus.Accepted;
     return result;
   }
