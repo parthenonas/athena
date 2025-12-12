@@ -48,9 +48,10 @@ const generateSqlWrapper = (
   studentSql: string,
   testCasesCode: string = '',
 ): string => {
-  // Escape quotes to safely embed SQL strings within the Python script
   const safeSetup = JSON.stringify(setupSql);
   const safeStudent = JSON.stringify(studentSql);
+
+  const indentedTests = indentCode(testCasesCode, 8);
 
   return `
 import psycopg2
@@ -113,7 +114,7 @@ def run():
         # 3. UNIT TESTS (Python Assertions from testCasesCode)
         # The 'result' variable holds the list of dictionaries from the user's query.
         # The 'cur' variable holds the cursor (for checking rowcount, etc.).
-        ${testCasesCode}
+${indentedTests}
 
         # Optional: Print success message to stdout if needed,
         # but exit code 0 is the primary success indicator.
@@ -138,4 +139,17 @@ def run():
 if __name__ == "__main__":
     run()
 `;
+};
+
+/**
+ * Helper to correctly indent multi-line user code so it fits inside Python functions/blocks.
+ * Adds prefix spaces to every line.
+ */
+const indentCode = (code: string, spaces: number): string => {
+  if (!code) return '';
+  const prefix = ' '.repeat(spaces);
+  return code
+    .split('\n')
+    .map((line) => (line.trim() ? prefix + line : line)) // Не трогаем пустые строки
+    .join('\n');
 };
