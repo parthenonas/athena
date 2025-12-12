@@ -2,7 +2,7 @@ import type { SubmissionMetadata, SubmissionPayload } from "@athena/types";
 import { Type } from "class-transformer";
 import { IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from "class-validator";
 
-import { RunnerCodeBlockContentDto } from "./runner-code-block-content.dto";
+import { RunnerCodeBlockContentDto } from "../../shared/dto/runner-code-block-content.dto";
 
 // NOTE: RunnerCodeBlockContentDto must be defined/imported
 

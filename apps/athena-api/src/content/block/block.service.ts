@@ -4,7 +4,9 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
 import { Repository } from "typeorm";
+import { v4 as uuid } from "uuid";
 
+import { SubmissionQueueService } from "../../submission-queue";
 import {
   CodeBlockContentDto,
   ImageBlockContentDto,
@@ -14,6 +16,7 @@ import {
   VideoBlockContentDto,
 } from "./dto/content-payload.dto";
 import { CreateBlockDto } from "./dto/create.dto";
+import { BlockDryRunDto } from "./dto/dry-run.dto";
 import { ReadBlockDto } from "./dto/read.dto";
 import { ReorderBlockDto, UpdateBlockDto } from "./dto/update.dto";
 import { Block } from "./entities/block.entity";
@@ -43,6 +46,7 @@ export class BlockService extends BaseService<Block> {
     @InjectRepository(Lesson)
     private readonly lessonRepo: Repository<Lesson>,
     private readonly identityService: IdentityService,
+    private readonly submissionQueue: SubmissionQueueService,
   ) {
     super();
   }
@@ -318,6 +322,40 @@ export class BlockService extends BaseService<Block> {
 
       this.logger.warn(`Validation failed for block type ${type}: ${messages}`);
       throw new BadRequestException(`Invalid content for block type ${type}: ${messages}`);
+    }
+  }
+
+  async dryRun(dto: BlockDryRunDto, userId: string, appliedPolicies: Policy[] = []): Promise<void> {
+    this.logger.log(`dryRun() | lessonId=${dto.lessonId}, userId=${userId}`);
+
+    try {
+      const lesson = await this.lessonRepo.findOne({
+        where: { id: dto.lessonId },
+        relations: ["course"],
+      });
+
+      if (!lesson) {
+        throw new NotFoundException(`Lesson with ID ${dto.lessonId} not found`);
+      }
+
+      for (const policy of appliedPolicies) {
+        if (!this.identityService.checkAbility(policy, userId, lesson.course)) {
+          throw new ForbiddenException("You are not allowed to run code in this lesson context");
+        }
+      }
+
+      await this.submissionQueue.sendForExecution({
+        submissionId: uuid(),
+        content: dto.content,
+        metadata: {
+          socketId: dto.socketId,
+          lessonId: dto.lessonId,
+        },
+      });
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException || error instanceof ForbiddenException) throw error;
+      this.logger.error(`dryRun() | ${(error as Error).message}`, (error as Error).stack);
+      throw new BadRequestException("Failed to initiate dry run");
     }
   }
 }

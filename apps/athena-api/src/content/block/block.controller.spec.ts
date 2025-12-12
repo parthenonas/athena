@@ -1,4 +1,4 @@
-import { BlockType, Policy } from "@athena/types";
+import { BlockType, CodeExecutionMode, Policy, ProgrammingLanguage } from "@athena/types";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
@@ -10,6 +10,7 @@ import { CreateBlockDto } from "./dto/create.dto";
 import { ReadBlockDto } from "./dto/read.dto";
 import { ReorderBlockDto, UpdateBlockDto } from "./dto/update.dto";
 import { AclGuard, JwtAuthGuard } from "../../identity";
+import { BlockDryRunDto } from "./dto/dry-run.dto";
 
 const USER_ID = "user-uuid";
 const LESSON_ID = "lesson-uuid";
@@ -42,6 +43,7 @@ describe("BlockController", () => {
             update: jest.fn(),
             reorder: jest.fn(),
             remove: jest.fn(),
+            dryRun: jest.fn(),
           },
         },
         {
@@ -160,6 +162,39 @@ describe("BlockController", () => {
       await controller.remove(BLOCK_ID, USER_ID, req);
 
       expect(service.remove).toHaveBeenCalledWith(BLOCK_ID, USER_ID, policies);
+    });
+  });
+
+  describe("dryRun", () => {
+    const dryRunDto: BlockDryRunDto = {
+      lessonId: LESSON_ID,
+      socketId: "socket-abc-123",
+      content: {
+        language: ProgrammingLanguage.Python,
+        initialCode: "print('Hello World')",
+        executionMode: CodeExecutionMode.IoCheck,
+      },
+    };
+
+    it("should call dryRun service method with extracted policies", async () => {
+      const policies = [Policy.OWN_ONLY];
+      const req = { appliedPolicies: policies } as unknown as Request;
+
+      service.dryRun.mockResolvedValue(undefined);
+
+      await controller.dryRun(dryRunDto, USER_ID, req);
+
+      expect(service.dryRun).toHaveBeenCalledWith(dryRunDto, USER_ID, policies);
+    });
+
+    it("should default appliedPolicies to empty array", async () => {
+      const req = {} as Request;
+
+      service.dryRun.mockResolvedValue(undefined);
+
+      await controller.dryRun(dryRunDto, USER_ID, req);
+
+      expect(service.dryRun).toHaveBeenCalledWith(dryRunDto, USER_ID, []);
     });
   });
 });

@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { SubmissionQueueModule } from "src/submission-queue";
 
 import { BlockController } from "./block.controller";
 import { BlockService } from "./block.service";
@@ -9,7 +10,7 @@ import { Block } from "./entities/block.entity";
 import { Lesson } from "../lesson/entities/lesson.entity";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Block, Lesson]), IdentityModule, JwtModule],
+  imports: [TypeOrmModule.forFeature([Block, Lesson]), IdentityModule, JwtModule, SubmissionQueueModule],
   providers: [BlockService],
   controllers: [BlockController],
   exports: [BlockService],
