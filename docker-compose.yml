@@ -1,6 +1,31 @@
 version: '3.8'
 
 services:
+  runner:
+    build:
+      context: ./apps/athena-runner
+      dockerfile: Dockerfile
+    container_name: athena-runner
+    restart: always
+    privileged: true 
+    environment:
+      NODE_ENV: production
+      REDIS_HOST: athena-redis
+      REDIS_PORT: 6379
+      EXECUTION_QUEUE_NAME: ${EXECUTION_QUEUE_NAME}
+      SUBMISSION_RESULT_QUEUE_NAME: ${SUBMISSION_RESULT_QUEUE_NAME}
+      RUNNER_DB_HOST: athena-postgres-runner
+      RUNNER_DB_PORT: 5432
+      RUNNER_DB_USER: ${RUNNER_DB_USER}
+      RUNNER_DB_PASSWORD: ${RUNNER_DB_PASSWORD}
+      RUNNER_DB_NAME: ${RUNNER_DB_NAME}
+      
+    depends_on:
+      - redis
+      - postgres-runner
+    networks:
+      - athena-network
+
   postgres:
     image: postgres:15-alpine
     container_name: athena-postgres
