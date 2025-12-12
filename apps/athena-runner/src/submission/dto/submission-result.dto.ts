@@ -4,7 +4,6 @@ import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 /**
  * @class SubmissionResultDto
  * DTO containing the final results of the code execution.
- * Sent back to the main API via the Callback URL.
  */
 export class SubmissionResultDto implements SubmissionResult {
   /** ID of the Submission/Attempt entity whose result is being returned. */

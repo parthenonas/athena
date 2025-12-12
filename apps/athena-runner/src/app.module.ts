@@ -33,14 +33,6 @@ import { SubmissionModule } from './submission/submission.module';
       }),
       inject: [ConfigService],
     }),
-    BullModule.registerQueueAsync({
-      imports: [ConfigModule],
-      name: 'execution',
-      useFactory: (configService: ConfigService) => ({
-        name: configService.get<string>('EXECUTION_QUEUE_NAME') || 'execution',
-      }),
-      inject: [ConfigService],
-    }),
     SandboxModule,
     SubmissionModule,
   ],

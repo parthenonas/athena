@@ -19,7 +19,7 @@ import { SubmissionResultDto } from './dto/submission-result.dto';
 export class SubmissionController {
   constructor(
     @InjectQueue('execution') private readonly executionQueue: Queue,
-    @Inject('EXECUTION_QUEUE_NAME') private readonly queueName: string,
+    @Inject('execution') private readonly queueName: string,
   ) {}
 
   /**

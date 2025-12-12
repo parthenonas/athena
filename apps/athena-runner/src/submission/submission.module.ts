@@ -18,12 +18,22 @@ import { SandboxModule } from '../sandbox/sandbox.module';
       }),
       inject: [ConfigService],
     }),
+    BullModule.registerQueueAsync({
+      imports: [ConfigModule],
+      name: 'submission-result',
+      useFactory: (configService: ConfigService) => ({
+        name:
+          configService.get<string>('SUBMISSION_RESULT_QUEUE_NAME') ||
+          'submission-result',
+      }),
+      inject: [ConfigService],
+    }),
   ],
   controllers: [SubmissionController],
   providers: [
     SubmissionProcessor,
     {
-      provide: 'EXECUTION_QUEUE_NAME',
+      provide: 'execution',
       useFactory: (config: ConfigService) =>
         config.get<string>('EXECUTION_QUEUE_NAME') || 'execution',
       inject: [ConfigService],

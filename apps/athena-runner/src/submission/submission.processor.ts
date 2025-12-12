@@ -1,6 +1,9 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { ExecutionStatus } from '@athena/types';
+import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Job } from 'bullmq';
+import { Job, Queue } from 'bullmq';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 
 import { SandboxService } from '../sandbox/sandbox.service';
 import { RunnerJobDataDto } from './dto/runner-job-data.dto';
@@ -13,7 +16,8 @@ export class SubmissionProcessor extends WorkerHost {
 
   constructor(
     private readonly sandboxService: SandboxService,
-    @Inject('EXECUTION_QUEUE_NAME') private readonly queueName: string,
+    @Inject('execution') private readonly queueName: string,
+    @InjectQueue('submission-result') private readonly resultQueue: Queue,
   ) {
     super();
   }
@@ -37,10 +41,40 @@ export class SubmissionProcessor extends WorkerHost {
     );
 
     try {
+      const rawData = job.data;
+      const jobDto = plainToInstance(RunnerJobDataDto, rawData);
+      const errors = await validate(jobDto);
+
+      if (errors.length > 0) {
+        const errorMsg = errors
+          .map((e) => Object.values(e.constraints || {}))
+          .join(', ');
+        this.logger.error(`Invalid job data for ${submissionId}: ${errorMsg}`);
+
+        const errorResult: SubmissionResultDto = {
+          submissionId: submissionId,
+          status: ExecutionStatus.SystemError,
+          message: `Invalid Job Data: ${errorMsg}`,
+          stdout: '',
+          stderr: '',
+          time: 0,
+          memory: 0,
+        };
+
+        await this.sendResult(submissionId, errorResult);
+        return errorResult;
+      }
+
       const result = await this.sandboxService.execute(job.data);
 
       this.logger.log(
         `[${this.queueName}] Completed submission: ${submissionId} with status ${result.status}`,
+      );
+
+      await this.sendResult(submissionId, result);
+
+      this.logger.debug(
+        `Result sent to submission-result queue for ${submissionId}`,
       );
 
       return result;
@@ -51,5 +85,18 @@ export class SubmissionProcessor extends WorkerHost {
       );
       throw error;
     }
+  }
+
+  private async sendResult(submissionId: string, result: SubmissionResultDto) {
+    await this.resultQueue.add('submission-processed', result, {
+      jobId: submissionId,
+      removeOnComplete: { age: 3600, count: 1000 },
+      attempts: 5,
+      backoff: { type: 'exponential', delay: 2000 },
+    });
+
+    this.logger.debug(
+      `Result sent to submission-result queue for ${submissionId}`,
+    );
   }
 }
