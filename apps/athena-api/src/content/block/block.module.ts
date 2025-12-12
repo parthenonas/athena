@@ -5,11 +5,12 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { BlockController } from "./block.controller";
 import { BlockService } from "./block.service";
 import { IdentityModule } from "../../identity";
+import { SubmissionQueueModule } from "../../submission-queue";
 import { Block } from "./entities/block.entity";
 import { Lesson } from "../lesson/entities/lesson.entity";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Block, Lesson]), IdentityModule, JwtModule],
+  imports: [TypeOrmModule.forFeature([Block, Lesson]), IdentityModule, JwtModule, SubmissionQueueModule],
   providers: [BlockService],
   controllers: [BlockController],
   exports: [BlockService],

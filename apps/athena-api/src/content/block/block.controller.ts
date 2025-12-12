@@ -16,6 +16,7 @@ import type { Request } from "express";
 
 import { BlockService } from "./block.service";
 import { CreateBlockDto } from "./dto/create.dto";
+import { BlockDryRunDto } from "./dto/dry-run.dto";
 import { ReadBlockDto } from "./dto/read.dto";
 import { ReorderBlockDto, UpdateBlockDto } from "./dto/update.dto";
 import { JwtAuthGuard } from "../../identity/account/guards/jwt.guard";
@@ -126,5 +127,21 @@ export class BlockController {
   async remove(@Param("id") id: string, @CurrentUser("sub") userId: string, @Req() req: Request): Promise<void> {
     const appliedPolicies = req.appliedPolicies || [];
     await this.service.remove(id, userId, appliedPolicies);
+  }
+
+  /**
+   * POST /blocks/dry-run
+   * Executes code on the Runner without saving state.
+   * Returns a submission ID (queued status). The actual result comes via WebSocket.
+   *
+   * Requires LESSONS_UPDATE because essentially you are working on lesson content.
+   */
+  @Post("dry-run")
+  @HttpCode(HttpStatus.ACCEPTED)
+  @RequirePermission(Permission.BLOCKS_EXECUTE)
+  @RequirePolicy(Policy.OWN_ONLY)
+  async dryRun(@Body() dto: BlockDryRunDto, @CurrentUser("sub") userId: string, @Req() req: Request): Promise<void> {
+    const appliedPolicies = req.appliedPolicies || [];
+    return this.service.dryRun(dto, userId, appliedPolicies);
   }
 }

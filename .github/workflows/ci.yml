@@ -29,6 +29,11 @@ jobs:
           --health-timeout=5s
           --health-retries=5
 
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -81,3 +86,11 @@ jobs:
       - name: Build API
         run: npm --workspace apps/athena-api run build
 
+      - name: Lint Runner
+        run: npm --workspace apps/athena-runner run lint
+
+      - name: Typecheck Runner
+        run: npm --workspace apps/athena-runner run typecheck
+
+      - name: Build Runner
+        run: npm --workspace apps/athena-runner run build

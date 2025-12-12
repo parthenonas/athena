@@ -66,7 +66,7 @@ export default tseslint.config(
     }
   },
   {
-    files: ["apps/athena-api/**/*.ts"],
+    files: ["apps/athena-api/**/*.ts","apps/athena-runner/**/*.ts"],
     rules: {
       "@typescript-eslint/no-floating-promises": "warn",
     }
@@ -84,7 +84,7 @@ export default tseslint.config(
     }
   },
   {
-  files: ["apps/athena-api/src/main.ts", "apps/*/src/main.ts"],
+  files: ["apps/athena-api/src/main.ts", "apps/athena-runner/src/main.ts", "apps/*/src/main.ts"],
     rules: {
       "@typescript-eslint/no-floating-promises": "off"
     }

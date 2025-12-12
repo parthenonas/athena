@@ -9,6 +9,8 @@ import { CreateBlockDto } from "./dto/create.dto";
 import { ReorderBlockDto, UpdateBlockDto } from "./dto/update.dto";
 import { Block } from "./entities/block.entity";
 import { IdentityService } from "../../identity";
+import { SubmissionQueueService } from "../../submission-queue";
+import { BlockDryRunDto } from "./dto/dry-run.dto";
 import { Course } from "../course/entities/course.entity";
 import { Lesson } from "../lesson/entities/lesson.entity";
 
@@ -47,6 +49,7 @@ describe("BlockService", () => {
   let blockRepo: jest.Mocked<Repository<Block>>;
   let lessonRepo: jest.Mocked<Repository<Lesson>>;
   let identityService: jest.Mocked<IdentityService>;
+  let submissionQueue: jest.Mocked<SubmissionQueueService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -75,6 +78,12 @@ describe("BlockService", () => {
             checkAbility: jest.fn(),
           },
         },
+        {
+          provide: SubmissionQueueService,
+          useValue: {
+            sendForExecution: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -82,6 +91,7 @@ describe("BlockService", () => {
     blockRepo = module.get(getRepositoryToken(Block));
     lessonRepo = module.get(getRepositoryToken(Lesson));
     identityService = module.get(IdentityService);
+    submissionQueue = module.get(SubmissionQueueService);
 
     jest.clearAllMocks();
   });
@@ -279,6 +289,51 @@ describe("BlockService", () => {
       identityService.checkAbility.mockReturnValue(false);
 
       await expect(service.remove(BLOCK_ID, USER_ID, [Policy.OWN_ONLY])).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe("dryRun", () => {
+    const dryRunDto: BlockDryRunDto = {
+      lessonId: LESSON_ID,
+      content: {
+        language: ProgrammingLanguage.Python,
+        initialCode: "print('test')",
+        executionMode: "io_check" as any,
+      },
+      socketId: "socket-123",
+    };
+
+    it("should initiate dry run if allowed", async () => {
+      lessonRepo.findOne.mockResolvedValue(mockLesson);
+      identityService.checkAbility.mockReturnValue(true);
+      submissionQueue.sendForExecution.mockResolvedValue({ submissionId: "uuid", status: "queued" });
+
+      await service.dryRun(dryRunDto, USER_ID, [Policy.OWN_ONLY]);
+
+      expect(lessonRepo.findOne).toHaveBeenCalledWith({ where: { id: LESSON_ID }, relations: ["course"] });
+      expect(identityService.checkAbility).toHaveBeenCalledWith(Policy.OWN_ONLY, USER_ID, mockCourse);
+
+      expect(submissionQueue.sendForExecution).toHaveBeenCalledWith(
+        expect.objectContaining({
+          content: dryRunDto.content,
+          metadata: expect.objectContaining({
+            socketId: dryRunDto.socketId,
+            lessonId: LESSON_ID,
+          }),
+        }),
+      );
+    });
+
+    it("should throw NotFoundException if lesson missing", async () => {
+      lessonRepo.findOne.mockResolvedValue(null);
+      await expect(service.dryRun(dryRunDto, USER_ID)).rejects.toThrow(NotFoundException);
+    });
+
+    it("should throw ForbiddenException if ACL fails", async () => {
+      lessonRepo.findOne.mockResolvedValue(mockLesson);
+      identityService.checkAbility.mockReturnValue(false);
+
+      await expect(service.dryRun(dryRunDto, USER_ID, [Policy.OWN_ONLY])).rejects.toThrow(ForbiddenException);
     });
   });
 });
