@@ -150,6 +150,6 @@ const indentCode = (code: string, spaces: number): string => {
   const prefix = ' '.repeat(spaces);
   return code
     .split('\n')
-    .map((line) => (line.trim() ? prefix + line : line)) // Не трогаем пустые строки
+    .map((line) => (line.trim() ? prefix + line : line))
     .join('\n');
 };

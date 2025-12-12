@@ -65,7 +65,6 @@ export class AbilityService {
     for (const policy of appliedPolicies) {
       switch (policy) {
         case Policy.OWN_ONLY:
-          // Теперь мы используем динамический алиас!
           qb.andWhere(`${targetAlias}.ownerId = :policyUserId`, { policyUserId: userId });
           break;
 
