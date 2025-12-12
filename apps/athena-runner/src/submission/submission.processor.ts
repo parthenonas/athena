@@ -59,6 +59,7 @@ export class SubmissionProcessor extends WorkerHost {
           stderr: '',
           time: 0,
           memory: 0,
+          metadata: jobDto.metadata,
         };
 
         await this.sendResult(submissionId, errorResult);
@@ -70,6 +71,10 @@ export class SubmissionProcessor extends WorkerHost {
       this.logger.log(
         `[${this.queueName}] Completed submission: ${submissionId} with status ${result.status}`,
       );
+
+      if (jobDto.metadata) {
+        result.metadata = jobDto.metadata;
+      }
 
       await this.sendResult(submissionId, result);
 

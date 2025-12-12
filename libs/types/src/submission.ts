@@ -20,4 +20,5 @@ export interface SubmissionResult {
   stderr?: string;
   compileOutput?: string;
   message?: string;
+  metadata?: unknown;
 }

@@ -45,4 +45,10 @@ export class SubmissionResultDto implements SubmissionResult {
   @IsString()
   @IsOptional()
   message?: string;
+
+  /** Pass-through metadata.
+   * Runner doesn't touch it, just returns it back with the result.
+   */
+  @IsOptional()
+  metadata?: unknown;
 }

@@ -1,5 +1,11 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 import { RunnerCodeBlockContentDto } from './runner-code-block-content.dto';
 
@@ -14,6 +20,14 @@ export class RunnerJobDataDto {
   @IsString()
   @IsNotEmpty()
   submissionId!: string;
+
+  /** Pass-through metadata.
+   * Runner doesn't touch it, just returns it back with the result.
+   * Useful for routing (context: 'LEARN' | 'STUDIO') or socket IDs.
+   */
+  @IsOptional()
+  @IsObject()
+  metadata?: unknown;
 
   /** The validated content of the code block, including source code and execution limits. */
   @Type(() => RunnerCodeBlockContentDto)
