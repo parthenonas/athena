@@ -1,13 +1,13 @@
-version: '3.8'
+version: "3.8"
 
 services:
   runner:
     build:
-      context: ./apps/athena-runner
+      context: .
       dockerfile: Dockerfile
     container_name: athena-runner
     restart: always
-    privileged: true 
+    privileged: true
     environment:
       NODE_ENV: production
       REDIS_HOST: athena-redis
@@ -19,7 +19,9 @@ services:
       RUNNER_DB_USER: ${RUNNER_DB_USER}
       RUNNER_DB_PASSWORD: ${RUNNER_DB_PASSWORD}
       RUNNER_DB_NAME: ${RUNNER_DB_NAME}
-      
+    ports:
+      - "${RUNNER_PORT}:3000"
+
     depends_on:
       - redis
       - postgres-runner
@@ -68,7 +70,6 @@ services:
     networks:
       - athena-network
 
-
   minio:
     image: minio/minio
     container_name: athena-minio
@@ -78,8 +79,8 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:
-      - "${MINIO_PORT}:9000"        
-      - "${MINIO_CONSOLE_PORT}:9001" 
+      - "${MINIO_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
     volumes:
       - minio_data:/data
     networks:
