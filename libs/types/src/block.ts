@@ -14,7 +14,6 @@ export enum CodeExecutionMode {
 
 export enum ProgrammingLanguage {
   Python = "python",
-  JavaScript = "javascript",
   SQL = "sql",
 }
 

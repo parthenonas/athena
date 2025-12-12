@@ -81,3 +81,11 @@ jobs:
       - name: Build API
         run: npm --workspace apps/athena-api run build
 
+      - name: Lint Runner
+        run: npm --workspace apps/athena-runner run lint
+
+      - name: Typecheck Runner
+        run: npm --workspace apps/athena-runner run typecheck
+
+      - name: Build Runner
+        run: npm --workspace apps/athena-runner run build
