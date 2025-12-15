@@ -1,4 +1,4 @@
-import { ProgrammingLanguage } from '@athena/types';
+import { ProgrammingLanguage } from "@athena/types";
 
 /**
  * Interface defining how a specific programming language should be handled
@@ -35,15 +35,15 @@ export interface LanguageConfig {
  */
 export const LANGUAGES_CONFIG: Record<ProgrammingLanguage, LanguageConfig> = {
   [ProgrammingLanguage.Python]: {
-    extension: '.py',
+    extension: ".py",
     compileCmd: null,
-    runCmd: '/usr/bin/python3 {sourcePath}',
+    runCmd: "/usr/bin/python3 {sourcePath}",
   },
   // SQL runs via Python
   [ProgrammingLanguage.SQL]: {
-    extension: '.py',
+    extension: ".py",
     compileCmd: null,
-    runCmd: '/usr/bin/python3 {sourcePath}',
+    runCmd: "/usr/bin/python3 {sourcePath}",
     isWrapper: true,
   },
 };

@@ -1,8 +1,8 @@
-import { spawn, SpawnOptionsWithoutStdio } from 'child_process';
+import { spawn, SpawnOptionsWithoutStdio } from "child_process";
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from "@nestjs/common";
 
-import { ProcessResult } from '../interfaces/process-result.interface';
+import { ProcessResult } from "../interfaces/process-result.interface";
 
 @Injectable()
 export class ProcessExecutor {
@@ -16,26 +16,22 @@ export class ProcessExecutor {
    * @returns A Promise that resolves with the ProcessResult containing stdout, stderr, and exitCode.
    */
 
-  async run(
-    command: string,
-    args: string[],
-    options: SpawnOptionsWithoutStdio = {},
-  ): Promise<ProcessResult> {
+  async run(command: string, args: string[], options: SpawnOptionsWithoutStdio = {}): Promise<ProcessResult> {
     return new Promise((resolve, reject) => {
       const child = spawn(command, args, options);
 
-      let stdout = '';
-      let stderr = '';
+      let stdout = "";
+      let stderr = "";
 
-      child.stdout.on('data', (data: string) => {
+      child.stdout.on("data", (data: string) => {
         stdout += data.toString();
       });
 
-      child.stderr.on('data', (data: string) => {
+      child.stderr.on("data", (data: string) => {
         stderr += data.toString();
       });
 
-      child.on('close', (code: number | null) => {
+      child.on("close", (code: number | null) => {
         resolve({
           stdout: stdout.trim(),
           stderr: stderr.trim(),
@@ -43,7 +39,7 @@ export class ProcessExecutor {
         });
       });
 
-      child.on('error', (err: Error) => {
+      child.on("error", (err: Error) => {
         this.logger.error(`Failed to start subprocess: ${command}`, err);
         reject(err);
       });

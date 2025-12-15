@@ -1,4 +1,4 @@
-import { ProgrammingLanguage } from '@athena/types';
+import { ProgrammingLanguage } from "@athena/types";
 
 /**
  * Generates a wrapper script based on the target programming language.
@@ -13,9 +13,9 @@ import { ProgrammingLanguage } from '@athena/types';
  */
 export const generateWrapper = (
   language: ProgrammingLanguage,
-  inputData: string = '',
+  inputData: string = "",
   initialCode: string,
-  testCasesCode: string = '',
+  testCasesCode: string = "",
 ): string => {
   switch (language) {
     case ProgrammingLanguage.SQL:
@@ -43,11 +43,7 @@ export const generateWrapper = (
  * @param testCasesCode Python code containing assertions to check the result.
  * @returns The final Python source code string.
  */
-const generateSqlWrapper = (
-  setupSql: string = '',
-  studentSql: string,
-  testCasesCode: string = '',
-): string => {
+const generateSqlWrapper = (setupSql: string = "", studentSql: string, testCasesCode: string = ""): string => {
   const safeSetup = JSON.stringify(setupSql);
   const safeStudent = JSON.stringify(studentSql);
 
@@ -146,10 +142,10 @@ if __name__ == "__main__":
  * Adds prefix spaces to every line.
  */
 const indentCode = (code: string, spaces: number): string => {
-  if (!code) return '';
-  const prefix = ' '.repeat(spaces);
+  if (!code) return "";
+  const prefix = " ".repeat(spaces);
   return code
-    .split('\n')
-    .map((line) => (line.trim() ? prefix + line : line))
-    .join('\n');
+    .split("\n")
+    .map(line => (line.trim() ? prefix + line : line))
+    .join("\n");
 };
