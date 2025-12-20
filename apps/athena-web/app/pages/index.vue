@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import athenaDarkImg from '@/assets/images/athena-dark.png'
-import athenaLightImg from '@/assets/images/athena-light.png'
-
 definePageMeta({
   layout: false
 })
@@ -11,8 +8,6 @@ const { t, locale, setLocale } = useI18n()
 const toggleLang = () => {
   setLocale(locale.value === 'ru' ? 'en' : 'ru')
 }
-
-const colorMode = useColorMode()
 
 const heroLinks = computed(() => [
   {
@@ -80,11 +75,14 @@ const heroLinks = computed(() => [
           description: 'font-body text-lg text-gray-500 dark:text-gray-400 mt-4'
         }"
       >
-        <img
-          :src="colorMode.value === 'dark' ? athenaDarkImg : athenaLightImg"
-          alt="Athena Platform"
-          class="hidden lg:block h-full object-cover opacity-90 mask-[radial-gradient(closest-side,black_20%,transparent_100%)]"
-        >
+        <div class="hidden lg:block">
+          <UColorModeImage
+            light="/images/athena-light.png"
+            dark="/images/athena-dark.png"
+            alt="Athena Platform"
+            class="h-full object-cover mask-[radial-gradient(closest-side,black_20%,transparent_100%)]"
+          />
+        </div>
       </UPageCTA>
     </UMain>
 
