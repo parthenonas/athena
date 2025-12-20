@@ -34,7 +34,7 @@ const heroLinks = computed(() => [
       <div class="absolute inset-0 bg-[linear-gradient(to_bottom,var(--color-gray-200)_1px,transparent_1px)] dark:bg-[linear-gradient(to_bottom,var(--color-gray-800)_1px,transparent_1px)] bg-size-[4rem_4rem] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20" />
     </div>
 
-    <UHeader>
+    <UHeader :toggle="false">
       <template #left>
         <div class="flex items-center gap-3">
           <span class="font-display font-bold text-2xl tracking-tighter text-gray-900 dark:text-white hover:text-primary-500 transition-colors cursor-pointer">
@@ -60,7 +60,7 @@ const heroLinks = computed(() => [
           class="font-display font-bold"
           @click="toggleLang"
         />
-        <UColorModeSwitch />
+        <UColorModeButton />
       </template>
     </UHeader>
 
