@@ -1,0 +1,11 @@
+{
+  "hero": {
+    "title": "NEXT GENERATION LEARNING MANAGEMENT SYSTEM",
+    "subtitle": "Focused learning. Practical application. Built for engineering excellence. A platform designed for those who build, not just observe.",
+    "start_btn": "START LEARNING",
+    "docs_btn": "DOCUMENTATION"
+  },
+  "footer": {
+    "version": "System Version"
+  }
+}
