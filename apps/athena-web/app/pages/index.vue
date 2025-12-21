@@ -13,7 +13,7 @@ const heroLinks = computed(() => [
   {
     label: t('hero.start_btn'),
     trailingIcon: 'i-lucide-power',
-    to: '/login',
+    to: '/auth/login',
     color: 'primary' as const,
     variant: 'solid' as const
   },

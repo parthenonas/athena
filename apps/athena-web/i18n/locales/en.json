@@ -7,5 +7,20 @@
   },
   "footer": {
     "version": "System Version"
+  },
+  "pages": {
+    "auth": {
+      "login": {
+        "header": "Login",
+        "subheader": "Enter your credentials to access your account",
+        "login-label": "Login",
+        "password-label": "Password",
+        "login-placeholder": "Enter your login",
+        "password-placeholder": "Enter your password",
+        "login-is-required": "Login is required",
+        "password-is-required": "Password is required",
+        "password-length": "Must be at least 4 characters"
+      }
+    }
   }
 }

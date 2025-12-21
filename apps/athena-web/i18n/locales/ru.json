@@ -7,5 +7,20 @@
   },
   "footer": {
     "version": "Версия системы"
+  },
+  "pages": {
+    "auth": {
+      "login": {
+        "header": "Вход",
+        "subheader": "Введите свои учетные данные для входа",
+        "login-label": "Логин",
+        "password-label": "Пароль",
+        "login-placeholder": "Введите логин",
+        "password-placeholder": "Введите пароль",
+        "login-is-required": "Требуется ввести логин",
+        "password-is-required": "Требкется ввести пароль",
+        "password-length": "Минимум 4 символа"
+      }
+    }
   }
 }

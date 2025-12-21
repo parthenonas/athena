@@ -18,3 +18,8 @@ export interface AccessTokenPayload extends RefreshTokenPayload {
   permissions: Permission[];
   policies: Partial<Record<Permission, Policy[]>>;
 }
+
+export interface LoginRequest {
+  login: string;
+  password: string;
+}
