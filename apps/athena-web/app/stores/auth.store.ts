@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { LoginRequest, LoginResponse } from '@athena/types'
+import type { AccountResponse, LoginRequest, TokenResponse } from '@athena/types'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = useCookie('athena_access_token', {
@@ -7,13 +7,13 @@ export const useAuthStore = defineStore('auth', () => {
     path: '/'
   })
 
-  const user = ref<any | null>(null)
+  const user = ref<AccountResponse | null>(null)
 
   const isLogged = computed(() => !!token.value)
 
   async function login(credentials: LoginRequest) {
     try {
-      const { data, error } = await useApi<LoginResponse>('/auth/login', {
+      const { data, error } = await useApi<TokenResponse>('/accounts/login', {
         method: 'POST',
         body: credentials
       })

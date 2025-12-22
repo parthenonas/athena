@@ -9,7 +9,7 @@ export function useApi<T>(
   const accessToken = useCookie('athena_access_token')
 
   const defaults: UseFetchOptions<T> = {
-    baseURL: config.public.apiBase as string,
+    baseURL: config.public.apiUrl as string,
 
     key: typeof url === 'function' ? url() : url,
 
