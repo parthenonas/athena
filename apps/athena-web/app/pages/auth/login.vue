@@ -38,7 +38,7 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
       color: 'success',
       icon: 'i-lucide-check-circle'
     })
-    await navigateTo('/')
+    await navigateTo('/dashboard')
   } catch (error: unknown) {
     console.error('Login error:', error)
 
