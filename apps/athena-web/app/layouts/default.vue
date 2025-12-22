@@ -1,13 +1,34 @@
 <script setup lang="ts">
-definePageMeta({
-  layout: false
-})
-
-const { locale, setLocale } = useI18n()
+const { t, locale, setLocale } = useI18n()
 
 const toggleLang = () => {
   setLocale(locale.value === 'ru' ? 'en' : 'ru')
 }
+const authStore = useAuthStore()
+
+const userItems = computed(() => [
+  [
+    {
+      label: authStore.user?.login,
+      slot: 'account',
+      disabled: true
+    }
+  ],
+  [
+    {
+      label: t('layouts.default.menu.settings'),
+      icon: 'i-lucide-settings',
+      to: '#'
+    }
+  ],
+  [
+    {
+      label: t('layouts.default.menu.logout'),
+      icon: 'i-lucide-log-out',
+      onSelect: () => authStore.logout()
+    }
+  ]
+])
 </script>
 
 <template>
@@ -47,6 +68,42 @@ const toggleLang = () => {
           @click="toggleLang"
         />
         <UColorModeButton />
+
+        <div class="h-4 w-px bg-gray-200 dark:bg-gray-800 mx-2 hidden sm:block" />
+
+        <UDropdownMenu
+          v-if="authStore.isLogged && authStore.user"
+          :items="userItems"
+        >
+          <button class="focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-full">
+            <UAvatar
+              :alt="authStore.user.login"
+              size="sm"
+              class="ring-2 ring-primary-500/20 hover:ring-primary-500 transition-all"
+            />
+          </button>
+
+          <template #account="{ item }">
+            <div class="text-left">
+              <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                {{ $t("layouts.default.menu.signed-in-as") }}
+              </p>
+              <p class="truncate font-display font-bold text-gray-900 dark:text-white">
+                {{ item.label }}
+              </p>
+            </div>
+          </template>
+        </UDropdownMenu>
+
+        <UButton
+          v-else
+          to="/auth/login"
+          label="Log in"
+          icon="i-lucide-log-in"
+          color="primary"
+          variant="ghost"
+          class="font-display font-bold"
+        />
       </template>
     </UHeader>
 

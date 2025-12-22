@@ -3,14 +3,14 @@ const { t } = useI18n()
 
 const heroLinks = computed(() => [
   {
-    label: t('hero.start_btn'),
+    label: t('pages.index.hero.start_btn'),
     trailingIcon: 'i-lucide-power',
     to: '/auth/login',
     color: 'primary' as const,
     variant: 'solid' as const
   },
   {
-    label: t('hero.docs_btn'),
+    label: t('pages.index.hero.docs_btn'),
     trailingIcon: 'i-lucide-book-open',
     to: '#',
     color: 'neutral' as const,
@@ -22,8 +22,8 @@ const heroLinks = computed(() => [
 <template>
   <div class="flex items-center justify-center relative z-10">
     <UPageCTA
-      :title="t('hero.title')"
-      :description="t('hero.subtitle')"
+      :title="t('pages.index.hero.title')"
+      :description="t('pages.index.hero.subtitle')"
       orientation="horizontal"
       :links="heroLinks"
       :ui="{

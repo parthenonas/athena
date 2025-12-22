@@ -1,14 +1,23 @@
 {
-  "hero": {
-    "title": "NEXT GENERATION LEARNING MANAGEMENT SYSTEM",
-    "subtitle": "Focused learning. Practical application. Built for engineering excellence. A platform designed for those who build, not just observe.",
-    "start_btn": "START LEARNING",
-    "docs_btn": "DOCUMENTATION"
-  },
-  "footer": {
-    "version": "System Version"
+  
+  "layouts": {
+    "default": {
+      "menu": {
+        "signed-in-as": "Signed in as",
+        "settings": "Settings",
+        "logout": "Logout"
+      }
+    }
   },
   "pages": {
+    "index": {
+      "hero": {
+        "title": "NEXT GENERATION LEARNING MANAGEMENT SYSTEM",
+        "subtitle": "Focused learning. Practical application. Built for engineering excellence. A platform designed for those who build, not just observe.",
+        "start_btn": "START LEARNING",
+        "docs_btn": "DOCUMENTATION"
+      }
+    },
     "auth": {
       "login": {
         "header": "Login",
@@ -19,7 +28,11 @@
         "password-placeholder": "Enter your password",
         "login-is-required": "Login is required",
         "password-is-required": "Password is required",
-        "password-length": "Must be at least 4 characters"
+        "password-length": "Must be at least 4 characters",
+        "success-title": "Success",
+        "success-msg": "Successfully logged in",
+        "error-title": "Login Error",
+        "error-msg": "An error occurred during login. Please try again."
       }
     }
   }

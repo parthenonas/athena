@@ -33,7 +33,25 @@ export const useAuthStore = defineStore('auth', () => {
   function logout() {
     token.value = null
     user.value = null
-    navigateTo('/login')
+    navigateTo('/auth/login')
+  }
+
+  async function getMe() {
+    try {
+      const { data, error } = await useApi<AccountResponse>('/accounts/me', {
+        method: 'GET'
+      })
+
+      if (error.value) throw error.value
+      if (!data.value) throw new Error('No data received')
+
+      user.value = data.value
+
+      return true
+    } catch (err) {
+      console.error('Update user data failed:', err)
+      throw err
+    }
   }
 
   return {
@@ -41,7 +59,8 @@ export const useAuthStore = defineStore('auth', () => {
     user,
     isLogged,
     login,
-    logout
+    logout,
+    getMe
   }
 }, {
   persist: {
