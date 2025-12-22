@@ -94,3 +94,15 @@ jobs:
 
       - name: Build Runner
         run: npm --workspace apps/athena-runner run build
+
+      - name: Lint Web
+        run: npm --workspace apps/athena-web run lint
+
+      - name: Run unit tests (Web)
+        run: npm --workspace apps/athena-web run test
+
+      - name: Typecheck Web
+        run: npm --workspace apps/athena-web run typecheck
+
+      - name: Build Web
+        run: npm --workspace apps/athena-web run build

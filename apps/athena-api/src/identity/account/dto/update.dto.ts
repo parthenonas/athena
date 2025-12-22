@@ -1,3 +1,4 @@
+import { UpdateAccountRequest } from "@athena/types";
 import { IsOptional, IsString, IsUUID, MinLength } from "class-validator";
 
 /**
@@ -9,7 +10,7 @@ import { IsOptional, IsString, IsUUID, MinLength } from "class-validator";
  * - If password is provided, it will be re-hashed
  * - If roleId changes, the account will be reassigned to another role
  */
-export class UpdateAccountDto {
+export class UpdateAccountDto implements UpdateAccountRequest {
   /** New login (optional). Must be unique. */
   @IsOptional()
   @IsString()

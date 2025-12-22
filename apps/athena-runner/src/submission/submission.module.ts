@@ -1,10 +1,10 @@
-import { BullModule } from '@nestjs/bullmq';
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { BullModule } from "@nestjs/bullmq";
+import { Module } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
-import { SubmissionController } from './submission.controller';
-import { SubmissionProcessor } from './submission.processor';
-import { SandboxModule } from '../sandbox/sandbox.module';
+import { SubmissionController } from "./submission.controller";
+import { SubmissionProcessor } from "./submission.processor";
+import { SandboxModule } from "../sandbox/sandbox.module";
 
 @Module({
   imports: [
@@ -12,19 +12,17 @@ import { SandboxModule } from '../sandbox/sandbox.module';
     ConfigModule,
     BullModule.registerQueueAsync({
       imports: [ConfigModule],
-      name: 'execution',
+      name: "execution",
       useFactory: (configService: ConfigService) => ({
-        name: configService.get<string>('EXECUTION_QUEUE_NAME') || 'execution',
+        name: configService.get<string>("EXECUTION_QUEUE_NAME") || "execution",
       }),
       inject: [ConfigService],
     }),
     BullModule.registerQueueAsync({
       imports: [ConfigModule],
-      name: 'submission-result',
+      name: "submission-result",
       useFactory: (configService: ConfigService) => ({
-        name:
-          configService.get<string>('SUBMISSION_RESULT_QUEUE_NAME') ||
-          'submission-result',
+        name: configService.get<string>("SUBMISSION_RESULT_QUEUE_NAME") || "submission-result",
       }),
       inject: [ConfigService],
     }),
@@ -33,9 +31,8 @@ import { SandboxModule } from '../sandbox/sandbox.module';
   providers: [
     SubmissionProcessor,
     {
-      provide: 'execution',
-      useFactory: (config: ConfigService) =>
-        config.get<string>('EXECUTION_QUEUE_NAME') || 'execution',
+      provide: "execution",
+      useFactory: (config: ConfigService) => config.get<string>("EXECUTION_QUEUE_NAME") || "execution",
       inject: [ConfigService],
     },
   ],

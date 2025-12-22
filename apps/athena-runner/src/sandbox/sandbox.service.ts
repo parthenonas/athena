@@ -1,28 +1,24 @@
-import * as fs from 'fs/promises';
-import * as os from 'os';
-import path from 'path';
+import * as fs from "fs/promises";
+import * as os from "os";
+import path from "path";
 
-import {
-  CodeExecutionMode,
-  ExecutionStatus,
-  ProgrammingLanguage,
-} from '@athena/types';
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { RunnerJobDataDto } from 'src/submission/dto/runner-job-data.dto';
-import { SubmissionResultDto } from 'src/submission/dto/submission-result.dto';
+import { CodeExecutionMode, ExecutionStatus, ProgrammingLanguage } from "@athena/types";
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { RunnerJobDataDto } from "src/submission/dto/runner-job-data.dto";
+import { SubmissionResultDto } from "src/submission/dto/submission-result.dto";
 
-import { LANGUAGES_CONFIG } from './config/languages.config';
-import { BoxContext } from './interfaces/box-content.interface';
-import { generateWrapper } from './templates/sql-wrapper.template';
-import { ProcessExecutor } from './utils/process.executor';
+import { LANGUAGES_CONFIG } from "./config/languages.config";
+import { BoxContext } from "./interfaces/box-content.interface";
+import { generateWrapper } from "./templates/sql-wrapper.template";
+import { ProcessExecutor } from "./utils/process.executor";
 
 @Injectable()
 export class SandboxService implements OnModuleInit {
   private readonly logger = new Logger(SandboxService.name);
 
-  private readonly STDOUT_FILE = 'stdout.txt';
-  private readonly STDERR_FILE = 'stderr.txt';
+  private readonly STDOUT_FILE = "stdout.txt";
+  private readonly STDERR_FILE = "stderr.txt";
 
   private readonly MAX_BOXES = 100;
   private availableBoxes: number[] = [];
@@ -49,23 +45,21 @@ export class SandboxService implements OnModuleInit {
     const boxId = this.availableBoxes.pop();
 
     if (boxId === undefined) {
-      throw new Error('No available sandbox boxes (Worker overloaded)');
+      throw new Error("No available sandbox boxes (Worker overloaded)");
     }
-    const args = ['--init', `--box-id=${boxId}`, '--cg'];
+    const args = ["--init", `--box-id=${boxId}`, "--cg"];
 
-    this.logger.debug(
-      `Initializing box ${boxId} for submission ${submissionId}...`,
-    );
+    this.logger.debug(`Initializing box ${boxId} for submission ${submissionId}...`);
 
     try {
-      const result = await this.processExecutor.run('isolate', args);
+      const result = await this.processExecutor.run("isolate", args);
 
       if (result.exitCode !== 0) {
         throw new Error(`Isolate init failed: ${result.stderr}`);
       }
       const workDir = result.stdout.trim();
       const boxDir = `${workDir}/box`;
-      await this.processExecutor.run('chmod', ['-R', '777', boxDir]);
+      await this.processExecutor.run("chmod", ["-R", "777", boxDir]);
       return { boxId, boxDir, workDir };
     } catch (error) {
       this.logger.error(`Failed to initialize box ${boxId}`, error);
@@ -93,7 +87,7 @@ export class SandboxService implements OnModuleInit {
       return {
         submissionId: jobData.submissionId,
         status: ExecutionStatus.SystemError,
-        message: error.message || 'Internal Runner Error',
+        message: error.message || "Internal Runner Error",
       } as SubmissionResultDto;
     } finally {
       if (boxContext) {
@@ -113,10 +107,10 @@ export class SandboxService implements OnModuleInit {
    */
   private async cleanup(boxId: number): Promise<void> {
     this.logger.debug(`Cleaning up box ${boxId}...`);
-    const args = ['--cleanup', `--box-id=${boxId}`, '--cg'];
+    const args = ["--cleanup", `--box-id=${boxId}`, "--cg"];
 
     try {
-      await this.processExecutor.run('isolate', args);
+      await this.processExecutor.run("isolate", args);
     } catch (error) {
       this.logger.warn(`Cleanup failed for box ${boxId}`, error);
     } finally {
@@ -133,10 +127,7 @@ export class SandboxService implements OnModuleInit {
    * @param jobData The job payload.
    * @returns The relative filename of the source code inside the box (e.g., 'source.py').
    */
-  private async setupFiles(
-    boxContext: BoxContext,
-    jobData: RunnerJobDataDto,
-  ): Promise<string> {
+  private async setupFiles(boxContext: BoxContext, jobData: RunnerJobDataDto): Promise<string> {
     const { content } = jobData;
     const langConfig = LANGUAGES_CONFIG[content.language];
 
@@ -147,26 +138,21 @@ export class SandboxService implements OnModuleInit {
 
     if (langConfig.isWrapper) {
       this.logger.debug(`Generating SQL wrapper for box ${boxContext.boxId}`);
-      sourceCode = generateWrapper(
-        content.language,
-        content.inputData,
-        content.initialCode,
-        content.testCasesCode,
-      );
+      sourceCode = generateWrapper(content.language, content.inputData, content.initialCode, content.testCasesCode);
     }
 
     const sourceFileName = `source${langConfig.extension}`;
     const sourceFilePath = path.join(boxContext.boxDir, sourceFileName);
 
-    await fs.writeFile(sourceFilePath, sourceCode, { encoding: 'utf8' });
-    const stdinPath = path.join(boxContext.boxDir, 'stdin.txt');
+    await fs.writeFile(sourceFilePath, sourceCode, { encoding: "utf8" });
+    const stdinPath = path.join(boxContext.boxDir, "stdin.txt");
 
-    let stdinContent = '';
+    let stdinContent = "";
     if (!langConfig.isWrapper && content.inputData) {
       stdinContent = content.inputData;
     }
 
-    await fs.writeFile(stdinPath, stdinContent, { encoding: 'utf8' });
+    await fs.writeFile(stdinPath, stdinContent, { encoding: "utf8" });
 
     return sourceFileName;
   }
@@ -179,24 +165,20 @@ export class SandboxService implements OnModuleInit {
    * @param jobData The job payload containing limits.
    * @param sourceFileName The name of the executable source file inside the box.
    */
-  private async run(
-    boxContext: BoxContext,
-    jobData: RunnerJobDataDto,
-    sourceFileName: string,
-  ): Promise<void> {
+  private async run(boxContext: BoxContext, jobData: RunnerJobDataDto, sourceFileName: string): Promise<void> {
     const { content } = jobData;
     const langConfig = LANGUAGES_CONFIG[content.language];
     const metadataPath = this.getMetadataPath(boxContext.boxId);
     try {
-      await fs.writeFile(metadataPath, '');
+      await fs.writeFile(metadataPath, "");
       await fs.chmod(metadataPath, 0o666);
     } catch (e) {
       this.logger.warn(`Failed to pre-create metadata file: ${e}`);
     }
     const args = [
-      '--run',
+      "--run",
       `--box-id=${boxContext.boxId}`,
-      '--cg',
+      "--cg",
       `-M${metadataPath}`,
       `--stdout=${this.STDOUT_FILE}`,
       `--stderr=${this.STDERR_FILE}`,
@@ -212,23 +194,18 @@ export class SandboxService implements OnModuleInit {
     }
 
     if (content.language === ProgrammingLanguage.SQL) {
-      args.push('--share-net');
+      args.push("--share-net");
       const envArgs = this.getEnvArgs();
       args.push(...envArgs);
     }
 
-    const commandToRun = langConfig.runCmd.replace(
-      '{sourcePath}',
-      sourceFileName,
-    );
+    const commandToRun = langConfig.runCmd.replace("{sourcePath}", sourceFileName);
 
-    const [executable, ...execArgs] = commandToRun.split(' ');
-    args.push('--', executable, ...execArgs);
+    const [executable, ...execArgs] = commandToRun.split(" ");
+    args.push("--", executable, ...execArgs);
 
-    this.logger.debug(
-      `Running in box ${boxContext.boxId}: isolate ${args.join(' ')}`,
-    );
-    const result = await this.processExecutor.run('isolate', args);
+    this.logger.debug(`Running in box ${boxContext.boxId}: isolate ${args.join(" ")}`);
+    const result = await this.processExecutor.run("isolate", args);
 
     if (result.exitCode !== 0) {
       this.logger.warn(
@@ -242,20 +219,11 @@ export class SandboxService implements OnModuleInit {
    * Retrieves values from the main application config (process.env).
    */
   private getEnvArgs(): string[] {
-    const dbHost = this.configService.get<string>(
-      'RUNNER_DB_HOST',
-      'localhost',
-    );
-    const dbUser = this.configService.get<string>('RUNNER_DB_USER', 'runner');
-    const dbPass = this.configService.get<string>(
-      'RUNNER_DB_PASSWORD',
-      'runner',
-    );
-    const dbName = this.configService.get<string>(
-      'RUNNER_DB_NAME',
-      'runner_db',
-    );
-    const dbPort = this.configService.get<string>('RUNNER_DB_PORT', '5432');
+    const dbHost = this.configService.get<string>("RUNNER_DB_HOST", "localhost");
+    const dbUser = this.configService.get<string>("RUNNER_DB_USER", "runner");
+    const dbPass = this.configService.get<string>("RUNNER_DB_PASSWORD", "runner");
+    const dbName = this.configService.get<string>("RUNNER_DB_NAME", "runner_db");
+    const dbPort = this.configService.get<string>("RUNNER_DB_PORT", "5432");
 
     return [
       `--env=DB_HOST=${dbHost}`,
@@ -273,28 +241,19 @@ export class SandboxService implements OnModuleInit {
    * @param jobData The original job payload (needed for expected output).
    * @returns The fully populated SubmissionResultDto.
    */
-  private async verify(
-    boxContext: BoxContext,
-    jobData: RunnerJobDataDto,
-  ): Promise<SubmissionResultDto> {
+  private async verify(boxContext: BoxContext, jobData: RunnerJobDataDto): Promise<SubmissionResultDto> {
     const { content } = jobData;
-    const stdout = await this.readFileSafely(
-      path.join(boxContext.boxDir, this.STDOUT_FILE),
-    );
-    const stderr = await this.readFileSafely(
-      path.join(boxContext.boxDir, this.STDERR_FILE),
-    );
-    const metadata = await this.parseMetadata(
-      this.getMetadataPath(boxContext.boxId),
-    );
+    const stdout = await this.readFileSafely(path.join(boxContext.boxDir, this.STDOUT_FILE));
+    const stderr = await this.readFileSafely(path.join(boxContext.boxDir, this.STDERR_FILE));
+    const metadata = await this.parseMetadata(this.getMetadataPath(boxContext.boxId));
 
-    console.log('METADATA', metadata);
+    console.log("METADATA", metadata);
 
-    if (Object.keys(metadata).length === 0 || metadata['status'] === 'XX') {
+    if (Object.keys(metadata).length === 0 || metadata["status"] === "XX") {
       return {
         submissionId: jobData.submissionId,
         status: ExecutionStatus.SystemError,
-        message: 'Isolate failed to execute. No metadata produced.',
+        message: "Isolate failed to execute. No metadata produced.",
         stdout: stdout,
         stderr: stderr,
       };
@@ -304,24 +263,22 @@ export class SandboxService implements OnModuleInit {
       status: ExecutionStatus.Processing,
       stdout: stdout,
       stderr: stderr,
-      time: metadata['time'] ? parseFloat(metadata['time']) : 0,
-      memory: metadata['cg-mem'] ? parseFloat(metadata['cg-mem']) : 0,
-      message: metadata['message'],
+      time: metadata["time"] ? parseFloat(metadata["time"]) : 0,
+      memory: metadata["cg-mem"] ? parseFloat(metadata["cg-mem"]) : 0,
+      message: metadata["message"],
     };
-    if (metadata['status'] === 'TO') {
+    if (metadata["status"] === "TO") {
       result.status = ExecutionStatus.TimeLimitExceeded;
       return result;
     }
 
-    if (metadata['status'] === 'XX') {
+    if (metadata["status"] === "XX") {
       result.status = ExecutionStatus.SystemError;
       return result;
     }
 
-    if (metadata['status'] === 'SG') {
-      const isOom =
-        metadata['exitsig'] === '9' ||
-        (result.message && result.message.includes('signal 9'));
+    if (metadata["status"] === "SG") {
+      const isOom = metadata["exitsig"] === "9" || (result.message && result.message.includes("signal 9"));
 
       if (isOom) {
         result.status = ExecutionStatus.MemoryLimitExceeded;
@@ -334,22 +291,17 @@ export class SandboxService implements OnModuleInit {
       }
       return result;
     }
-    const exitCode = metadata['exitcode']
-      ? parseInt(metadata['exitcode'], 10)
-      : 0;
+    const exitCode = metadata["exitcode"] ? parseInt(metadata["exitcode"], 10) : 0;
 
     if (exitCode !== 0) {
       result.status = ExecutionStatus.RuntimeError;
-      if (stderr.includes('Test Failed') || stderr.includes('AssertionError')) {
+      if (stderr.includes("Test Failed") || stderr.includes("AssertionError")) {
         result.status = ExecutionStatus.WrongAnswer;
       }
       return result;
     }
     const langConfig = LANGUAGES_CONFIG[content.language];
-    if (
-      langConfig?.isWrapper ||
-      content.executionMode === CodeExecutionMode.UnitTest
-    ) {
+    if (langConfig?.isWrapper || content.executionMode === CodeExecutionMode.UnitTest) {
       result.status = ExecutionStatus.Accepted;
       return result;
     }
@@ -373,23 +325,21 @@ export class SandboxService implements OnModuleInit {
    */
   private async readFileSafely(filepath: string): Promise<string> {
     try {
-      return await fs.readFile(filepath, 'utf8');
+      return await fs.readFile(filepath, "utf8");
     } catch {
-      return '';
+      return "";
     }
   }
 
   /**
    * Parses isolate's key:value metadata file.
    */
-  private async parseMetadata(
-    filepath: string,
-  ): Promise<Record<string, string>> {
+  private async parseMetadata(filepath: string): Promise<Record<string, string>> {
     const raw = await this.readFileSafely(filepath);
     const result: Record<string, string> = {};
 
-    raw.split('\n').forEach((line) => {
-      const [key, value] = line.split(':');
+    raw.split("\n").forEach(line => {
+      const [key, value] = line.split(":");
       if (key && value) {
         result[key.trim()] = value.trim();
       }
@@ -405,12 +355,12 @@ export class SandboxService implements OnModuleInit {
    * - Trims leading/trailing whitespace of the whole text.
    */
   private normalizeOutput(text: string): string {
-    if (!text) return '';
+    if (!text) return "";
     return text
       .trim()
-      .replace(/\r\n/g, '\n')
-      .split('\n')
-      .map((line) => line.trimEnd())
-      .join('\n');
+      .replace(/\r\n/g, "\n")
+      .split("\n")
+      .map(line => line.trimEnd())
+      .join("\n");
   }
 }

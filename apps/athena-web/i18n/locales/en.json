@@ -1,0 +1,113 @@
+{
+  
+  "layouts": {
+    "default": {
+      "menu": {
+        "signed-in-as": "Signed in as",
+        "settings": "Settings",
+        "logout": "Logout"
+      }
+    }
+  },
+  "pages": {
+    "index": {
+      "hero": {
+        "title": "NEXT GENERATION LEARNING MANAGEMENT SYSTEM",
+        "subtitle": "Focused learning. Practical application. Built for engineering excellence. A platform designed for those who build, not just observe.",
+        "start_btn": "START LEARNING",
+        "docs_btn": "DOCUMENTATION"
+      }
+    },
+    "auth": {
+      "login": {
+        "header": "Login",
+        "subheader": "Enter your credentials to access your account",
+        "login-label": "Login",
+        "password-label": "Password",
+        "login-placeholder": "Enter your login",
+        "password-placeholder": "Enter your password",
+        "login-is-required": "Login is required",
+        "password-is-required": "Password is required",
+        "password-length": "Must be at least 4 characters",
+        "success-title": "Success",
+        "success-msg": "Successfully logged in",
+        "error-title": "Login Error",
+        "error-msg": "An error occurred during login. Please try again."
+      }
+    },
+    "dashboard": {
+      "learn": "Learning",
+      "studio": "Studio",
+      "admin": "Admin Zone",
+      "dashboard": "Dashboard",
+      "my-learning": "My Learning",
+      "schedule": "Schedule",
+      "my-files": "My Files",
+      "my-files-desc": "Personal storage",
+      "community": "Community",
+      "studio-overview": "Studio Overview",
+      "course-manager": "Course Manager",
+      "drafts": "Drafts",
+      "published": "Published",
+      "assignments": "Assignments",
+      "users": "Users",
+      "roles": "Roles",
+      "system-settings": "System Settings",
+      "menu": {
+        "signed-in-as": "Signed in as",
+        "settings": "Settings",
+        "logout": "Logout"
+      }
+    },
+    "placeholders": {
+      "dashboard": {
+        "title": "Command Center",
+        "desc": "Your personal overview of progress, stats, and upcoming events."
+      },
+      "learn": {
+        "title": "Learning Hub",
+        "desc": "Access your enrolled courses, continue where you left off, and track your progress."
+      },
+      "schedule": {
+        "title": "Calendar & Schedule",
+        "desc": "Manage your deadlines, live sessions, and study time effectively."
+      },
+      "files": {
+        "title": "File Storage",
+        "desc": "Secure cloud storage for your assignments, resources, and personal documents."
+      },
+      "community": {
+        "title": "Community & Chat",
+        "desc": "Connect with peers, mentors, and join discussions in real-time."
+      },
+      "studio": {
+        "title": "Creator Studio",
+        "desc": "Your workspace for creating content, managing courses, and analyzing performance."
+      },
+      "courses": {
+        "title": "Course Management",
+        "desc": "Create, edit, and publish your educational content. Manage drafts and releases."
+      },
+      "grading": {
+        "title": "Grading Center",
+        "desc": "Review student submissions, provide feedback, and manage grades."
+      },
+      "users": {
+        "title": "User Management",
+        "desc": "Manage system users, students, and instructors. Control access and profiles."
+      },
+      "roles": {
+        "title": "Role & Permissions",
+        "desc": "Configure Access Control Lists (ACL) and define what users can do."
+      },
+      "admin_settings": {
+        "title": "System Configuration",
+        "desc": "Global settings for the LMS platform, integrations, and branding."
+      },
+      "settings": {
+        "title": "Account Settings",
+        "desc": "Manage your profile, security preferences, and notifications."
+      }
+    }
+  }
+}

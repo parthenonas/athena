@@ -1,10 +1,11 @@
+import { LoginRequest } from "@athena/types";
 import { IsString, MinLength } from "class-validator";
 
 /**
  * @class LoginDto
  * Input DTO for login/authentication requests.
  */
-export class LoginDto {
+export class LoginDto implements LoginRequest {
   /** Account login. */
   @IsString()
   login!: string;

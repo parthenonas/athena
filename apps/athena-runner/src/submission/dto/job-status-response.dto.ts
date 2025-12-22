@@ -1,4 +1,4 @@
-import { SubmissionResultDto } from './submission-result.dto';
+import { SubmissionResultDto } from "./submission-result.dto";
 
 export class JobStatusResponseDto {
   /** The internal BullMQ Job ID. */

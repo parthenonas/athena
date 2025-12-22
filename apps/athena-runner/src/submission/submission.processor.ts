@@ -1,23 +1,23 @@
-import { ExecutionStatus } from '@athena/types';
-import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Job, Queue } from 'bullmq';
-import { plainToInstance } from 'class-transformer';
-import { validate } from 'class-validator';
+import { ExecutionStatus } from "@athena/types";
+import { InjectQueue, Processor, WorkerHost } from "@nestjs/bullmq";
+import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Job, Queue } from "bullmq";
+import { plainToInstance } from "class-transformer";
+import { validate } from "class-validator";
 
-import { SandboxService } from '../sandbox/sandbox.service';
-import { RunnerJobDataDto } from './dto/runner-job-data.dto';
-import { SubmissionResultDto } from './dto/submission-result.dto';
+import { SandboxService } from "../sandbox/sandbox.service";
+import { RunnerJobDataDto } from "./dto/runner-job-data.dto";
+import { SubmissionResultDto } from "./dto/submission-result.dto";
 
-@Processor('execution')
+@Processor("execution")
 @Injectable()
 export class SubmissionProcessor extends WorkerHost {
   private readonly logger = new Logger(SubmissionProcessor.name);
 
   constructor(
     private readonly sandboxService: SandboxService,
-    @Inject('execution') private readonly queueName: string,
-    @InjectQueue('submission-result') private readonly resultQueue: Queue,
+    @Inject("execution") private readonly queueName: string,
+    @InjectQueue("submission-result") private readonly resultQueue: Queue,
   ) {
     super();
   }
@@ -32,13 +32,9 @@ export class SubmissionProcessor extends WorkerHost {
    * @param job The BullMQ job containing the submission payload.
    * @returns The execution result DTO.
    */
-  async process(
-    job: Job<RunnerJobDataDto, SubmissionResultDto, string>,
-  ): Promise<SubmissionResultDto> {
+  async process(job: Job<RunnerJobDataDto, SubmissionResultDto, string>): Promise<SubmissionResultDto> {
     const { submissionId } = job.data;
-    this.logger.log(
-      `[${this.queueName}] Processing submission: ${submissionId}`,
-    );
+    this.logger.log(`[${this.queueName}] Processing submission: ${submissionId}`);
 
     try {
       const rawData = job.data;
@@ -46,17 +42,15 @@ export class SubmissionProcessor extends WorkerHost {
       const errors = await validate(jobDto);
 
       if (errors.length > 0) {
-        const errorMsg = errors
-          .map((e) => Object.values(e.constraints || {}))
-          .join(', ');
+        const errorMsg = errors.map(e => Object.values(e.constraints || {})).join(", ");
         this.logger.error(`Invalid job data for ${submissionId}: ${errorMsg}`);
 
         const errorResult: SubmissionResultDto = {
           submissionId: submissionId,
           status: ExecutionStatus.SystemError,
           message: `Invalid Job Data: ${errorMsg}`,
-          stdout: '',
-          stderr: '',
+          stdout: "",
+          stderr: "",
           time: 0,
           memory: 0,
           metadata: jobDto.metadata,
@@ -68,9 +62,7 @@ export class SubmissionProcessor extends WorkerHost {
 
       const result = await this.sandboxService.execute(job.data);
 
-      this.logger.log(
-        `[${this.queueName}] Completed submission: ${submissionId} with status ${result.status}`,
-      );
+      this.logger.log(`[${this.queueName}] Completed submission: ${submissionId} with status ${result.status}`);
 
       if (jobDto.metadata) {
         result.metadata = jobDto.metadata;
@@ -78,30 +70,24 @@ export class SubmissionProcessor extends WorkerHost {
 
       await this.sendResult(submissionId, result);
 
-      this.logger.debug(
-        `Result sent to submission-result queue for ${submissionId}`,
-      );
+      this.logger.debug(`Result sent to submission-result queue for ${submissionId}`);
 
       return result;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      this.logger.error(
-        `[${this.queueName}] System Error for ${submissionId}: ${error.message}`,
-      );
+      this.logger.error(`[${this.queueName}] System Error for ${submissionId}: ${error.message}`);
       throw error;
     }
   }
 
   private async sendResult(submissionId: string, result: SubmissionResultDto) {
-    await this.resultQueue.add('submission-processed', result, {
+    await this.resultQueue.add("submission-processed", result, {
       jobId: submissionId,
       removeOnComplete: { age: 3600, count: 1000 },
       attempts: 5,
-      backoff: { type: 'exponential', delay: 2000 },
+      backoff: { type: "exponential", delay: 2000 },
     });
 
-    this.logger.debug(
-      `Result sent to submission-result queue for ${submissionId}`,
-    );
+    this.logger.debug(`Result sent to submission-result queue for ${submissionId}`);
   }
 }

@@ -1,9 +1,5 @@
-import {
-  CodeBlockContent,
-  ProgrammingLanguage,
-  CodeExecutionMode,
-} from '@athena/types';
-import { IsNotEmpty, IsString, IsOptional, IsNumber } from 'class-validator';
+import { CodeBlockContent, ProgrammingLanguage, CodeExecutionMode } from "@athena/types";
+import { IsNotEmpty, IsString, IsOptional, IsNumber } from "class-validator";
 
 /**
  * @class RunnerCodeBlockContentDto

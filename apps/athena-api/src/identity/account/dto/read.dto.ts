@@ -1,4 +1,4 @@
-import { Status } from "@athena/types";
+import { AccountResponse, Status } from "@athena/types";
 import { Expose } from "class-transformer";
 
 /**
@@ -13,7 +13,7 @@ import { Expose } from "class-transformer";
  *
  * Does NOT contain sensitive data such as password hashes.
  */
-export class ReadAccountDto {
+export class ReadAccountDto implements AccountResponse {
   /** Account UUID. */
 
   @Expose()
