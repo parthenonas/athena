@@ -1,3 +1,4 @@
+import { FilterAccountRequest } from "@athena/types";
 import { Type } from "class-transformer";
 import { IsIn, IsInt, IsOptional, IsString, Max, Min } from "class-validator";
 
@@ -10,7 +11,7 @@ import { IsIn, IsInt, IsOptional, IsString, Max, Min } from "class-validator";
  * - Pagination (page, limit)
  * - Sorting (sortBy, sortOrder)
  */
-export class FilterAccountDto {
+export class FilterAccountDto implements FilterAccountRequest {
   /** Full-text search by login (ILIKE %search%). */
   @IsOptional()
   @IsString()

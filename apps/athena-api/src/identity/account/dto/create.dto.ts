@@ -1,3 +1,4 @@
+import { CreateAccountRequest } from "@athena/types";
 import { IsString, IsUUID, MinLength } from "class-validator";
 
 /**
@@ -8,7 +9,7 @@ import { IsString, IsUUID, MinLength } from "class-validator";
  * - `password` is provided in plain text and will be hashed in the service
  * - `roleId` links the account to an existing Role entity
  */
-export class CreateAccountDto {
+export class CreateAccountDto implements CreateAccountRequest {
   /** New account login (unique). */
   @IsString()
   @MinLength(3)
