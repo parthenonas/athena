@@ -104,5 +104,5 @@ jobs:
       - name: Typecheck Web
         run: npm --workspace apps/athena-web run typecheck
 
-      - name: Build Runner
+      - name: Build Web
         run: npm --workspace apps/athena-web run build
