@@ -8,7 +8,8 @@ export default defineNuxtConfig({
     '@nuxt/icon',
     '@nuxtjs/i18n',
     '@pinia/nuxt',
-    'pinia-plugin-persistedstate'
+    'pinia-plugin-persistedstate',
+    '@nuxt/test-utils/module'
   ],
 
   ssr: false,

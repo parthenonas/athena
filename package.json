@@ -31,6 +31,7 @@
     "test:web": "npm --workspace apps/athena-web run test",
     "test:watch:api": "npm --workspace apps/athena-api run test:watch",
     "test:watch:runner": "npm --workspace apps/athena-runner run test:watch",
+    "test:watch:web": "npm --workspace apps/athena-web run test:watch",
     "typecheck:all": "npm run typecheck:api && npm run typecheck:runner && npm run typecheck:web",
     "typecheck:api": "npm --workspace apps/athena-api run typecheck",
     "typecheck:runner": "npm --workspace apps/athena-runner run typecheck",
