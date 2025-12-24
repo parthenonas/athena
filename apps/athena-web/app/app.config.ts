@@ -7,8 +7,7 @@ export default defineAppConfig({
       success: 'emerald',
       info: 'cyan',
       warning: 'amber',
-      error: 'red',
-      default: 'blue'
+      error: 'red'
     },
     pageCTA: {
       slots: {

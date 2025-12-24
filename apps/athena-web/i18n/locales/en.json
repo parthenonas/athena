@@ -4,7 +4,21 @@
     "cancel": "Cancel",
     "success": "Success",
     "error": "Error",
-    "deleted": "Deleted successfully"
+    "deleted": "Deleted successfully",
+    "confirm": "Confirm",
+    "delete": "Delete"
+  },
+  "components": {
+    "admin": {
+      "roles-slideover": {
+        "name-label": "Role Name",
+        "permissions-title": "Permissions",
+        "errors": {
+          "name-min": "Role name must be at least 3 characters long",
+          "name-required": "Role name is required"
+        }
+      }
+    }
   },
   "layouts": {
     "default": {
@@ -130,6 +144,10 @@
         "name": "Role Name",
         "access_level": "Access Level",
         "updated_at": "Updated"
+      },
+      "delete-modal": {
+        "title": "Delete Role?",
+        "description": "This action cannot be undone. Are you sure you want to delete this role?"
       }
     }
   },
@@ -153,6 +171,22 @@
       "publish": "Publish",
       "execute": "Execute Code",
       "admin": "Super Admin Access"
+    }
+  },
+  "toasts": {
+    "roles": {
+      "created": {
+        "title": "Role created",
+        "description": "New role has been successfully added to the system."
+      },
+      "updated": {
+        "title": "Role updated",
+        "description": "Changes have been successfully saved."
+      },
+      "deleted": {
+        "title": "Role deleted",
+        "description": "The role has been permanently removed."
+      }
     }
   }
 }

@@ -17,37 +17,51 @@ export const useRoles = () => {
     })
   }
 
-  const fetchRole = (id: string) => {
-    return useApi<RoleResponse>(`/roles/${id}`, { method: 'GET' })
+  const fetchRole = async (id: string) => {
+    return await $api<RoleResponse>(`/roles/${id}`, { method: 'GET' })
   }
 
   const createRole = async (body: CreateRoleRequest) => {
-    const { error } = await useApi<RoleResponse>('/roles', {
+    const data = await $api<RoleResponse>('/roles', {
       method: 'POST',
       body
     })
 
-    if (error.value) throw error.value
-    toast.add({ title: t('common.success'), color: 'success' })
+    toast.add({
+      title: t('toasts.roles.created.title'),
+      description: t('toasts.roles.created.description'),
+      color: 'success',
+      icon: 'i-lucide-check-circle'
+    })
+    return data
   }
 
   const updateRole = async (id: string, body: UpdateRoleRequest) => {
-    const { error } = await useApi<RoleResponse>(`/roles/${id}`, {
+    const data = await $api<RoleResponse>(`/roles/${id}`, {
       method: 'PATCH',
       body
     })
 
-    if (error.value) throw error.value
-    toast.add({ title: t('common.success'), color: 'success' })
+    toast.add({
+      title: t('toasts.roles.updated.title'),
+      description: t('toasts.roles.updated.description'),
+      color: 'success',
+      icon: 'i-lucide-save'
+    })
+    return data
   }
 
   const deleteRole = async (id: string) => {
-    const { error } = await useApi(`/roles/${id}`, {
+    await $api(`/roles/${id}`, {
       method: 'DELETE'
     })
 
-    if (error.value) throw error.value
-    toast.add({ title: t('common.deleted'), color: 'success' })
+    toast.add({
+      title: t('toasts.roles.deleted.title'),
+      description: t('toasts.roles.deleted.description'),
+      color: 'success',
+      icon: 'i-lucide-trash-2'
+    })
   }
 
   return {

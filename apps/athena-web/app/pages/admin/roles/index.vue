@@ -12,6 +12,10 @@ const { fetchRoles, deleteRole } = useRoles()
 const isSlideoverOpen = ref(false)
 const selectedRoleId = ref<string | null>(null)
 
+const isDeleteOpen = ref(false)
+const deleteLoading = ref(false)
+const roleToDelete = ref<RoleResponse | null>(null)
+
 const columns = computed<TableColumn<RoleResponse>[]>(() => [
   { accessorKey: 'name', header: t('pages.roles.columns.name') },
   { accessorKey: 'permissions', header: t('pages.roles.columns.access_level') },
@@ -43,10 +47,23 @@ const openEdit = (role: RoleResponse) => {
   isSlideoverOpen.value = true
 }
 
-const onDelete = async (role: RoleResponse) => {
-  if (!confirm(t('pages.roles.delete_confirm'))) return
-  await deleteRole(role.id)
-  refresh()
+const openDelete = (role: RoleResponse) => {
+  roleToDelete.value = role
+  isDeleteOpen.value = true
+}
+
+const onConfirmDelete = async () => {
+  if (!roleToDelete.value) return
+
+  deleteLoading.value = true
+  try {
+    await deleteRole(roleToDelete.value.id)
+    await refresh()
+    isDeleteOpen.value = false
+    roleToDelete.value = null
+  } finally {
+    deleteLoading.value = false
+  }
 }
 </script>
 
@@ -120,7 +137,7 @@ const onDelete = async (role: RoleResponse) => {
             variant="ghost"
             icon="i-lucide-trash"
             size="xs"
-            @click="onDelete(row.original)"
+            @click="openDelete(row.original)"
           />
         </div>
       </template>
@@ -134,10 +151,20 @@ const onDelete = async (role: RoleResponse) => {
       />
     </div>
 
-    <RolesSlideover
+    <AdminRolesSlideover
       v-model="isSlideoverOpen"
       :role-id="selectedRoleId"
       @refresh="refresh"
+    />
+
+    <ConfirmModal
+      v-model:open="isDeleteOpen"
+      :title="$t('pages.roles.delete-modal.title')"
+      :description="$t('pages.roles.delete-modal.description')"
+      :confirm-label="$t('common.delete')"
+      danger
+      :loading="deleteLoading"
+      @confirm="onConfirmDelete"
     />
   </div>
 </template>
