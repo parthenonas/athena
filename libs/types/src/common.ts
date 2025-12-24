@@ -10,3 +10,5 @@ export interface Pageable<T> {
     pages: number;
   };
 }
+
+export type SortOrder = "ASC" | "DESC" | "asc" | "desc";

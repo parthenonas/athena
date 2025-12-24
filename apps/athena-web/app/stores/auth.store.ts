@@ -33,7 +33,7 @@ export const useAuthStore = defineStore('auth', () => {
   function logout() {
     token.value = null
     user.value = null
-    navigateTo('/auth/login')
+    return navigateTo('/auth/login')
   }
 
   async function getMe() {

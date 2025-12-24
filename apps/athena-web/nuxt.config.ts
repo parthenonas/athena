@@ -25,6 +25,9 @@ export default defineNuxtConfig({
       apiUrl: import.meta.env.NUXT_APP_API_URL
     }
   },
+  build: {
+    transpile: ['@athena/types']
+  },
 
   routeRules: {
     '/': { prerender: true }

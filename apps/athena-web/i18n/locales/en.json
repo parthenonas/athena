@@ -1,5 +1,11 @@
 {
-  
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "success": "Success",
+    "error": "Error",
+    "deleted": "Deleted successfully"
+  },
   "layouts": {
     "default": {
       "menu": {
@@ -108,6 +114,45 @@
         "title": "Account Settings",
         "desc": "Manage your profile, security preferences, and notifications."
       }
+    },
+    "roles": {
+      "title": "Roles & Permissions",
+      "description": "Manage access control lists and system roles.",
+      "create": "Create Role",
+      "edit": "Edit Role",
+      "name": "Role Name",
+      "permissions_title": "Permissions",
+      "search_placeholder": "Search roles...",
+      "delete_confirm": "Are you sure you want to delete this role?",
+      "super_admin": "Super Admin",
+      "permissions_count": "{count} permissions",
+      "columns": {
+        "name": "Role Name",
+        "access_level": "Access Level",
+        "updated_at": "Updated"
+      }
+    }
+  },
+  "permissions": {
+    "groups": {
+      "accounts": "Accounts",
+      "profiles": "Profiles",
+      "courses": "Courses",
+      "lessons": "Lessons",
+      "blocks": "Code Runner",
+      "progress": "Progress",
+      "enrollments": "Enrollments",
+      "schedule": "Schedule",
+      "system": "System"
+    },
+    "actions": {
+      "create": "Create",
+      "read": "Read / View",
+      "update": "Update / Edit",
+      "delete": "Delete",
+      "publish": "Publish",
+      "execute": "Execute Code",
+      "admin": "Super Admin Access"
     }
   }
 }

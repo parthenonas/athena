@@ -1,4 +1,4 @@
-import { Permission, Policy } from "@athena/types";
+import { Permission, Policy, UpdateRoleRequest } from "@athena/types";
 import { IsArray, IsEnum, IsObject, IsOptional, IsString, MinLength } from "class-validator";
 
 /**
@@ -6,7 +6,7 @@ import { IsArray, IsEnum, IsObject, IsOptional, IsString, MinLength } from "clas
  * DTO for updating an existing role.
  * All fields are optional.
  */
-export class UpdateRoleDto {
+export class UpdateRoleDto implements UpdateRoleRequest {
   /** Updated role name (optional). */
   @IsOptional()
   @IsString()

@@ -1,4 +1,11 @@
 { 
+  "common": {
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "success": "Успешно",
+    "error": "Ошибка",
+    "deleted": "Успешно удалено"
+  },
   "layouts": {
     "default": {
       "menu": {
@@ -107,7 +114,45 @@
         "title": "Настройки аккаунта",
         "desc": "Управление профилем, безопасностью и уведомлениями."
       }
+    },
+    "roles": {
+      "title": "Роли и права",
+      "description": "Управление списками доступа и системными ролями.",
+      "create": "Создать роль",
+      "edit": "Редактировать роль",
+      "name": "Название роли",
+      "permissions_title": "Права доступа",
+      "search_placeholder": "Поиск ролей...",
+      "delete_confirm": "Вы уверены, что хотите удалить эту роль?",
+      "super_admin": "Супер-Админ",
+      "permissions_count": "{count} прав",
+      "columns": {
+        "name": "Название",
+        "access_level": "Уровень доступа",
+        "updated_at": "Обновлено"
+      }
+    }
+  },
+  "permissions": {
+    "groups": {
+      "accounts": "Аккаунты",
+      "profiles": "Профили",
+      "courses": "Курсы",
+      "lessons": "Уроки",
+      "blocks": "Code Runner",
+      "progress": "Прогресс",
+      "enrollments": "Зачисления",
+      "schedule": "Расписание",
+      "system": "Система"
+    },
+    "actions": {
+      "create": "Создание",
+      "read": "Просмотр",
+      "update": "Редактирование",
+      "delete": "Удаление",
+      "publish": "Публикация",
+      "execute": "Запуск кода",
+      "admin": "Супер-Админ"
     }
   }
-  
 }
