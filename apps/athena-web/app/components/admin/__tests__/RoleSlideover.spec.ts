@@ -148,8 +148,6 @@ describe('RolesSlideover', () => {
     const checkboxes = wrapper.findAllComponents(UCheckboxStub)
     const readCheckboxComponent = checkboxes.find(c => c.props('label')?.includes('read'))
 
-    console.log(checkboxes.map(c => c.props('label')))
-
     expect(readCheckboxComponent).toBeDefined()
     readCheckboxComponent?.vm.$emit('update:modelValue', true)
 
