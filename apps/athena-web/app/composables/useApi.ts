@@ -23,7 +23,7 @@ export function useApi<T>(
       if (response.status === 401) {
         accessToken.value = null
 
-        await navigateTo('/login')
+        await navigateTo('/auth/login')
       }
     }
   }
