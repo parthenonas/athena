@@ -17,9 +17,11 @@ const deleteLoading = ref(false)
 const roleToDelete = ref<RoleResponse | null>(null)
 
 const columns = computed<TableColumn<RoleResponse>[]>(() => [
+  { accessorKey: 'id', header: t('pages.roles.columns.id') },
   { accessorKey: 'name', header: t('pages.roles.columns.name') },
-  { accessorKey: 'permissions', header: t('pages.roles.columns.access_level') },
-  { accessorKey: 'updatedAt', header: t('pages.roles.columns.updated_at') },
+  { accessorKey: 'permissions', header: t('pages.roles.columns.access-level') },
+  { accessorKey: 'createdAt', header: t('pages.roles.columns.created-at') },
+  { accessorKey: 'updatedAt', header: t('pages.roles.columns.updated-at') },
   { id: 'actions', header: '' }
 ])
 
@@ -32,6 +34,8 @@ const filters = reactive({
 })
 
 const { data, status, refresh } = await fetchRoles(filters)
+const route = useRoute()
+const router = useRouter()
 
 const roles = computed(() => data.value?.data || [])
 const total = computed(() => data.value?.meta?.total || 0)
@@ -42,15 +46,36 @@ const openCreate = () => {
   isSlideoverOpen.value = true
 }
 
-const openEdit = (role: RoleResponse) => {
-  selectedRoleId.value = role.id
+const openEdit = (role: RoleResponse | string) => {
+  const id = typeof role === 'string' ? role : role.id
+  selectedRoleId.value = id
   isSlideoverOpen.value = true
+  router.push({ query: { ...route.query, roleId: id } })
 }
 
 const openDelete = (role: RoleResponse) => {
   roleToDelete.value = role
   isDeleteOpen.value = true
 }
+
+watch(() => route.query.roleId, (newId) => {
+  console.log(newId)
+  if (newId && typeof newId === 'string') {
+    selectedRoleId.value = newId
+    isSlideoverOpen.value = true
+  } else {
+    isSlideoverOpen.value = false
+    selectedRoleId.value = null
+  }
+}, { immediate: true })
+
+watch(isSlideoverOpen, (isOpen) => {
+  if (!isOpen && route.query.roleId) {
+    const query = { ...route.query }
+    delete query.roleId
+    router.replace({ query })
+  }
+})
 
 const onConfirmDelete = async () => {
   if (!roleToDelete.value) return
@@ -90,7 +115,7 @@ const onConfirmDelete = async () => {
       <UInput
         v-model="filters.search"
         icon="i-lucide-search"
-        :placeholder="$t('pages.roles.search_placeholder')"
+        :placeholder="$t('pages.roles.search-placeholder')"
         class="w-full max-w-sm"
       />
     </div>
@@ -106,15 +131,21 @@ const onConfirmDelete = async () => {
             v-if="row.original.permissions.includes(Permission.ADMIN)"
             color="error"
             variant="subtle"
-            :label="$t('pages.roles.super_admin')"
+            :label="$t('pages.roles.super-admin')"
           />
           <UBadge
             v-else
             color="primary"
             variant="subtle"
-            :label="$t('pages.roles.permissions_count', { count: row.original.permissions.length })"
+            :label="$t('pages.roles.permissions-count', { count: row.original.permissions.length })"
           />
         </div>
+      </template>
+
+      <template #createdAt-cell="{ row }">
+        <span class="text-gray-500 text-sm">
+          {{ new Date(row.original.createdAt).toLocaleDateString() }}
+        </span>
       </template>
 
       <template #updatedAt-cell="{ row }">

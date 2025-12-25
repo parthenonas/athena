@@ -21,10 +21,6 @@ const state = reactive<CreateRoleRequest>({
   policies: {}
 })
 
-const errors = reactive({
-  name: ''
-})
-
 const schema = z.object({
   name: z.string()
     .min(1, t('components.admin.roles-slideover.errors.name-required'))
@@ -57,10 +53,8 @@ const permissionGroups = computed(() => {
   return groups
 })
 
-watch(isOpen, async (val) => {
-  if (!val) return
-
-  errors.name = ''
+watchEffect(async () => {
+  if (!isOpen.value) return
 
   isLoading.value = true
   try {
