@@ -17,6 +17,16 @@
           "name-min": "Role name must be at least 3 characters long",
           "name-required": "Role name is required"
         }
+      },
+      "accounts-slideover": {
+        "login-label": "Login",
+        "password-label": "Password",
+        "password-help": "Leave empty to keep current password",
+        "role-label": "Role",
+        "errors": {
+          "login-min": "Login must be at least 3 characters",
+          "password-min": "Password must be at least 8 characters"
+        }
       }
     }
   },

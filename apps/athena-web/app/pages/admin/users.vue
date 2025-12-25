@@ -175,12 +175,12 @@ const onConfirmDelete = async () => {
         :page-count="filters.limit"
       />
     </div>
-    <!--
-    <AdminRolesSlideover
+
+    <AdminAccountsSlideover
       v-model="isSlideoverOpen"
-      :role-id="selectedAccountId"
+      :account-id="selectedAccountId"
       @refresh="refresh"
-    /> -->
+    />
 
     <ConfirmModal
       v-model:open="isDeleteOpen"

@@ -61,11 +61,11 @@ const AdminRoleBadgeStub = {
   props: ['roleId']
 }
 
-// const SlideoverStub = {
-//   name: 'AdminRolesSlideover',
-//   template: '<div data-testid="slideover" />',
-//   props: ['modelValue', 'roleId']
-// }
+const SlideoverStub = {
+  name: 'AdminAccountsSlideover',
+  template: '<div data-testid="slideover" />',
+  props: ['modelValue', 'accountId']
+}
 
 const ConfirmModalStub = {
   name: 'ConfirmModal',
@@ -109,7 +109,7 @@ describe('Accounts (Users) Page', () => {
         UTable: UTableStub,
         AdminRoleBadge: AdminRoleBadgeStub,
         ConfirmModal: ConfirmModalStub,
-        // AdminRolesSlideover: SlideoverStub,
+        AdminRolesSlideover: SlideoverStub,
         UButton: UButtonStub,
         UInput: { template: '<input />' },
         UBadge: { template: '<span class="badge">{{ label }}</span>', props: ['label'] },
@@ -163,11 +163,9 @@ describe('Accounts (Users) Page', () => {
 
     expect((wrapper.vm as any).selectedAccountId).toBeNull()
 
-    /*
     const slideover = wrapper.findComponent(SlideoverStub)
     expect(slideover.exists()).toBe(true)
     expect(slideover.props('modelValue')).toBe(true)
-    */
   })
 
   it('should handle edit button click', async () => {
