@@ -1,11 +1,11 @@
-import { Permission } from "@athena/types";
+import { Permission, RoleResponse } from "@athena/types";
 import { Expose } from "class-transformer";
 
 /**
  * @class ReadRoleDto
  * DTO for safely returning role information.
  */
-export class ReadRoleDto {
+export class ReadRoleDto implements RoleResponse {
   /** Role UUID. */
   @Expose()
   id!: string;

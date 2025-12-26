@@ -1,7 +1,7 @@
-import { Permission } from "@athena/types";
+import { Permission, UpdateRolePermissionsRequest } from "@athena/types";
 import { IsArray, IsEnum } from "class-validator";
 
-export class UpdateRolePermissionsDto {
+export class UpdateRolePermissionsDto implements UpdateRolePermissionsRequest {
   /**
    * Full list of permissions to assign to the role.
    */

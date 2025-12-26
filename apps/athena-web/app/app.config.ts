@@ -7,8 +7,7 @@ export default defineAppConfig({
       success: 'emerald',
       info: 'cyan',
       warning: 'amber',
-      error: 'red',
-      default: 'blue'
+      error: 'red'
     },
     pageCTA: {
       slots: {
@@ -29,6 +28,11 @@ export default defineAppConfig({
     button: {
       slots: {
         base: 'font-display font-bold uppercase tracking-wider transition-transform active:scale-[0.98]'
+      },
+      variants: {
+        variant: {
+          link: 'font-body font-medium normal-case tracking-normal hover:underline p-0!'
+        }
       }
     }
   }

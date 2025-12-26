@@ -5,6 +5,15 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean"
+  },
+  "exports": {  
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1"
   }
 }

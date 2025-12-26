@@ -9,7 +9,8 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n',
     '@pinia/nuxt',
     'pinia-plugin-persistedstate',
-    '@nuxt/test-utils/module'
+    '@nuxt/test-utils/module',
+    '@vueuse/nuxt'
   ],
 
   ssr: false,
@@ -24,6 +25,9 @@ export default defineNuxtConfig({
     public: {
       apiUrl: import.meta.env.NUXT_APP_API_URL
     }
+  },
+  build: {
+    transpile: ['@athena/types']
   },
 
   routeRules: {

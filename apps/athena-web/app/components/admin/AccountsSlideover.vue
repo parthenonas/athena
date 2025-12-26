@@ -1,0 +1,230 @@
+<script setup lang="ts">
+import type { FormSubmitEvent } from '#ui/types'
+import { z } from 'zod'
+import type { CreateAccountRequest, UpdateAccountRequest, FilterRoleRequest, RoleResponse } from '@athena/types'
+import type { SelectMenuItem } from '@nuxt/ui'
+
+const props = defineProps<{
+  modelValue: boolean
+  accountId?: string | null
+}>()
+
+const emit = defineEmits(['update:modelValue', 'refresh'])
+
+const { t } = useI18n()
+const { fetchAccount, createAccount, updateAccount } = useAccounts()
+const { fetchRoles, fetchRole } = useRoles()
+
+const isLoading = ref(false)
+
+const search = ref('')
+
+const specificRole = ref<RoleResponse | null>(null)
+
+const state = reactive<CreateAccountRequest | UpdateAccountRequest>({
+  login: '',
+  password: '',
+  roleId: undefined
+})
+
+watch(state, val => console.log(val))
+
+const schema = computed(() => {
+  const baseSchema = z.object({
+    login: z.string()
+      .min(3, t('components.admin.accounts-slideover.errors.login-min')),
+    roleId: z.string(t('components.admin.accounts-slideover.errors.role-required'))
+  })
+
+  if (!props.accountId) {
+    return baseSchema.extend({
+      password: z.string()
+        .min(8, t('components.admin.accounts-slideover.errors.password-min'))
+    })
+  }
+
+  return baseSchema.extend({
+    password: z.string()
+      .min(8, t('components.admin.accounts-slideover.errors.password-min'))
+      .or(z.literal(''))
+      .optional()
+  })
+})
+
+type Schema = z.output<typeof schema.value>
+
+const isOpen = computed({
+  get: () => props.modelValue,
+  set: val => emit('update:modelValue', val)
+})
+
+const filters = reactive<FilterRoleRequest>({
+  page: 1,
+  limit: 20,
+  search: undefined,
+  sortBy: 'name',
+  sortOrder: 'ASC'
+})
+
+watchDebounced(search, (val) => {
+  filters.search = val
+}, { debounce: 500, maxWait: 1000 })
+
+const { data: fetchedRoles, pending } = await fetchRoles(filters)
+
+const roles = computed<SelectMenuItem[]>(() => {
+  const list = fetchedRoles.value?.data || []
+  const result = [...list]
+
+  if (specificRole.value && !list.find(r => r.id === specificRole.value?.id)) {
+    result.push(specificRole.value)
+  }
+
+  return result.map(role => ({
+    id: role.id,
+    label: role.name
+  }))
+})
+
+watch(isOpen, async (val) => {
+  if (!val) return
+
+  isLoading.value = true
+  try {
+    if (props.accountId) {
+      const account = await fetchAccount(props.accountId)
+      if (account) {
+        state.login = account.login
+        state.password = ''
+        state.roleId = account.roleId
+
+        const currentRoles = fetchedRoles.value?.data || []
+        const roleExists = currentRoles.some(r => r.id === account?.roleId)
+        if (account.roleId && !roleExists) {
+          try {
+            const roleData = await fetchRole(account.roleId)
+            specificRole.value = roleData
+          } catch (e) {
+            console.error('Failed to load specific role', e)
+          }
+        }
+      }
+    } else {
+      state.login = ''
+      state.password = ''
+      state.roleId = undefined
+    }
+  } catch (e) {
+    console.error(e)
+  } finally {
+    isLoading.value = false
+  }
+}, { immediate: true })
+
+const onSubmit = async (event: FormSubmitEvent<Schema>) => {
+  isLoading.value = true
+  try {
+    const formData = event.data
+
+    if (props.accountId) {
+      const payload: UpdateAccountRequest = {
+        login: formData.login,
+        roleId: state.roleId
+      }
+      if (formData.password) {
+        payload.password = formData.password
+      }
+      await updateAccount(props.accountId, payload)
+    } else {
+      const payload: CreateAccountRequest = {
+        login: formData.login,
+        password: formData.password!,
+        roleId: state.roleId
+      }
+      await createAccount(payload)
+    }
+
+    emit('refresh')
+    isOpen.value = false
+  } catch (e: unknown) {
+    console.error(e)
+  } finally {
+    isLoading.value = false
+  }
+}
+</script>
+
+<template>
+  <USlideover
+    v-model:open="isOpen"
+    :title="accountId ? $t('pages.accounts.edit') : $t('pages.accounts.create')"
+    :ui="{ content: 'sm:max-w-xl' }"
+  >
+    <template #body>
+      <UForm
+        id="accounts-form"
+        :schema="schema"
+        :state="state"
+        class="h-full flex flex-col gap-6"
+        @submit="onSubmit"
+      >
+        <UFormField
+          :label="$t('components.admin.accounts-slideover.login-label')"
+          name="login"
+          required
+        >
+          <UInput
+            v-model="state.login"
+            autofocus
+            class="w-full"
+          />
+        </UFormField>
+
+        <UFormField
+          :label="$t('components.admin.accounts-slideover.password-label')"
+          name="password"
+          :required="!accountId"
+          :help="accountId ? $t('components.admin.accounts-slideover.password-help') : undefined"
+        >
+          <UInput
+            v-model="state.password"
+            type="password"
+            class="w-full"
+          />
+        </UFormField>
+
+        <UFormField
+          :label="$t('components.admin.accounts-slideover.role-label')"
+          name="roleId"
+        >
+          <USelectMenu
+            v-model:search-term="search"
+            v-model="state.roleId"
+            :items="roles"
+            :loading="pending"
+            value-key="id"
+            class="w-full"
+          />
+        </UFormField>
+      </UForm>
+    </template>
+
+    <template #footer>
+      <div class="flex justify-end gap-3 w-full">
+        <UButton
+          :label="$t('common.cancel')"
+          color="secondary"
+          variant="ghost"
+          @click="isOpen = false"
+        />
+        <UButton
+          type="submit"
+          form="accounts-form"
+          :label="$t('common.save')"
+          color="primary"
+          :loading="isLoading"
+        />
+      </div>
+    </template>
+  </USlideover>
+</template>
