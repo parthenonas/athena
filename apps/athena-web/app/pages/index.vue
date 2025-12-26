@@ -12,7 +12,7 @@ const heroLinks = computed(() => [
   {
     label: t('pages.index.hero.docs-btn'),
     trailingIcon: 'i-lucide-book-open',
-    to: '#',
+    to: '/docs',
     color: 'neutral' as const,
     variant: 'outline' as const
   }
