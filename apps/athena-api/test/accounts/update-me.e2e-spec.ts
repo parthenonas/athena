@@ -22,7 +22,7 @@ describe("PATCH /accounts/me (e2e)", () => {
     });
 
     const login = "me_update_user";
-    const password = "12345678";
+    const password = "Password123!";
     const user = await fixtures.createUser({
       login,
       password,
@@ -55,11 +55,11 @@ describe("PATCH /accounts/me (e2e)", () => {
     const res = await http
       .patch("/accounts/me")
       .set("Authorization", `Bearer ${userToken}`)
-      .send({ password: "newpassword123" });
+      .send({ password: "Newpassword123!" });
 
     expect(res.status).toBe(200);
 
-    const newToken = await fixtures.login(res.body.login, "newpassword123");
+    const newToken = await fixtures.login(res.body.login, "Newpassword123!");
     expect(typeof newToken).toBe("string");
   });
 
@@ -77,7 +77,7 @@ describe("PATCH /accounts/me (e2e)", () => {
     });
 
     const login = "user_without_permissions";
-    const password = "12345678";
+    const password = "Password123!";
     const updatedLogin = "user_without_permissions_upd";
 
     await fixtures.createUser({
@@ -101,7 +101,7 @@ describe("PATCH /accounts/me (e2e)", () => {
     });
 
     const login = "user_with_permissions";
-    const password = "12345678";
+    const password = "Password123!";
     const updatedLogin = "user_with_permissions_upd";
 
     await fixtures.createUser({

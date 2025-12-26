@@ -37,7 +37,7 @@ describe("RoleController (e2e)", () => {
       });
 
       const login = "noperms";
-      const password = "12345678";
+      const password = "Password123!";
 
       await fixtures.createUser({ login, password, roleId: role.id });
       const token = await fixtures.login(login, password);

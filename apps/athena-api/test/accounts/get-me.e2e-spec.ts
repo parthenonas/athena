@@ -38,7 +38,7 @@ describe("GET /accounts/me (e2e)", () => {
     });
 
     const login = "user_without_permissions";
-    const password = "123456";
+    const password = "Password123!";
     await fixtures.createUser({ login, password, roleId: role.id });
 
     const token = await fixtures.login(login, password);
@@ -56,7 +56,7 @@ describe("GET /accounts/me (e2e)", () => {
     });
 
     const login = "user_with_permissions";
-    const password = "123456";
+    const password = "Password123!";
     const user = await fixtures.createUser({ login, password, roleId: role.id });
 
     const token = await fixtures.login(login, password);

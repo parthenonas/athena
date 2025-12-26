@@ -37,7 +37,7 @@ describe("PATCH /blocks/:id (e2e)", () => {
     fixtures = res.fixtures;
     await fixtures.resetDatabase();
 
-    const { adminToken: token } = await fixtures.seedAdmin({ password: "12345678" });
+    const { adminToken: token } = await fixtures.seedAdmin({ password: "Password123!" });
     adminToken = token;
 
     const ownerRole = await fixtures.createRole({
@@ -45,9 +45,13 @@ describe("PATCH /blocks/:id (e2e)", () => {
       permissions: [Permission.LESSONS_READ, Permission.LESSONS_UPDATE],
       policies: { [Permission.LESSONS_UPDATE]: [Policy.OWN_ONLY] },
     });
-    const ownerUser = await fixtures.createUser({ login: "b_upd_owner", password: "12345678", roleId: ownerRole.id });
+    const ownerUser = await fixtures.createUser({
+      login: "b_upd_owner",
+      password: "Password123!",
+      roleId: ownerRole.id,
+    });
     creatorId = ownerUser.id;
-    ownerToken = await fixtures.login(ownerUser.login, "12345678");
+    ownerToken = await fixtures.login(ownerUser.login, "Password123!");
 
     const publicRole = await fixtures.createRole({
       name: "b_upd_public_read",
@@ -56,10 +60,10 @@ describe("PATCH /blocks/:id (e2e)", () => {
     });
     const publicUser = await fixtures.createUser({
       login: "b_upd_public",
-      password: "12345678",
+      password: "Password123!",
       roleId: publicRole.id,
     });
-    publicOnlyToken = await fixtures.login(publicUser.login, "12345678");
+    publicOnlyToken = await fixtures.login(publicUser.login, "Password123!");
 
     const restrictedUpdateRole = await fixtures.createRole({
       name: "b_upd_restricted",
@@ -69,12 +73,16 @@ describe("PATCH /blocks/:id (e2e)", () => {
     updateRestrictedRoleId = restrictedUpdateRole.id;
     const restrictedUser = await fixtures.createUser({
       login: "b_upd_restricted_guy",
-      password: "12345678",
+      password: "Password123!",
       roleId: updateRestrictedRoleId,
     });
-    restrictedUpdateToken = await fixtures.login(restrictedUser.login, "12345678");
+    restrictedUpdateToken = await fixtures.login(restrictedUser.login, "Password123!");
 
-    const otherUser = await fixtures.createUser({ login: "b_upd_other", password: "12345678", roleId: ownerRole.id });
+    const otherUser = await fixtures.createUser({
+      login: "b_upd_other",
+      password: "Password123!",
+      roleId: ownerRole.id,
+    });
 
     const c1 = await fixtures.createCourse({ title: "C1 Pub", ownerId: creatorId, isPublished: true });
     const l1 = await fixtures.createLesson({ title: "L1 Pub", courseId: c1.id });

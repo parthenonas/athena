@@ -23,16 +23,16 @@ describe("POST /blocks/dry-run (e2e)", () => {
     queueService = app.get(SubmissionQueueService);
 
     await fixtures.resetDatabase();
-    await fixtures.seedAdmin({ password: "12345678" });
+    await fixtures.seedAdmin({ password: "Password123!" });
 
     const ownerRole = await fixtures.createRole({
       name: "dry_run_owner",
       permissions: [Permission.BLOCKS_EXECUTE],
       policies: { [Permission.BLOCKS_EXECUTE]: [Policy.OWN_ONLY] },
     });
-    const owner = await fixtures.createUser({ login: "dry_owner", password: "12345678", roleId: ownerRole.id });
+    const owner = await fixtures.createUser({ login: "dry_owner", password: "Password123!", roleId: ownerRole.id });
 
-    ownerToken = await fixtures.login(owner.login, "12345678");
+    ownerToken = await fixtures.login(owner.login, "Password123!");
     if (!ownerToken) throw new Error("Failed to login owner!");
 
     const otherRole = await fixtures.createRole({
@@ -40,8 +40,8 @@ describe("POST /blocks/dry-run (e2e)", () => {
       permissions: [Permission.BLOCKS_EXECUTE],
       policies: { [Permission.BLOCKS_EXECUTE]: [Policy.OWN_ONLY] },
     });
-    const other = await fixtures.createUser({ login: "dry_other", password: "12345678", roleId: otherRole.id });
-    otherToken = await fixtures.login(other.login, "12345678");
+    const other = await fixtures.createUser({ login: "dry_other", password: "Password123!", roleId: otherRole.id });
+    otherToken = await fixtures.login(other.login, "Password123!");
 
     const course = await fixtures.createCourse({ title: "Dry Course", ownerId: owner.id });
     const lesson = await fixtures.createLesson({ title: "Dry Lesson", courseId: course.id });

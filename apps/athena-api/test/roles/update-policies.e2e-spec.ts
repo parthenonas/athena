@@ -35,7 +35,7 @@ describe("PATCH /roles/:id/policies (e2e)", () => {
     });
 
     const login = "noperms_user";
-    const password = "12345678";
+    const password = "Password123!";
 
     await fixtures.createUser({ login, password, roleId: role.id });
     const token = await fixtures.login(login, password);

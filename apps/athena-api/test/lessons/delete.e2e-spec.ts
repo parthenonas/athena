@@ -22,7 +22,7 @@ describe("DELETE /lessons/:id (e2e)", () => {
     fixtures = res.fixtures;
     await fixtures.resetDatabase();
 
-    const { adminToken: token } = await fixtures.seedAdmin({ password: "12345678" });
+    const { adminToken: token } = await fixtures.seedAdmin({ password: "Password123!" });
     adminToken = token;
 
     const ownerRole = await fixtures.createRole({
@@ -30,12 +30,12 @@ describe("DELETE /lessons/:id (e2e)", () => {
       permissions: [Permission.LESSONS_DELETE],
       policies: { [Permission.LESSONS_DELETE]: [Policy.OWN_ONLY] },
     });
-    const owner = await fixtures.createUser({ login: "l_deleter", password: "12345678", roleId: ownerRole.id });
+    const owner = await fixtures.createUser({ login: "l_deleter", password: "Password123!", roleId: ownerRole.id });
     ownerId = owner.id;
-    ownerToken = await fixtures.login(owner.login, "12345678");
+    ownerToken = await fixtures.login(owner.login, "Password123!");
 
-    const attacker = await fixtures.createUser({ login: "l_att_del", password: "12345678", roleId: ownerRole.id });
-    attackerToken = await fixtures.login(attacker.login, "12345678");
+    const attacker = await fixtures.createUser({ login: "l_att_del", password: "Password123!", roleId: ownerRole.id });
+    attackerToken = await fixtures.login(attacker.login, "Password123!");
 
     const c1 = await fixtures.createCourse({ title: "Del Course", ownerId: ownerId });
     const l1 = await fixtures.createLesson({ title: "To Delete", courseId: c1.id });

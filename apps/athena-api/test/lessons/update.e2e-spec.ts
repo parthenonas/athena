@@ -22,7 +22,7 @@ describe("PATCH /lessons/:id (e2e)", () => {
     fixtures = res.fixtures;
     await fixtures.resetDatabase();
 
-    const { adminToken: token } = await fixtures.seedAdmin({ password: "12345678" });
+    const { adminToken: token } = await fixtures.seedAdmin({ password: "Password123!" });
     adminToken = token;
 
     const ownerRole = await fixtures.createRole({
@@ -30,12 +30,12 @@ describe("PATCH /lessons/:id (e2e)", () => {
       permissions: [Permission.LESSONS_UPDATE],
       policies: { [Permission.LESSONS_UPDATE]: [Policy.OWN_ONLY] },
     });
-    const owner = await fixtures.createUser({ login: "l_updater", password: "12345678", roleId: ownerRole.id });
+    const owner = await fixtures.createUser({ login: "l_updater", password: "Password123!", roleId: ownerRole.id });
     ownerId = owner.id;
-    ownerToken = await fixtures.login(owner.login, "12345678");
+    ownerToken = await fixtures.login(owner.login, "Password123!");
 
-    const attacker = await fixtures.createUser({ login: "l_att_upd", password: "12345678", roleId: ownerRole.id });
-    attackerToken = await fixtures.login(attacker.login, "12345678");
+    const attacker = await fixtures.createUser({ login: "l_att_upd", password: "Password123!", roleId: ownerRole.id });
+    attackerToken = await fixtures.login(attacker.login, "Password123!");
 
     const c1 = await fixtures.createCourse({ title: "My Course", ownerId: ownerId });
     const l1 = await fixtures.createLesson({ title: "Old Title", courseId: c1.id });

@@ -24,25 +24,33 @@ describe("POST /blocks (e2e)", () => {
     fixtures = res.fixtures;
     await fixtures.resetDatabase();
 
-    const { adminToken: token } = await fixtures.seedAdmin({ password: "12345678" });
+    const { adminToken: token } = await fixtures.seedAdmin({ password: "Password123!" });
     adminToken = token;
 
     const creatorRole = await fixtures.createRole({
       name: "b_creator",
       permissions: [Permission.LESSONS_UPDATE, Permission.LESSONS_READ],
     });
-    const creator = await fixtures.createUser({ login: "b_creator", password: "12345678", roleId: creatorRole.id });
+    const creator = await fixtures.createUser({ login: "b_creator", password: "Password123!", roleId: creatorRole.id });
     creatorId = creator.id;
-    creatorToken = await fixtures.login(creator.login, "12345678");
+    creatorToken = await fixtures.login(creator.login, "Password123!");
 
-    const attacker = await fixtures.createUser({ login: "b_attacker", password: "12345678", roleId: creatorRole.id });
+    const attacker = await fixtures.createUser({
+      login: "b_attacker",
+      password: "Password123!",
+      roleId: creatorRole.id,
+    });
 
     const unauthorizedRole = await fixtures.createRole({
       name: "unauth_block",
       permissions: [Permission.LESSONS_READ],
     });
-    const unauth = await fixtures.createUser({ login: "b_unauth", password: "12345678", roleId: unauthorizedRole.id });
-    unauthorizedToken = await fixtures.login(unauth.login, "12345678");
+    const unauth = await fixtures.createUser({
+      login: "b_unauth",
+      password: "Password123!",
+      roleId: unauthorizedRole.id,
+    });
+    unauthorizedToken = await fixtures.login(unauth.login, "Password123!");
 
     const c1 = await fixtures.createCourse({ title: "Creator Course", ownerId: creatorId });
     const c2 = await fixtures.createCourse({ title: "Other Course", ownerId: attacker.id });

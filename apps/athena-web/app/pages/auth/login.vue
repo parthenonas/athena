@@ -24,7 +24,8 @@ const fields = computed<AuthFormField[]>(() => ([{
 
 const schema: z.ZodType<LoginRequest> = z.object({
   login: z.string(t('pages.auth.login.login-is-required')),
-  password: z.string(t('pages.auth.login.password-is-required')).min(4, t('pages.auth.login.password-length'))
+  password: z.string(t('pages.auth.login.password-is-required'))
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/, t('pages.auth.login.password-rule'))
 })
 
 type Schema = z.output<typeof schema>

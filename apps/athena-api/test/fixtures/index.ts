@@ -32,7 +32,7 @@ export class TestFixtures {
     }
   }
 
-  async seedAdmin({ login = "admin", password = "admin" } = {}) {
+  async seedAdmin({ login = "admin", password = "Password123!" } = {}) {
     let adminRole = await this.identityService.findRoleByName("admin").catch(() => null);
     if (!adminRole) {
       adminRole = await this.identityService.createRole({

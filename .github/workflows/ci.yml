@@ -75,7 +75,7 @@ jobs:
           DATABASE_PASSWORD: test
           DATABASE_NAME: athena_test
           INITIAL_ADMIN_USERNAME: admin
-          INITIAL_ADMIN_PASSWORD: admin
+          INITIAL_ADMIN_PASSWORD: Admin123!
           INITIAL_ADMIN_ROLE_NAME: admin
           JWT_ACCESS_SECRET: JWT_ACCESS_SECRET
           JWT_REFRESH_SECRET: JWT_REFRESH_SECRET

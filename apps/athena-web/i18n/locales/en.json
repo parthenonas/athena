@@ -25,7 +25,7 @@
         "role-label": "Role",
         "errors": {
           "login-min": "Login must be at least 3 characters",
-          "password-min": "Password must be at least 8 characters"
+          "password-rule": "Password must contain uppercase and lowercase letters, numbers, and special characters"
         }
       }
     }
@@ -66,7 +66,7 @@
         "password-placeholder": "Enter your password",
         "login-is-required": "Login is required",
         "password-is-required": "Password is required",
-        "password-length": "Must be at least 4 characters",
+        "password-rule": "Password must contain uppercase and lowercase letters, numbers, and special characters",
         "success-title": "Success",
         "success-msg": "Successfully logged in",
         "error-title": "Login Error",

@@ -23,7 +23,7 @@ describe("DELETE /blocks/:id (e2e)", () => {
     fixtures = res.fixtures;
     await fixtures.resetDatabase();
 
-    const { adminToken: token } = await fixtures.seedAdmin({ password: "12345678" });
+    const { adminToken: token } = await fixtures.seedAdmin({ password: "Password123!" });
     adminToken = token;
 
     const ownerRole = await fixtures.createRole({
@@ -33,10 +33,10 @@ describe("DELETE /blocks/:id (e2e)", () => {
     });
     const ownerUser = await fixtures.createUser({
       login: "b_remove_owner",
-      password: "12345678",
+      password: "Password123!",
       roleId: ownerRole.id,
     });
-    ownerToken = await fixtures.login(ownerUser.login, "12345678");
+    ownerToken = await fixtures.login(ownerUser.login, "Password123!");
 
     const restrictedRole = await fixtures.createRole({
       name: "b_remove_restricted",
@@ -45,14 +45,14 @@ describe("DELETE /blocks/:id (e2e)", () => {
     });
     const restrictedUser = await fixtures.createUser({
       login: "b_remove_restricted_guy",
-      password: "12345678",
+      password: "Password123!",
       roleId: restrictedRole.id,
     });
-    restrictedDeleteToken = await fixtures.login(restrictedUser.login, "12345678");
+    restrictedDeleteToken = await fixtures.login(restrictedUser.login, "Password123!");
 
     const attacker = await fixtures.createUser({
       login: "b_remove_attacker",
-      password: "12345678",
+      password: "Password123!",
       roleId: restrictedRole.id,
     });
 

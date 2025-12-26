@@ -17,7 +17,7 @@ export async function startTestPostgres() {
   process.env.TEST_E2E = "true";
 
   process.env.INITIAL_ADMIN_USERNAME = "admin";
-  process.env.INITIAL_ADMIN_PASSWORD = "admin";
+  process.env.INITIAL_ADMIN_PASSWORD = "Admin123!";
   process.env.INITIAL_ADMIN_ROLE_NAME = "admin";
 
   process.env.JWT_ACCESS_SECRET = "test-access";

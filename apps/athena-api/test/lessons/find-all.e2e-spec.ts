@@ -32,7 +32,11 @@ describe("GET /lessons (e2e)", () => {
       name: "creator_role",
       permissions: [Permission.LESSONS_READ, Permission.COURSES_READ],
     });
-    const creator = await fixtures.createUser({ login: "creator_l_all", password: "12345678", roleId: creatorRole.id });
+    const creator = await fixtures.createUser({
+      login: "creator_l_all",
+      password: "Password123!",
+      roleId: creatorRole.id,
+    });
     creatorId = creator.id;
 
     const ownerRole = await fixtures.createRole({
@@ -40,8 +44,12 @@ describe("GET /lessons (e2e)", () => {
       permissions: [Permission.LESSONS_READ],
       policies: { [Permission.LESSONS_READ]: [Policy.OWN_ONLY] },
     });
-    const ownerUser = await fixtures.createUser({ login: "owner_l_all", password: "12345678", roleId: ownerRole.id });
-    ownerOnlyToken = await fixtures.login(ownerUser.login, "12345678");
+    const ownerUser = await fixtures.createUser({
+      login: "owner_l_all",
+      password: "Password123!",
+      roleId: ownerRole.id,
+    });
+    ownerOnlyToken = await fixtures.login(ownerUser.login, "Password123!");
 
     const publicRole = await fixtures.createRole({
       name: "public_reader",
@@ -50,13 +58,17 @@ describe("GET /lessons (e2e)", () => {
     });
     const publicUser = await fixtures.createUser({
       login: "public_l_all",
-      password: "12345678",
+      password: "Password123!",
       roleId: publicRole.id,
     });
-    publicOnlyToken = await fixtures.login(publicUser.login, "12345678");
+    publicOnlyToken = await fixtures.login(publicUser.login, "Password123!");
 
     const otherRole = await fixtures.createRole({ name: "other_role", permissions: [] });
-    const otherUser = await fixtures.createUser({ login: "other_l_all", password: "12345678", roleId: otherRole.id });
+    const otherUser = await fixtures.createUser({
+      login: "other_l_all",
+      password: "Password123!",
+      roleId: otherRole.id,
+    });
     otherUserId = otherUser.id;
 
     const c1 = await fixtures.createCourse({ title: "C1 Pub", ownerId: creatorId, isPublished: true });

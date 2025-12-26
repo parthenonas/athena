@@ -29,7 +29,7 @@ export class AppService implements OnModuleInit {
     private readonly configService: ConfigService,
   ) {
     this.initialAdminUsername = this.configService.get<string>("INITIAL_ADMIN_USERNAME") || "admin";
-    this.initialAdminPassword = this.configService.get<string>("INITIAL_ADMIN_PASSWORD") || "admin";
+    this.initialAdminPassword = this.configService.get<string>("INITIAL_ADMIN_PASSWORD") || "Admin123!";
     this.initialAdminRoleName = this.configService.get<string>("INITIAL_ADMIN_ROLE_NAME") || "admin";
   }
 
