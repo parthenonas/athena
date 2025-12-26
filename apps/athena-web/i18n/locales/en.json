@@ -1,6 +1,44 @@
 {
-  
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "success": "Success",
+    "error": "Error",
+    "deleted": "Deleted successfully",
+    "confirm": "Confirm",
+    "delete": "Delete"
+  },
+  "components": {
+    "admin": {
+      "roles-slideover": {
+        "name-label": "Role Name",
+        "permissions-title": "Permissions",
+        "errors": {
+          "name-min": "Role name must be at least 3 characters long",
+          "name-required": "Role name is required"
+        }
+      },
+      "accounts-slideover": {
+        "login-label": "Login",
+        "password-label": "Password",
+        "password-help": "Leave empty to keep current password",
+        "role-label": "Role",
+        "errors": {
+          "login-min": "Login must be at least 3 characters",
+          "password-rule": "Password must contain uppercase and lowercase letters, numbers, and special characters"
+        }
+      }
+    }
+  },
   "layouts": {
+    "shared": {
+      "log-in": "Log in",
+      "menu": {
+        "signed-in-as": "Вы вошли как",
+        "settings": "Настройки",
+        "logout": "Выйти"
+      }
+    },
     "default": {
       "menu": {
         "signed-in-as": "Signed in as",
@@ -14,8 +52,8 @@
       "hero": {
         "title": "NEXT GENERATION LEARNING MANAGEMENT SYSTEM",
         "subtitle": "Focused learning. Practical application. Built for engineering excellence. A platform designed for those who build, not just observe.",
-        "start_btn": "START LEARNING",
-        "docs_btn": "DOCUMENTATION"
+        "start-btn": "START LEARNING",
+        "docs-btn": "DOCUMENTATION"
       }
     },
     "auth": {
@@ -28,7 +66,7 @@
         "password-placeholder": "Enter your password",
         "login-is-required": "Login is required",
         "password-is-required": "Password is required",
-        "password-length": "Must be at least 4 characters",
+        "password-rule": "Password must contain uppercase and lowercase letters, numbers, and special characters",
         "success-title": "Success",
         "success-msg": "Successfully logged in",
         "error-title": "Login Error",
@@ -100,13 +138,103 @@
         "title": "Role & Permissions",
         "desc": "Configure Access Control Lists (ACL) and define what users can do."
       },
-      "admin_settings": {
+      "admin-settings": {
         "title": "System Configuration",
         "desc": "Global settings for the LMS platform, integrations, and branding."
       },
       "settings": {
         "title": "Account Settings",
         "desc": "Manage your profile, security preferences, and notifications."
+      }
+    },
+    "roles": {
+      "title": "Roles & Permissions",
+      "description": "Manage access control lists and system roles.",
+      "create": "Create Role",
+      "edit": "Edit Role",
+      "name": "Role Name",
+      "permissions-title": "Permissions",
+      "search-placeholder": "Search roles...",
+      "delete-confirm": "Are you sure you want to delete this role?",
+      "super-admin": "Super Admin",
+      "permissions-count": "{count} permissions",
+      "columns": {
+        "id": "ID",
+        "name": "Role Name",
+        "access-level": "Access Level",
+        "created-at": "Created",
+        "updated-at": "Updated"
+      },
+      "delete-modal": {
+        "title": "Delete Role?",
+        "description": "This action cannot be undone. Are you sure you want to delete this role?"
+      }
+    },
+    "accounts": {
+      "title": "Accounts",
+      "description": "Manage accounts.",
+      "create": "Create Account",
+      "edit": "Edit Account",
+      "login": "Account Login",
+      "status": "Status",
+      "role": "Role",
+      "search-placeholder": "Search accounts...",
+      "delete-confirm": "Are you sure you want to delete this account?",
+      "columns": {
+        "id": "ID",
+        "login": "Login",
+        "status": "Status",
+        "role-id": "Role",
+        "created-at": "Created",
+        "updated-at": "Updated"
+      },
+      "delete-modal": {
+        "title": "Delete Account?",
+        "description": "This action cannot be undone. Are you sure you want to delete this account?"
+      }
+    }
+  },
+  "permissions": {
+    "groups": {
+      "accounts": "Accounts",
+      "profiles": "Profiles",
+      "courses": "Courses",
+      "lessons": "Lessons",
+      "blocks": "Code Runner",
+      "progress": "Progress",
+      "enrollments": "Enrollments",
+      "schedule": "Schedule",
+      "system": "System"
+    },
+    "actions": {
+      "create": "Create",
+      "read": "Read / View",
+      "update": "Update / Edit",
+      "delete": "Delete",
+      "publish": "Publish",
+      "execute": "Execute Code",
+      "admin": "Super Admin Access"
+    }
+  },
+  "statuses": {
+    "active": "Active",
+    "blocked": "Blocked",
+    "temporary-blocked": "Temporary Blocked",
+    "unknown": "Unknown"
+  },
+  "toasts": {
+    "roles": {
+      "created": {
+        "title": "Role created",
+        "description": "New role has been successfully added to the system."
+      },
+      "updated": {
+        "title": "Role updated",
+        "description": "Changes have been successfully saved."
+      },
+      "deleted": {
+        "title": "Role deleted",
+        "description": "The role has been permanently removed."
       }
     }
   }

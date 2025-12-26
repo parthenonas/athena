@@ -1,3 +1,4 @@
+import { FilterRoleRequest } from "@athena/types";
 import { Type } from "class-transformer";
 import { IsIn, IsInt, IsOptional, IsString, Max, Min } from "class-validator";
 
@@ -11,7 +12,7 @@ import { IsIn, IsInt, IsOptional, IsString, Max, Min } from "class-validator";
  * - Pagination (page, limit)
  * - Sorting: name, createdAt, updatedAt
  */
-export class FilterRoleDto {
+export class FilterRoleDto implements FilterRoleRequest {
   /** Full-text search by role name (ILIKE %search%). */
   @IsOptional()
   @IsString()

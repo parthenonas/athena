@@ -35,7 +35,7 @@ describe("POST /accounts (e2e)", () => {
 
     const res = await http.post("/accounts").set("Authorization", `Bearer ${adminToken}`).send({
       login: "newuser",
-      password: "12345678",
+      password: "Password123!",
       roleId: userRoleId,
     });
 
@@ -43,7 +43,7 @@ describe("POST /accounts (e2e)", () => {
     expect(res.body).toHaveProperty("id");
     expect(res.body).toHaveProperty("login", "newuser");
 
-    const token = await fixtures.login("newuser", "12345678");
+    const token = await fixtures.login("newuser", "Password123!");
     expect(typeof token).toBe("string");
   });
 
@@ -51,7 +51,7 @@ describe("POST /accounts (e2e)", () => {
     const http = request(app.getHttpServer());
     const res = await http.post("/accounts").send({
       login: "someone",
-      password: "12345678",
+      password: "Password123!",
       roleId: userRoleId,
     });
 
@@ -65,7 +65,7 @@ describe("POST /accounts (e2e)", () => {
     });
 
     const login = "user_without_permissions";
-    const password = "12345678";
+    const password = "Password123!";
 
     await fixtures.createUser({
       login,
@@ -78,7 +78,7 @@ describe("POST /accounts (e2e)", () => {
     const http = request(app.getHttpServer());
     const res = await http.post("/accounts").set("Authorization", `Bearer ${token}`).send({
       login: "hehehe",
-      password: "12345678",
+      password: "Password123!",
       roleId: userRoleId,
     });
 
@@ -92,7 +92,7 @@ describe("POST /accounts (e2e)", () => {
     });
 
     const login = "user_with_permissions";
-    const password = "12345678";
+    const password = "Password123!";
 
     await fixtures.createUser({
       login,
@@ -105,7 +105,7 @@ describe("POST /accounts (e2e)", () => {
     const http = request(app.getHttpServer());
     const res = await http.post("/accounts").set("Authorization", `Bearer ${token}`).send({
       login: "hehehe",
-      password: "12345678",
+      password: "Password123!",
       roleId: userRoleId,
     });
 
@@ -129,7 +129,7 @@ describe("POST /accounts (e2e)", () => {
     const http = request(app.getHttpServer());
 
     const res = await http.post("/accounts").set("Authorization", `Bearer ${adminToken}`).send({
-      password: "12345678",
+      password: "Password123!",
       roleId: userRoleId,
     });
 
@@ -141,7 +141,7 @@ describe("POST /accounts (e2e)", () => {
 
     const res = await http.post("/accounts").set("Authorization", `Bearer ${adminToken}`).send({
       login: "wrongrole",
-      password: "12345678",
+      password: "Password123!",
       roleId: "not-uuid",
     });
 
@@ -153,7 +153,7 @@ describe("POST /accounts (e2e)", () => {
 
     const res = await http.post("/accounts").set("Authorization", `Bearer ${adminToken}`).send({
       login: "ghostrole",
-      password: "12345678",
+      password: "Password123!",
       roleId: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
     });
 
@@ -165,13 +165,13 @@ describe("POST /accounts (e2e)", () => {
 
     await fixtures.createUser({
       login: "dupe",
-      password: "12345678",
+      password: "Password123!",
       roleId: userRoleId,
     });
 
     const res = await http.post("/accounts").set("Authorization", `Bearer ${adminToken}`).send({
       login: "dupe",
-      password: "12345678",
+      password: "Password123!",
       roleId: userRoleId,
     });
 

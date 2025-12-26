@@ -14,6 +14,6 @@ export default defineNuxtRouteMiddleware((to) => {
   const isProtectedRoute = protectedPrefixes.some(prefix => to.path.startsWith(prefix))
 
   if (!authStore.isLogged && isProtectedRoute) {
-    return navigateTo('/auth/login')
+    return authStore.logout()
   }
 })

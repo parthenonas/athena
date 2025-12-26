@@ -29,7 +29,7 @@ describe("PATCH /blocks/:id/reorder (e2e)", () => {
     fixtures = res.fixtures;
     await fixtures.resetDatabase();
 
-    const { adminToken: token } = await fixtures.seedAdmin({ password: "12345678" });
+    const { adminToken: token } = await fixtures.seedAdmin({ password: "Password123!" });
     adminToken = token;
 
     const ownerRole = await fixtures.createRole({
@@ -39,11 +39,11 @@ describe("PATCH /blocks/:id/reorder (e2e)", () => {
     });
     const ownerUser = await fixtures.createUser({
       login: "b_reorder_owner",
-      password: "12345678",
+      password: "Password123!",
       roleId: ownerRole.id,
     });
     creatorId = ownerUser.id;
-    ownerToken = await fixtures.login(ownerUser.login, "12345678");
+    ownerToken = await fixtures.login(ownerUser.login, "Password123!");
 
     const restrictedUpdateRole = await fixtures.createRole({
       name: "b_reorder_restricted",
@@ -52,14 +52,14 @@ describe("PATCH /blocks/:id/reorder (e2e)", () => {
     });
     const restrictedUser = await fixtures.createUser({
       login: "b_reorder_restricted_guy",
-      password: "12345678",
+      password: "Password123!",
       roleId: restrictedUpdateRole.id,
     });
-    restrictedUpdateToken = await fixtures.login(restrictedUser.login, "12345678");
+    restrictedUpdateToken = await fixtures.login(restrictedUser.login, "Password123!");
 
     const otherUser = await fixtures.createUser({
       login: "b_reorder_other",
-      password: "12345678",
+      password: "Password123!",
       roleId: ownerRole.id,
     });
 

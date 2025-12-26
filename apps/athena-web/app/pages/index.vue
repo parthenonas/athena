@@ -3,16 +3,16 @@ const { t } = useI18n()
 
 const heroLinks = computed(() => [
   {
-    label: t('pages.index.hero.start_btn'),
+    label: t('pages.index.hero.start-btn'),
     trailingIcon: 'i-lucide-power',
     to: '/auth/login',
     color: 'primary' as const,
     variant: 'solid' as const
   },
   {
-    label: t('pages.index.hero.docs_btn'),
+    label: t('pages.index.hero.docs-btn'),
     trailingIcon: 'i-lucide-book-open',
-    to: '#',
+    to: '/docs',
     color: 'neutral' as const,
     variant: 'outline' as const
   }

@@ -1,5 +1,5 @@
 import { Permission, Policy } from "./acl";
-import { SortOrder } from "./shared";
+import { SortOrder } from "./common";
 
 export enum Status {
   Active = "active",

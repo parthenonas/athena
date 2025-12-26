@@ -1,3 +1,5 @@
+import { SortOrder } from "./common";
+
 export enum Permission {
   ACCOUNTS_CREATE = "accounts.create",
   ACCOUNTS_READ = "accounts.read",
@@ -45,4 +47,41 @@ export enum Policy {
   NOT_PUBLISHED = "not_published",
   ONLY_PUBLISHED = "only_published",
   PUBLISHED_OR_OWNER = "published_or_owner",
+}
+
+export interface CreateRoleRequest {
+  name: string;
+  permissions?: Permission[];
+  policies: Partial<Record<Permission, Policy[]>>;
+}
+
+export interface FilterRoleRequest {
+  search?: string;
+  page: number;
+  limit: number;
+  sortBy: "name" | "createdAt" | "updatedAt";
+  sortOrder: SortOrder;
+}
+
+export interface RoleResponse {
+  id: string;
+  name: string;
+  permissions: Permission[];
+  policies: Record<string, string[]>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface UpdateRolePermissionsRequest {
+  permissions: Permission[];
+}
+
+export interface UpdateRolePoliciesRequest {
+  policies: Partial<Record<Permission, Policy[]>>;
+}
+
+export interface UpdateRoleRequest {
+  name?: string;
+  permissions: Permission[];
+  policies: Partial<Record<Permission, Policy[]>>;
 }

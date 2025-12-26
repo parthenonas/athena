@@ -35,26 +35,26 @@ describe("GET /courses/:id (e2e)", () => {
       name: "creator",
       permissions: [Permission.COURSES_READ, Permission.COURSES_CREATE],
     });
-    const creator = await fixtures.createUser({ login: "creator", password: "12345678", roleId: creatorRole.id });
+    const creator = await fixtures.createUser({ login: "creator", password: "Password123!", roleId: creatorRole.id });
     creatorId = creator.id;
-    creatorToken = await fixtures.login(creator.login, "12345678");
+    creatorToken = await fixtures.login(creator.login, "Password123!");
 
     const publicRole = await fixtures.createRole({
       name: "public",
       permissions: [Permission.COURSES_READ],
       policies: { [Permission.COURSES_READ]: [Policy.ONLY_PUBLISHED] },
     });
-    const publicUser = await fixtures.createUser({ login: "public", password: "12345678", roleId: publicRole.id });
-    publicReaderToken = await fixtures.login(publicUser.login, "12345678");
+    const publicUser = await fixtures.createUser({ login: "public", password: "Password123!", roleId: publicRole.id });
+    publicReaderToken = await fixtures.login(publicUser.login, "Password123!");
 
     const hybridRole = await fixtures.createRole({
       name: "hybrid",
       permissions: [Permission.COURSES_READ, Permission.COURSES_CREATE],
       policies: { [Permission.COURSES_READ]: [Policy.PUBLISHED_OR_OWNER] },
     });
-    const hybridUser = await fixtures.createUser({ login: "hybrid", password: "12345678", roleId: hybridRole.id });
+    const hybridUser = await fixtures.createUser({ login: "hybrid", password: "Password123!", roleId: hybridRole.id });
     hybridReaderId = hybridUser.id;
-    hybridReaderToken = await fixtures.login(hybridUser.login, "12345678");
+    hybridReaderToken = await fixtures.login(hybridUser.login, "Password123!");
 
     const c1 = await fixtures.createCourse({
       title: "Public Course",
@@ -152,8 +152,8 @@ describe("GET /courses/:id (e2e)", () => {
 
   it("should return 403 without COURSES_READ permission", async () => {
     const noPermRole = await fixtures.createRole({ name: "no_perm", permissions: [] });
-    const user = await fixtures.createUser({ login: "noperm", password: "12345678", roleId: noPermRole.id });
-    const token = await fixtures.login(user.login, "12345678");
+    const user = await fixtures.createUser({ login: "noperm", password: "Password123!", roleId: noPermRole.id });
+    const token = await fixtures.login(user.login, "Password123!");
 
     const http = request(app.getHttpServer());
     const res = await http.get(`/courses/${courseCreatorPublished}`).set("Authorization", `Bearer ${token}`);

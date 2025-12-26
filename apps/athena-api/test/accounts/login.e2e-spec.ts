@@ -7,7 +7,7 @@ describe("POST /accounts/login (e2e)", () => {
   let app: INestApplication;
   let fixtures: any;
   const login: string = "admin";
-  const password: string = "admin";
+  const password: string = "Password123!";
 
   beforeAll(async () => {
     const res = await bootstrapE2E();
@@ -40,7 +40,7 @@ describe("POST /accounts/login (e2e)", () => {
 
     const res = await http.post("/accounts/login").send({
       login,
-      password: "wrong",
+      password: "Password123!wrong",
     });
 
     expect(res.status).toBe(404);
@@ -51,7 +51,7 @@ describe("POST /accounts/login (e2e)", () => {
 
     const res = await http.post("/accounts/login").send({
       login: "wrong",
-      password: "wrong",
+      password: "Password123!wrong",
     });
 
     expect(res.status).toBe(404);

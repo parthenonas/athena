@@ -1,4 +1,4 @@
-import { Permission, Policy } from "@athena/types";
+import { CreateRoleRequest, Permission, Policy } from "@athena/types";
 import { IsArray, IsEnum, IsObject, IsOptional, IsString, MinLength } from "class-validator";
 
 /**
@@ -15,7 +15,7 @@ import { IsArray, IsEnum, IsObject, IsOptional, IsString, MinLength } from "clas
  *
  * If a permission is not present in `policies`, it has no policy restrictions.
  */
-export class CreateRoleDto {
+export class CreateRoleDto implements CreateRoleRequest {
   /**
    * Human-readable role name.
    * Must be unique in the system.

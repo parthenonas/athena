@@ -44,7 +44,7 @@ const studentItems: NavigationMenuItem[] = [
 
 const studioItems: NavigationMenuItem[] = [
   {
-    label: 'Studio Overview',
+    label: t('pages.dashboard.studio-overview'),
     icon: 'i-lucide-presentation',
     to: '/studio'
   },
@@ -241,7 +241,7 @@ const footerMenuItems = computed(() => [
               color="neutral"
               size="sm"
               :icon="collapsed ? undefined : 'i-lucide-languages'"
-              :label="locale === 'ru' ? 'EN' : 'RU'"
+              :label="locale === 'ru' ? 'RU' : 'RN'"
               class="font-display font-bold"
               @click="toggleLang"
             />
@@ -251,6 +251,10 @@ const footerMenuItems = computed(() => [
       </template>
     </UDashboardSidebar>
 
-    <NuxtPage />
+    <div class="flex flex-col items-start flex-1 min-w-0 overflow-auto">
+      <div class="w-full max-w-4xl">
+        <NuxtPage />
+      </div>
+    </div>
   </UDashboardGroup>
 </template>
