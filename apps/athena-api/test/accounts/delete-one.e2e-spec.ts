@@ -34,7 +34,7 @@ describe("DELETE /accounts/:id (e2e)", () => {
 
     const user = await fixtures.createUser({
       login: "del_target",
-      password: "12345678",
+      password: "Password123!",
       roleId: role.id,
     });
 
@@ -44,7 +44,7 @@ describe("DELETE /accounts/:id (e2e)", () => {
 
     const failLogin = await http.post("/accounts/login").send({
       login: "del_target",
-      password: "12345678",
+      password: "Password123!",
     });
 
     expect(failLogin.status).toBe(404);
@@ -64,7 +64,7 @@ describe("DELETE /accounts/:id (e2e)", () => {
     });
 
     const login = "user_without_permissions";
-    const password = "12345678";
+    const password = "Password123!";
 
     const user = await fixtures.createUser({ login, password, roleId: role.id });
 
@@ -83,7 +83,7 @@ describe("DELETE /accounts/:id (e2e)", () => {
     });
 
     const login = "user_with_permissions";
-    const password = "12345678";
+    const password = "Password123!";
 
     const user = await fixtures.createUser({ login, password, roleId: role.id });
 
@@ -96,7 +96,7 @@ describe("DELETE /accounts/:id (e2e)", () => {
 
     const failLogin = await http.post("/accounts/login").send({
       login: "del_target_2",
-      password: "12345678",
+      password: "Password123!",
     });
 
     expect(failLogin.status).toBe(404);

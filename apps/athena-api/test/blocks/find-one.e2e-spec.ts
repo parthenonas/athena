@@ -28,16 +28,20 @@ describe("GET /blocks/:id (e2e)", () => {
     fixtures = res.fixtures;
     await fixtures.resetDatabase();
 
-    const { adminToken: token } = await fixtures.seedAdmin({ password: "12345678" });
+    const { adminToken: token } = await fixtures.seedAdmin({ password: "Password123!" });
     adminToken = token;
 
     const ownerRole = await fixtures.createRole({
       name: "b_owner_reader",
       permissions: [Permission.LESSONS_READ, Permission.LESSONS_UPDATE],
     });
-    const ownerUser = await fixtures.createUser({ login: "b_one_owner", password: "12345678", roleId: ownerRole.id });
+    const ownerUser = await fixtures.createUser({
+      login: "b_one_owner",
+      password: "Password123!",
+      roleId: ownerRole.id,
+    });
     creatorId = ownerUser.id;
-    ownerToken = await fixtures.login(ownerUser.login, "12345678");
+    ownerToken = await fixtures.login(ownerUser.login, "Password123!");
 
     const publicRole = await fixtures.createRole({
       name: "b_one_public_reader",
@@ -46,10 +50,10 @@ describe("GET /blocks/:id (e2e)", () => {
     });
     const publicUser = await fixtures.createUser({
       login: "b_one_public",
-      password: "12345678",
+      password: "Password123!",
       roleId: publicRole.id,
     });
-    publicOnlyToken = await fixtures.login(publicUser.login, "12345678");
+    publicOnlyToken = await fixtures.login(publicUser.login, "Password123!");
 
     const restrictedRole = await fixtures.createRole({
       name: "b_one_restricted",
@@ -59,12 +63,16 @@ describe("GET /blocks/:id (e2e)", () => {
     restrictedRoleId = restrictedRole.id;
     const restrictedUser = await fixtures.createUser({
       login: "b_one_restricted",
-      password: "12345678",
+      password: "Password123!",
       roleId: restrictedRoleId,
     });
-    restrictedToken = await fixtures.login(restrictedUser.login, "12345678");
+    restrictedToken = await fixtures.login(restrictedUser.login, "Password123!");
 
-    const otherUser = await fixtures.createUser({ login: "b_one_other", password: "12345678", roleId: ownerRole.id });
+    const otherUser = await fixtures.createUser({
+      login: "b_one_other",
+      password: "Password123!",
+      roleId: ownerRole.id,
+    });
 
     const c1 = await fixtures.createCourse({ title: "C1 Pub", ownerId: creatorId, isPublished: true });
     const l1 = await fixtures.createLesson({ title: "L1 Pub", courseId: c1.id });

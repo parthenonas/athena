@@ -25,7 +25,7 @@ describe("DELETE /accounts/me (e2e)", () => {
     });
 
     const login = "delete_me_test";
-    const password = "12345678";
+    const password = "Password123!";
 
     await fixtures.createUser({
       login,
@@ -63,7 +63,7 @@ describe("DELETE /accounts/me (e2e)", () => {
     });
 
     const login = "user_without_permissions";
-    const password = "12345678";
+    const password = "Password123!";
 
     await fixtures.createUser({ login, password, roleId: role.id });
 
@@ -83,7 +83,7 @@ describe("DELETE /accounts/me (e2e)", () => {
     });
 
     const login = "user_with_permissions";
-    const password = "12345678";
+    const password = "Password123!";
 
     await fixtures.createUser({ login, password, roleId: role.id });
 

@@ -39,13 +39,13 @@ const schema = computed(() => {
   if (!props.accountId) {
     return baseSchema.extend({
       password: z.string()
-        .min(8, t('components.admin.accounts-slideover.errors.password-min'))
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/, t('components.admin.accounts-slideover.errors.password-rule'))
     })
   }
 
   return baseSchema.extend({
     password: z.string()
-      .min(8, t('components.admin.accounts-slideover.errors.password-min'))
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/, t('components.admin.accounts-slideover.errors.password-rule'))
       .or(z.literal(''))
       .optional()
   })

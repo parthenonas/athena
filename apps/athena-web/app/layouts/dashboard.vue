@@ -44,7 +44,7 @@ const studentItems: NavigationMenuItem[] = [
 
 const studioItems: NavigationMenuItem[] = [
   {
-    label: 'Studio Overview',
+    label: t('pages.dashboard.studio-overview'),
     icon: 'i-lucide-presentation',
     to: '/studio'
   },
@@ -241,7 +241,7 @@ const footerMenuItems = computed(() => [
               color="neutral"
               size="sm"
               :icon="collapsed ? undefined : 'i-lucide-languages'"
-              :label="locale === 'ru' ? 'EN' : 'RU'"
+              :label="locale === 'ru' ? 'RU' : 'RN'"
               class="font-display font-bold"
               @click="toggleLang"
             />

@@ -23,19 +23,23 @@ describe("POST /lessons (e2e)", () => {
     fixtures = res.fixtures;
     await fixtures.resetDatabase();
 
-    const { adminToken: token } = await fixtures.seedAdmin({ password: "12345678" });
+    const { adminToken: token } = await fixtures.seedAdmin({ password: "Password123!" });
     adminToken = token;
 
     const creatorRole = await fixtures.createRole({
       name: "l_creator",
       permissions: [Permission.LESSONS_CREATE, Permission.COURSES_READ],
     });
-    const creator = await fixtures.createUser({ login: "l_creator", password: "12345678", roleId: creatorRole.id });
+    const creator = await fixtures.createUser({ login: "l_creator", password: "Password123!", roleId: creatorRole.id });
     creatorId = creator.id;
-    creatorToken = await fixtures.login(creator.login, "12345678");
+    creatorToken = await fixtures.login(creator.login, "Password123!");
 
-    const attacker = await fixtures.createUser({ login: "l_attacker", password: "12345678", roleId: creatorRole.id });
-    attackerToken = await fixtures.login(attacker.login, "12345678");
+    const attacker = await fixtures.createUser({
+      login: "l_attacker",
+      password: "Password123!",
+      roleId: creatorRole.id,
+    });
+    attackerToken = await fixtures.login(attacker.login, "Password123!");
 
     const c1 = await fixtures.createCourse({ title: "Creator Course", ownerId: creatorId });
     courseId = c1.id;

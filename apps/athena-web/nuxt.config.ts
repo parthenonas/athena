@@ -10,7 +10,8 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     'pinia-plugin-persistedstate',
     '@nuxt/test-utils/module',
-    '@vueuse/nuxt'
+    '@vueuse/nuxt',
+    '@nuxt/content'
   ],
 
   ssr: false,
@@ -54,6 +55,6 @@ export default defineNuxtConfig({
       { code: 'en', file: 'en.json', name: 'English' }
     ],
     defaultLocale: 'en',
-    strategy: 'prefix_and_default'
+    strategy: 'no_prefix'
   }
 })

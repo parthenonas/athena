@@ -8,7 +8,7 @@ const { t } = useI18n()
 const authStore = useAuthStore()
 const toast = useToast()
 
-const fields: AuthFormField[] = [{
+const fields = computed<AuthFormField[]>(() => ([{
   name: 'login',
   type: 'text',
   label: t('pages.auth.login.login-label'),
@@ -20,11 +20,12 @@ const fields: AuthFormField[] = [{
   label: t('pages.auth.login.password-label'),
   placeholder: t('pages.auth.login.password-placeholder'),
   required: true
-}]
+}]))
 
 const schema: z.ZodType<LoginRequest> = z.object({
   login: z.string(t('pages.auth.login.login-is-required')),
-  password: z.string(t('pages.auth.login.password-is-required')).min(4, t('pages.auth.login.password-length'))
+  password: z.string(t('pages.auth.login.password-is-required'))
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/, t('pages.auth.login.password-rule'))
 })
 
 type Schema = z.output<typeof schema>

@@ -38,7 +38,7 @@ describe("PATCH /accounts/:id (e2e)", () => {
 
     const user = await fixtures.createUser({
       login: "updateme",
-      password: "12345678",
+      password: "Password123!",
       roleId: userRoleId,
     });
 
@@ -56,18 +56,18 @@ describe("PATCH /accounts/:id (e2e)", () => {
 
     const user = await fixtures.createUser({
       login: "userpass",
-      password: "12345678",
+      password: "Password123!",
       roleId: userRoleId,
     });
 
     const res = await http
       .patch(`/accounts/${user.id}`)
       .set("Authorization", `Bearer ${adminToken}`)
-      .send({ password: "87654321" });
+      .send({ password: "Newpassword123!" });
 
     expect(res.status).toBe(200);
 
-    const token = await fixtures.login("userpass", "87654321");
+    const token = await fixtures.login("userpass", "Newpassword123!");
     expect(typeof token).toBe("string");
   });
 
@@ -81,7 +81,7 @@ describe("PATCH /accounts/:id (e2e)", () => {
 
     const user = await fixtures.createUser({
       login: "changerole",
-      password: "12345678",
+      password: "Password123!",
       roleId: userRoleId,
     });
 
@@ -111,7 +111,7 @@ describe("PATCH /accounts/:id (e2e)", () => {
     });
 
     const login = "user_without_permissions";
-    const password = "12345678";
+    const password = "Password123!";
 
     await fixtures.createUser({
       login,
@@ -134,7 +134,7 @@ describe("PATCH /accounts/:id (e2e)", () => {
     });
 
     const login = "user_with_permissions";
-    const password = "12345678";
+    const password = "Password123!";
     const updatedLogin = "user_with_permissions_upd";
 
     await fixtures.createUser({
@@ -182,7 +182,7 @@ describe("PATCH /accounts/:id (e2e)", () => {
 
     const user = await fixtures.createUser({
       login: "aaa2",
-      password: "12345678",
+      password: "Password123!",
       roleId: userRoleId,
     });
 
@@ -199,7 +199,7 @@ describe("PATCH /accounts/:id (e2e)", () => {
 
     const user = await fixtures.createUser({
       login: "aaas3",
-      password: "12345678",
+      password: "Password123!",
       roleId: userRoleId,
     });
 
@@ -216,7 +216,7 @@ describe("PATCH /accounts/:id (e2e)", () => {
 
     const user = await fixtures.createUser({
       login: "nonexistrole",
-      password: "12345678",
+      password: "Password123!",
       roleId: userRoleId,
     });
 
@@ -232,13 +232,13 @@ describe("PATCH /accounts/:id (e2e)", () => {
 
     await fixtures.createUser({
       login: "duplicatelogin",
-      password: "12345678",
+      password: "Password123!",
       roleId: userRoleId,
     });
 
     const user = await fixtures.createUser({
       login: "changingit",
-      password: "12345678",
+      password: "Password123!",
       roleId: userRoleId,
     });
 

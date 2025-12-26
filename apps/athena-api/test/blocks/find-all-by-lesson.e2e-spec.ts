@@ -34,17 +34,21 @@ describe("GET /blocks/lesson/:lessonId (e2e)", () => {
       name: "b_owner_reader",
       permissions: [Permission.LESSONS_READ, Permission.LESSONS_UPDATE],
     });
-    const ownerUser = await fixtures.createUser({ login: "b_owner", password: "12345678", roleId: ownerRole.id });
+    const ownerUser = await fixtures.createUser({ login: "b_owner", password: "Password123!", roleId: ownerRole.id });
     creatorId = ownerUser.id;
-    ownerToken = await fixtures.login(ownerUser.login, "12345678");
+    ownerToken = await fixtures.login(ownerUser.login, "Password123!");
 
     const publicRole = await fixtures.createRole({
       name: "b_public_reader",
       permissions: [Permission.LESSONS_READ],
       policies: { [Permission.LESSONS_READ]: [Policy.ONLY_PUBLISHED] },
     });
-    const publicUser = await fixtures.createUser({ login: "b_public", password: "12345678", roleId: publicRole.id });
-    publicOnlyToken = await fixtures.login(publicUser.login, "12345678");
+    const publicUser = await fixtures.createUser({
+      login: "b_public",
+      password: "Password123!",
+      roleId: publicRole.id,
+    });
+    publicOnlyToken = await fixtures.login(publicUser.login, "Password123!");
 
     const restrictedRole = await fixtures.createRole({
       name: "b_restricted_read",
@@ -53,7 +57,7 @@ describe("GET /blocks/lesson/:lessonId (e2e)", () => {
     });
     restrictedRoleId = restrictedRole.id;
 
-    const otherUser = await fixtures.createUser({ login: "b_other", password: "12345678", roleId: ownerRole.id });
+    const otherUser = await fixtures.createUser({ login: "b_other", password: "Password123!", roleId: ownerRole.id });
     otherUserId = otherUser.id;
 
     const c1 = await fixtures.createCourse({ title: "C1 Pub", ownerId: creatorId, isPublished: true });
@@ -141,10 +145,10 @@ describe("GET /blocks/lesson/:lessonId (e2e)", () => {
 
     const restrictedUser = await fixtures.createUser({
       login: "restricted_reader",
-      password: "12345678",
+      password: "Password123!",
       roleId: restrictedRoleId,
     });
-    const restrictedToken = await fixtures.login(restrictedUser.login, "12345678");
+    const restrictedToken = await fixtures.login(restrictedUser.login, "Password123!");
 
     const res = await http.get(`/blocks/lesson/${lessonPubOtherId}`).set("Authorization", `Bearer ${restrictedToken}`);
 

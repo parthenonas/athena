@@ -37,11 +37,11 @@ describe("POST /courses (e2e)", () => {
 
     const teacher = await fixtures.createUser({
       login: "teacher_user",
-      password: "password123",
+      password: "Password123!",
       roleId: userRoleId,
     });
     teacherId = teacher.id;
-    teacherToken = await fixtures.login("teacher_user", "password123");
+    teacherToken = await fixtures.login("teacher_user", "Password123!");
   }, 30000);
 
   afterAll(async () => {
@@ -85,10 +85,10 @@ describe("POST /courses (e2e)", () => {
 
     await fixtures.createUser({
       login: "no_create_user",
-      password: "12345678",
+      password: "Password123!",
       roleId: noPermRole.id,
     });
-    const token = await fixtures.login("no_create_user", "12345678");
+    const token = await fixtures.login("no_create_user", "Password123!");
 
     const http = request(app.getHttpServer());
     const res = await http.post("/courses").set("Authorization", `Bearer ${token}`).send(mockCreateDto);

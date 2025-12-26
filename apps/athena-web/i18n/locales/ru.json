@@ -25,13 +25,14 @@
         "role-label": "Роль",
         "errors": {
           "login-min": "Логин должен быть не менее 3 символов",
-          "password-min": "Пароль должен быть не менее 8 символов"
+          "password-rule": "Пароль должен содержать заглавные и строчные буквы, цифры и спецсимволы"
         }
       }
     }
   },
   "layouts": {
-    "default": {
+    "shared": {
+      "log-in": "Вход",
       "menu": {
         "signed-in-as": "Вы вошли как",
         "settings": "Настройки",
@@ -58,7 +59,7 @@
         "password-placeholder": "Введите пароль",
         "login-is-required": "Требуется ввести логин",
         "password-is-required": "Требкется ввести пароль",
-        "password-length": "Минимум 4 символа",
+        "password-rule": "Пароль должен содержать заглавные и строчные буквы, цифры и спецсимволы.",
         "success-title": "Успех",
         "success-msg": "Вы успешно вошли", 
         "error-title": "Ошибка",
@@ -75,7 +76,7 @@
       "my-files": "Мои файлы",
       "my-files-desc": "Личное хранилище",
       "community": "Сообщество",
-      "studio-overview": "Обзор студии",
+      "studio-overview": "Обзор",
       "course-manager": "Управление курсами",
       "drafts": "Черновики",
       "published": "Опубликовано",

@@ -77,7 +77,7 @@ describe('Dashboard Layout', () => {
     })
 
     expect(allLabels).toContain('pages.dashboard.my-learning')
-    expect(allLabels).toContain('Studio Overview')
+    expect(allLabels).toContain('pages.dashboard.studio-overview')
     expect(allLabels).toContain('pages.dashboard.users')
   })
 

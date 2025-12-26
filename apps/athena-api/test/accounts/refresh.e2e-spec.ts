@@ -7,7 +7,7 @@ describe("POST /accounts/refresh (e2e)", () => {
   let app: INestApplication;
   let fixtures: any;
   const login: string = "admin";
-  const password: string = "admin";
+  const password: string = "Admin123!";
 
   beforeAll(async () => {
     const res = await bootstrapE2E();

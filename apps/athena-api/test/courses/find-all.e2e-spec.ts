@@ -34,9 +34,13 @@ describe("GET /courses (e2e)", () => {
       permissions: [Permission.COURSES_READ, Permission.COURSES_CREATE],
     });
 
-    const creator = await fixtures.createUser({ login: "creator_user", password: "12345678", roleId: creatorRole.id });
+    const creator = await fixtures.createUser({
+      login: "creator_user",
+      password: "Password123!",
+      roleId: creatorRole.id,
+    });
     creatorId = creator.id;
-    creatorToken = await fixtures.login(creator.login, "12345678");
+    creatorToken = await fixtures.login(creator.login, "Password123!");
 
     const ownerReaderRole = await fixtures.createRole({
       name: "owner_reader",
@@ -45,10 +49,10 @@ describe("GET /courses (e2e)", () => {
     });
     const ownerReader = await fixtures.createUser({
       login: "owner_reader",
-      password: "12345678",
+      password: "Password123!",
       roleId: ownerReaderRole.id,
     });
-    ownerReaderToken = await fixtures.login(ownerReader.login, "12345678");
+    ownerReaderToken = await fixtures.login(ownerReader.login, "Password123!");
 
     const publishedReaderRole = await fixtures.createRole({
       name: "published_reader",
@@ -57,10 +61,10 @@ describe("GET /courses (e2e)", () => {
     });
     const publishedReader = await fixtures.createUser({
       login: "published_reader",
-      password: "12345678",
+      password: "Password123!",
       roleId: publishedReaderRole.id,
     });
-    publishedReaderToken = await fixtures.login(publishedReader.login, "12345678");
+    publishedReaderToken = await fixtures.login(publishedReader.login, "Password123!");
 
     const publishedOwnerReaderRole = await fixtures.createRole({
       name: "published_owner_reader",
@@ -69,13 +73,17 @@ describe("GET /courses (e2e)", () => {
     });
     const publishedOwnerReader = await fixtures.createUser({
       login: "published_owner_reader",
-      password: "12345678",
+      password: "Password123!",
       roleId: publishedOwnerReaderRole.id,
     });
-    publishedOwnerReaderToken = await fixtures.login(publishedOwnerReader.login, "12345678");
+    publishedOwnerReaderToken = await fixtures.login(publishedOwnerReader.login, "Password123!");
 
     const otherRole = await fixtures.createRole({ name: "other_guy", permissions: [] });
-    const otherUser = await fixtures.createUser({ login: "other_user", password: "12345678", roleId: otherRole.id });
+    const otherUser = await fixtures.createUser({
+      login: "other_user",
+      password: "Password123!",
+      roleId: otherRole.id,
+    });
     courseOtherUserId = otherUser.id;
 
     const course1 = await fixtures.createCourse({
