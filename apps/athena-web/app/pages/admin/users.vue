@@ -26,6 +26,8 @@ const columns = computed<TableColumn<AccountResponse>[]>(() => [
   { id: 'actions', header: '' }
 ])
 
+const search = ref('')
+
 const filters = reactive({
   page: 1,
   limit: 10,
@@ -35,6 +37,10 @@ const filters = reactive({
 })
 
 const { data, status, refresh } = await fetchAccounts(filters)
+
+watchDebounced(search, (val) => {
+  filters.search = val
+}, { debounce: 500, maxWait: 1000 })
 
 const accounts = computed(() => data.value?.data || [])
 const total = computed(() => data.value?.meta?.total || 0)
@@ -91,7 +97,7 @@ const onConfirmDelete = async () => {
 
     <div class="flex gap-4">
       <UInput
-        v-model="filters.search"
+        v-model="search"
         icon="i-lucide-search"
         :placeholder="$t('pages.accounts.search-placeholder')"
         class="w-full max-w-sm"

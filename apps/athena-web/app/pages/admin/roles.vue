@@ -25,6 +25,8 @@ const columns = computed<TableColumn<RoleResponse>[]>(() => [
   { id: 'actions', header: '' }
 ])
 
+const search = ref('')
+
 const filters = reactive({
   page: 1,
   limit: 10,
@@ -32,6 +34,10 @@ const filters = reactive({
   sortBy: 'createdAt' as const,
   sortOrder: 'DESC' as const
 })
+
+watchDebounced(search, (val) => {
+  filters.search = val
+}, { debounce: 500, maxWait: 1000 })
 
 const { data, status, refresh } = await fetchRoles(filters)
 const route = useRoute()
@@ -113,7 +119,7 @@ const onConfirmDelete = async () => {
 
     <div class="flex gap-4">
       <UInput
-        v-model="filters.search"
+        v-model="search"
         icon="i-lucide-search"
         :placeholder="$t('pages.roles.search-placeholder')"
         class="w-full max-w-sm"
