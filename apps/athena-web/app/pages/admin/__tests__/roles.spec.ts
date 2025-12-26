@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import RolesPage from '../roles.vue'
 import { nextTick } from 'vue'
@@ -27,6 +27,12 @@ vi.mock('vue-i18n', () => ({
     t: (key: string) => key
   })
 }))
+
+const UInputStub = {
+  name: 'UInput',
+  props: ['modelValue'],
+  template: `<input :value="modelValue" @input="$emit('update:modelValue', $event.target.value)" />`
+}
 
 const UTableStub = {
   name: 'UTable',
@@ -83,7 +89,7 @@ describe('Roles Page', () => {
         AdminRolesSlideover: AdminRolesSlideoverStub,
         ConfirmModal: ConfirmModalStub,
         UButton: UButtonStub,
-        UInput: { template: '<input />' },
+        UInput: UInputStub,
         UBadge: { template: '<span>badge</span>' },
         UPagination: true
       }
@@ -92,12 +98,17 @@ describe('Roles Page', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.useFakeTimers()
 
     fetchRolesMock.mockResolvedValue({
       data: { value: { data: mockRoles, meta: { total: 2 } } },
       status: { value: 'success' },
       refresh: refreshMock
     })
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('should render and load data', async () => {
@@ -157,11 +168,25 @@ describe('Roles Page', () => {
     modal.vm.$emit('confirm')
 
     await nextTick()
-    await new Promise(resolve => setTimeout(resolve, 0))
+    await vi.advanceTimersByTimeAsync(1)
 
     expect(deleteRoleMock).toHaveBeenCalledWith('1')
     expect(refreshMock).toHaveBeenCalled()
 
     expect(modal.props('open')).toBe(false)
+  })
+
+  it('should update filters with debounce when searching', async () => {
+    const wrapper = await mountSuspended(RolesPage, defaultMocks)
+    const input = wrapper.findComponent(UInputStub)
+    await input.find('input').setValue('moderator')
+
+    expect((wrapper.vm as any).search).toBe('moderator')
+
+    expect((wrapper.vm as any).filters.search).toBe('')
+
+    vi.advanceTimersByTime(500)
+
+    expect((wrapper.vm as any).filters.search).toBe('moderator')
   })
 })
