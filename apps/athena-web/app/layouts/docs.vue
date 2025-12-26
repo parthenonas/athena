@@ -16,14 +16,14 @@ const userItems = computed(() => [
   ],
   [
     {
-      label: t('layouts.default.menu.settings'),
+      label: t('layouts.shared.menu.settings'),
       icon: 'i-lucide-settings',
       to: '#'
     }
   ],
   [
     {
-      label: t('layouts.default.menu.logout'),
+      label: t('layouts.shared.menu.logout'),
       icon: 'i-lucide-log-out',
       onSelect: () => authStore.logout()
     }
@@ -62,7 +62,7 @@ const userItems = computed(() => [
           color="neutral"
           size="sm"
           icon="i-lucide-languages"
-          :label="locale === 'ru' ? 'EN' : 'RU'"
+          :label="locale === 'ru' ? 'RU' : 'EN'"
           class="font-display font-bold"
           @click="toggleLang"
         />
@@ -85,7 +85,7 @@ const userItems = computed(() => [
           <template #account="{ item }">
             <div class="text-left">
               <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                {{ $t("layouts.default.menu.signed-in-as") }}
+                {{ $t("layouts.shared.menu.signed-in-as") }}
               </p>
               <p class="truncate font-display font-bold text-gray-900 dark:text-white">
                 {{ item.label }}
@@ -97,7 +97,7 @@ const userItems = computed(() => [
         <UButton
           v-else
           to="/auth/login"
-          label="Log in"
+          :label="$t('layouts.shared.log-in')"
           icon="i-lucide-log-in"
           color="primary"
           variant="ghost"

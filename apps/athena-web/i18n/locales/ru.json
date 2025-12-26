@@ -31,7 +31,8 @@
     }
   },
   "layouts": {
-    "default": {
+    "shared": {
+      "log-in": "Вход",
       "menu": {
         "signed-in-as": "Вы вошли как",
         "settings": "Настройки",
@@ -75,7 +76,7 @@
       "my-files": "Мои файлы",
       "my-files-desc": "Личное хранилище",
       "community": "Сообщество",
-      "studio-overview": "Обзор студии",
+      "studio-overview": "Обзор",
       "course-manager": "Управление курсами",
       "drafts": "Черновики",
       "published": "Опубликовано",

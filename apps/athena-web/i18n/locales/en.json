@@ -31,6 +31,14 @@
     }
   },
   "layouts": {
+    "shared": {
+      "log-in": "Log in",
+      "menu": {
+        "signed-in-as": "Вы вошли как",
+        "settings": "Настройки",
+        "logout": "Выйти"
+      }
+    },
     "default": {
       "menu": {
         "signed-in-as": "Signed in as",
