@@ -3,6 +3,7 @@ import type { FormSubmitEvent } from '#ui/types'
 import { z } from 'zod'
 import type { CreateAccountRequest, UpdateAccountRequest, FilterRoleRequest, RoleResponse } from '@athena/types'
 import type { SelectMenuItem } from '@nuxt/ui'
+import { PASSWORD_REGEX } from '@athena/common'
 
 const props = defineProps<{
   modelValue: boolean
@@ -39,13 +40,13 @@ const schema = computed(() => {
   if (!props.accountId) {
     return baseSchema.extend({
       password: z.string()
-        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/, t('components.admin.accounts-slideover.errors.password-rule'))
+        .regex(PASSWORD_REGEX, t('components.admin.accounts-slideover.errors.password-rule'))
     })
   }
 
   return baseSchema.extend({
     password: z.string()
-      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/, t('components.admin.accounts-slideover.errors.password-rule'))
+      .regex(PASSWORD_REGEX, t('components.admin.accounts-slideover.errors.password-rule'))
       .or(z.literal(''))
       .optional()
   })

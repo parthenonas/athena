@@ -3,7 +3,8 @@ import type {
   AccountResponse,
   CreateAccountRequest,
   UpdateAccountRequest,
-  FilterAccountRequest
+  FilterAccountRequest,
+  ChangePasswordRequest
 } from '@athena/types'
 
 export const useAccounts = () => {
@@ -22,46 +23,99 @@ export const useAccounts = () => {
   }
 
   const createAccount = async (body: CreateAccountRequest) => {
-    const data = await $api<AccountResponse>('/accounts', {
-      method: 'POST',
-      body
-    })
+    try {
+      const data = await $api<AccountResponse>('/accounts', {
+        method: 'POST',
+        body
+      })
 
-    toast.add({
-      title: t('toasts.accounts.created.title'),
-      description: t('toasts.accounts.created.description'),
-      color: 'success',
-      icon: 'i-lucide-check-circle'
-    })
-    return data
+      toast.add({
+        title: t('toasts.accounts.created.title'),
+        description: t('toasts.accounts.created.description'),
+        color: 'success',
+        icon: 'i-lucide-check-circle'
+      })
+      return data
+    } catch (error: unknown) {
+      console.error(error)
+      toast.add({
+        title: t('common.error'),
+        description: t('toasts.accounts.created.error'),
+        color: 'error',
+        icon: 'i-lucide-alert-circle'
+      })
+    }
   }
 
   const updateAccount = async (id: string, body: UpdateAccountRequest) => {
-    const data = await $api<AccountResponse>(`/accounts/${id}`, {
-      method: 'PATCH',
-      body
-    })
+    try {
+      const data = await $api<AccountResponse>(`/accounts/${id}`, {
+        method: 'PATCH',
+        body
+      })
 
-    toast.add({
-      title: t('toasts.accounts.updated.title'),
-      description: t('toasts.accounts.updated.description'),
-      color: 'success',
-      icon: 'i-lucide-save'
-    })
-    return data
+      toast.add({
+        title: t('toasts.accounts.updated.title'),
+        description: t('toasts.accounts.updated.description'),
+        color: 'success',
+        icon: 'i-lucide-save'
+      })
+      return data
+    } catch (error: unknown) {
+      console.error(error)
+      toast.add({
+        title: t('common.error'),
+        description: t('toasts.accounts.updated.error'),
+        color: 'error',
+        icon: 'i-lucide-alert-circle'
+      })
+    }
   }
 
   const deleteAccount = async (id: string) => {
-    await $api(`/accounts/${id}`, {
-      method: 'DELETE'
-    })
+    try {
+      await $api(`/accounts/${id}`, {
+        method: 'DELETE'
+      })
 
-    toast.add({
-      title: t('toasts.accounts.deleted.title'),
-      description: t('toasts.accounts.deleted.description'),
-      color: 'success',
-      icon: 'i-lucide-trash-2'
-    })
+      toast.add({
+        title: t('toasts.accounts.deleted.title'),
+        description: t('toasts.accounts.deleted.description'),
+        color: 'success',
+        icon: 'i-lucide-trash-2'
+      })
+    } catch (error: unknown) {
+      console.error(error)
+      toast.add({
+        title: t('common.error'),
+        description: t('toasts.accounts.deleted.error'),
+        color: 'error',
+        icon: 'i-lucide-alert-circle'
+      })
+    }
+  }
+
+  const changePassword = async (payload: ChangePasswordRequest) => {
+    try {
+      await $api('/accounts/me/password', {
+        method: 'PATCH',
+        body: payload
+      })
+      toast.add({
+        title: t('common.success'),
+        description: t('pages.settings.password-changed'),
+        color: 'success',
+        icon: 'i-lucide-key'
+      })
+    } catch (error: unknown) {
+      console.error(error)
+      toast.add({
+        title: t('common.error'),
+        description: t('toasts.accounts.password-changed.error'),
+        color: 'error',
+        icon: 'i-lucide-alert-circle'
+      })
+    }
   }
 
   return {
@@ -69,6 +123,7 @@ export const useAccounts = () => {
     fetchAccount,
     createAccount,
     updateAccount,
-    deleteAccount
+    deleteAccount,
+    changePassword
   }
 }

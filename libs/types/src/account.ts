@@ -53,3 +53,8 @@ export interface TokenResponse {
 }
 
 export type UpdateAccountRequest = Partial<CreateAccountRequest>;
+
+export interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+}
