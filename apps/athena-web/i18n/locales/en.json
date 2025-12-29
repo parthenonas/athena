@@ -13,6 +13,8 @@
       "roles-slideover": {
         "name-label": "Role Name",
         "permissions-title": "Permissions",
+        "add-policy": "Constraints...",
+        "policies-selected": "policies",
         "errors": {
           "name-min": "Role name must be at least 3 characters long",
           "name-required": "Role name is required"
@@ -215,6 +217,12 @@
       "execute": "Execute Code",
       "admin": "Super Admin Access"
     }
+  },
+  "policies": {
+    "own_only": "Own Only",
+    "not_published": "Not Published",
+    "only_published": "Only Published",
+    "published_or_owner": "Published or Owner"
   },
   "statuses": {
     "active": "Active",

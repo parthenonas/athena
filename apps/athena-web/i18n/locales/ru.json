@@ -13,6 +13,8 @@
       "roles-slideover": {
         "name-label": "Название роли",
         "permissions-title": "Права доступа",
+        "add-policy": "Ограничения...",
+        "policies-selected": "полит.",
         "errors": {
           "name-min": "Название должно быть не короче 3 символов",
           "name-required": "Введите название роли"
@@ -208,6 +210,12 @@
       "execute": "Запуск кода",
       "admin": "Супер-Админ"
     }
+  },
+  "policies": {
+    "own_only": "Только свои",
+    "not_published": "Только черновики",
+    "only_published": "Только опубликованные",
+    "published_or_owner": "Опубликованные или свои"
   },
   "statuses": {
     "active": "Активный",
