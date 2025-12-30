@@ -1,3 +1,5 @@
+import { SortOrder } from "./common";
+
 export enum FileAccess {
   /**
    * File is accessible to everyone via direct link.
@@ -26,6 +28,9 @@ export interface FileResponse {
 export interface FilterFileRequest {
   search?: string;
   type?: string;
+  ownerId?: string;
   page?: number;
   limit?: number;
+  sortBy: "originalName" | "size" | "createdAt";
+  sortOrder: SortOrder;
 }

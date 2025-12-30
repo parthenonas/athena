@@ -12,19 +12,19 @@ export const useAccounts = () => {
   const { t } = useI18n()
 
   const fetchAccounts = (params: FilterAccountRequest) => {
-    return useApi<Pageable<AccountResponse>>('/accounts', {
+    return useApi<Pageable<AccountResponse>>('/api/accounts', {
       method: 'GET',
       params
     })
   }
 
   const fetchAccount = async (id: string) => {
-    return await $api<AccountResponse>(`/accounts/${id}`, { method: 'GET' })
+    return await $api<AccountResponse>(`/api/accounts/${id}`, { method: 'GET' })
   }
 
   const createAccount = async (body: CreateAccountRequest) => {
     try {
-      const data = await $api<AccountResponse>('/accounts', {
+      const data = await $api<AccountResponse>('/api/accounts', {
         method: 'POST',
         body
       })
@@ -49,7 +49,7 @@ export const useAccounts = () => {
 
   const updateAccount = async (id: string, body: UpdateAccountRequest) => {
     try {
-      const data = await $api<AccountResponse>(`/accounts/${id}`, {
+      const data = await $api<AccountResponse>(`/api/accounts/${id}`, {
         method: 'PATCH',
         body
       })
@@ -74,7 +74,7 @@ export const useAccounts = () => {
 
   const deleteAccount = async (id: string) => {
     try {
-      await $api(`/accounts/${id}`, {
+      await $api(`/api/accounts/${id}`, {
         method: 'DELETE'
       })
 
@@ -97,7 +97,7 @@ export const useAccounts = () => {
 
   const changePassword = async (payload: ChangePasswordRequest) => {
     try {
-      await $api('/accounts/me/password', {
+      await $api('/api/accounts/me/password', {
         method: 'PATCH',
         body: payload
       })

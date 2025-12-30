@@ -13,7 +13,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function login(credentials: LoginRequest) {
     try {
-      const { data, error } = await useApi<TokenResponse>('/accounts/login', {
+      const { data, error } = await useApi<TokenResponse>('/api/accounts/login', {
         method: 'POST',
         body: credentials
       })
@@ -38,7 +38,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function getMe() {
     try {
-      const { data, error } = await useApi<AccountResponse>('/accounts/me', {
+      const { data, error } = await useApi<AccountResponse>('/api/accounts/me', {
         method: 'GET'
       })
 
