@@ -9,7 +9,7 @@ jest.mock("argon2", () => ({
 
 import { PostgresErrorCode } from "@athena/common";
 import { Permission } from "@athena/types";
-import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
@@ -77,6 +77,7 @@ describe("AccountService", () => {
   let qbMock: ReturnType<typeof createQueryBuilderMock>;
 
   beforeEach(async () => {
+    jest.clearAllMocks();
     qbMock = createQueryBuilderMock();
 
     const module: TestingModule = await Test.createTestingModule({
@@ -467,40 +468,96 @@ describe("AccountService", () => {
     });
   });
 
-  it("should generate a new access token when refresh token is valid", async () => {
-    const mockPayload = { sub: "user-123" };
+  describe("refresh", () => {
+    it("should generate a new access token when refresh token is valid", async () => {
+      const mockPayload = { sub: "user-123" };
 
-    (service as any).jwt.verifyAsync.mockResolvedValue(mockPayload);
-    service.generateAccessToken = jest.fn().mockReturnValue("NEW_ACCESS_TOKEN");
-    repo.findOne.mockResolvedValue(mockAccount);
+      (service as any).jwt.verifyAsync.mockResolvedValue(mockPayload);
+      service.generateAccessToken = jest.fn().mockReturnValue("NEW_ACCESS_TOKEN");
+      repo.findOne.mockResolvedValue(mockAccount);
 
-    const result = await service.refresh("VALID_REFRESH_TOKEN");
+      const result = await service.refresh("VALID_REFRESH_TOKEN");
 
-    expect((service as any).jwt.verifyAsync).toHaveBeenCalledWith("VALID_REFRESH_TOKEN", {
-      secret: "REFRESH_SECRET",
+      expect((service as any).jwt.verifyAsync).toHaveBeenCalledWith("VALID_REFRESH_TOKEN", {
+        secret: "REFRESH_SECRET",
+      });
+
+      expect(repo.findOne).toHaveBeenCalledWith({
+        where: { id: "user-123" },
+        relations: ["role"],
+      });
+
+      expect(service.generateAccessToken).toHaveBeenCalledWith(mockAccount);
+      expect(result).toBe("NEW_ACCESS_TOKEN");
     });
 
-    expect(repo.findOne).toHaveBeenCalledWith({
-      where: { id: "user-123" },
-      relations: ["role"],
+    it("should throw BadRequestException when refresh token is invalid", async () => {
+      (service as any).jwt.verifyAsync.mockRejectedValue(new Error("invalid token"));
+
+      await expect(service.refresh("BAD_TOKEN")).rejects.toBeInstanceOf(BadRequestException);
     });
 
-    expect(service.generateAccessToken).toHaveBeenCalledWith(mockAccount);
-    expect(result).toBe("NEW_ACCESS_TOKEN");
+    it("should throw NotFoundException when account does not exist", async () => {
+      const mockPayload = { sub: "missing-id" };
+
+      (service as any).jwt.verifyAsync.mockResolvedValue(mockPayload);
+      repo.findOne.mockResolvedValue(null);
+
+      await expect(service.refresh("VALID_REFRESH_TOKEN")).rejects.toBeInstanceOf(NotFoundException);
+    });
   });
 
-  it("should throw BadRequestException when refresh token is invalid", async () => {
-    (service as any).jwt.verifyAsync.mockRejectedValue(new Error("invalid token"));
+  describe("changePassword", () => {
+    const verifySpy = argon2.verify as jest.Mock;
+    const hashSpy = argon2.hash as jest.Mock;
 
-    await expect(service.refresh("BAD_TOKEN")).rejects.toBeInstanceOf(BadRequestException);
-  });
+    it("should verify old password and update with new hash", async () => {
+      repo.findOne.mockResolvedValue({ ...mockAccount });
+      verifySpy.mockResolvedValue(true);
+      hashSpy.mockResolvedValue("new_hashed_password");
+      repo.save.mockResolvedValue({ ...mockAccount, passwordHash: "new_hashed_password" });
 
-  it("should throw NotFoundException when account does not exist", async () => {
-    const mockPayload = { sub: "missing-id" };
+      await service.changePassword("123", {
+        oldPassword: "Old_Valid_123!",
+        newPassword: "New_Valid_123!",
+      });
 
-    (service as any).jwt.verifyAsync.mockResolvedValue(mockPayload);
-    repo.findOne.mockResolvedValue(null);
+      expect(repo.findOne).toHaveBeenCalledWith({ where: { id: "123" } });
+      expect(verifySpy).toHaveBeenCalledWith(mockAccount.passwordHash, "Old_Valid_123!");
+      expect(hashSpy).toHaveBeenCalledWith("New_Valid_123!");
 
-    await expect(service.refresh("VALID_REFRESH_TOKEN")).rejects.toBeInstanceOf(NotFoundException);
+      expect(repo.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: "123",
+          passwordHash: "new_hashed_password",
+        }),
+      );
+    });
+
+    it("should throw NotFoundException if account not found", async () => {
+      repo.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.changePassword("999", {
+          oldPassword: "any",
+          newPassword: "any",
+        }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it("should throw ForbiddenException if old password is invalid", async () => {
+      repo.findOne.mockResolvedValue(mockAccount);
+
+      verifySpy.mockResolvedValue(false);
+
+      await expect(
+        service.changePassword("123", {
+          oldPassword: "wrong_old",
+          newPassword: "new",
+        }),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+
+      expect(repo.save).not.toHaveBeenCalled();
+    });
   });
 });

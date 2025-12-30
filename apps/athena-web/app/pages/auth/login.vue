@@ -2,6 +2,7 @@
 import * as z from 'zod'
 import type { FormSubmitEvent, AuthFormField } from '@nuxt/ui'
 import type { LoginRequest } from '@athena/types'
+import { PASSWORD_REGEX } from '@athena/common'
 
 const { t } = useI18n()
 
@@ -25,7 +26,7 @@ const fields = computed<AuthFormField[]>(() => ([{
 const schema: z.ZodType<LoginRequest> = z.object({
   login: z.string(t('pages.auth.login.login-is-required')),
   password: z.string(t('pages.auth.login.password-is-required'))
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/, t('pages.auth.login.password-rule'))
+    .regex(PASSWORD_REGEX, t('pages.auth.login.password-rule'))
 })
 
 type Schema = z.output<typeof schema>

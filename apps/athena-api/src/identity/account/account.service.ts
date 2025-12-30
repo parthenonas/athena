@@ -1,6 +1,13 @@
 import { PostgresErrorCode } from "@athena/common";
 import { Pageable, AccessTokenPayload, RefreshTokenPayload } from "@athena/types";
-import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -8,6 +15,7 @@ import * as argon2 from "argon2";
 import { Response } from "express";
 import { QueryFailedError, Repository } from "typeorm";
 
+import { ChangePasswordDto } from "./dto/change-password.dto";
 import { CreateAccountDto } from "./dto/create.dto";
 import { FilterAccountDto } from "./dto/filter.dto";
 import { ReadAccountDto } from "./dto/read.dto";
@@ -439,5 +447,33 @@ export class AccountService extends BaseService<Account> {
       this.logger.warn(`refresh() | Invalid refresh token`);
       throw new BadRequestException("Invalid or expired refresh token");
     }
+  }
+
+  /**
+   * Allows a user to change their own password.
+   * Requires the old password for verification.
+   *
+   * @param id - Account UUID
+   * @returns New access token string
+   *
+   * @throws ForbiddenException if old password is wrong
+   * @throws NotFoundException if account not found
+   */
+  async changePassword(id: string, dto: ChangePasswordDto): Promise<void> {
+    this.logger.log(`changePassword() | id=${id}`);
+
+    const account = await this.repo.findOne({ where: { id } });
+    if (!account) throw new NotFoundException("Account not found");
+
+    const isOldValid = await argon2.verify(account.passwordHash, dto.oldPassword);
+    if (!isOldValid) {
+      this.logger.warn(`changePassword() | Invalid old password | id=${id}`);
+      throw new ForbiddenException("Invalid old password");
+    }
+
+    account.passwordHash = await argon2.hash(dto.newPassword);
+
+    await this.repo.save(account);
+    this.logger.log(`changePassword() | Password changed successfully | id=${id}`);
   }
 }

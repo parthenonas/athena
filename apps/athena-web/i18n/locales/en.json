@@ -13,6 +13,8 @@
       "roles-slideover": {
         "name-label": "Role Name",
         "permissions-title": "Permissions",
+        "add-policy": "Constraints...",
+        "policies-selected": "policies",
         "errors": {
           "name-min": "Role name must be at least 3 characters long",
           "name-required": "Role name is required"
@@ -54,6 +56,21 @@
         "subtitle": "Focused learning. Practical application. Built for engineering excellence. A platform designed for those who build, not just observe.",
         "start-btn": "START LEARNING",
         "docs-btn": "DOCUMENTATION"
+      }
+    },
+    "settings": {
+      "title": "Account Settings",
+      "description": "Manage your profile and security preferences.",
+      "member-since": "Member since {date}",
+      "security-title": "Security",
+      "old-password": "Current Password",
+      "new-password": "New Password",
+      "confirm-password": "Confirm New Password",
+      "change-password-btn": "Update Password",
+      "password-changed": "Password changed successfully",
+      "errors": {
+        "old-password-required": "Please enter your current password",
+        "passwords-mismatch": "Passwords do not match"
       }
     },
     "auth": {
@@ -216,6 +233,12 @@
       "admin": "Super Admin Access"
     }
   },
+  "policies": {
+    "own_only": "Own Only",
+    "not_published": "Not Published",
+    "only_published": "Only Published",
+    "published_or_owner": "Published or Owner"
+  },
   "statuses": {
     "active": "Active",
     "blocked": "Blocked",
@@ -226,15 +249,38 @@
     "roles": {
       "created": {
         "title": "Role created",
-        "description": "New role has been successfully added to the system."
+        "description": "New role has been successfully added to the system.",
+        "error": "Failed to create role"
       },
       "updated": {
         "title": "Role updated",
-        "description": "Changes have been successfully saved."
+        "description": "Changes have been successfully saved.",
+        "error": "Failed to update role"
       },
       "deleted": {
         "title": "Role deleted",
-        "description": "The role has been permanently removed."
+        "description": "The role has been permanently removed.",
+        "error": "Failed to delete role"
+      }
+    },
+    "accounts": {
+      "created": {
+        "title": "Account created",
+        "description": "New account has been successfully created.",
+        "error": "Failed to create account"
+      },
+      "updated": {
+        "title": "Account updated",
+        "description": "Account details have been successfully updated.",
+        "error": "Failed to update account"
+      },
+      "deleted": {
+        "title": "Account deleted",
+        "description": "The account has been successfully deleted.",
+        "error": "Failed to delete account"
+      },
+      "password-changed": {
+        "error": "Failed to change password"
       }
     }
   }

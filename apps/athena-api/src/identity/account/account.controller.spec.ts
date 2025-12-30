@@ -6,6 +6,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { AccountController } from "./account.controller";
 import { AccountService } from "./account.service";
 import { AclGuard } from "../acl/acl.guard";
+import { ChangePasswordDto } from "./dto/change-password.dto";
 import { CreateAccountDto } from "./dto/create.dto";
 import { FilterAccountDto } from "./dto/filter.dto";
 import { LoginDto } from "./dto/login.dto";
@@ -63,6 +64,7 @@ describe("AccountController", () => {
             generateRefreshToken: jest.fn(),
             setRefreshCookie: jest.fn(),
             refresh: jest.fn(),
+            changePassword: jest.fn(),
           },
         },
         {
@@ -236,6 +238,19 @@ describe("AccountController", () => {
       };
 
       await expect(controller.refresh(req)).rejects.toThrow("Missing refresh token");
+    });
+  });
+
+  describe("changePassword", () => {
+    it("should call service.changePassword with current user id and dto", async () => {
+      const dto: ChangePasswordDto = {
+        oldPassword: "Old_Password_123!",
+        newPassword: "New_Password_123!",
+      };
+
+      await controller.changePassword("123", dto);
+
+      expect(service.changePassword).toHaveBeenCalledWith("123", dto);
     });
   });
 });
