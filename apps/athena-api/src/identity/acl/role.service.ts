@@ -1,6 +1,7 @@
 import { PostgresErrorCode } from "@athena/common";
 import { Pageable, Permission, Policy } from "@athena/types";
 import { Injectable, Logger, NotFoundException, BadRequestException, ConflictException } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { InjectRepository } from "@nestjs/typeorm";
 import { QueryFailedError, Repository } from "typeorm";
 
@@ -9,6 +10,7 @@ import { FilterRoleDto } from "./dto/filter.dto";
 import { ReadRoleDto } from "./dto/read.dto";
 import { Role } from "./entities/role.entity";
 import { BaseService } from "../../base/base.service";
+import { AthenaEvent, RoleDeletedEvent } from "../../shared/events/types";
 import { isPostgresQueryError } from "../../shared/helpers/errors";
 
 /**
@@ -34,6 +36,7 @@ export class RoleService extends BaseService<Role> {
   constructor(
     @InjectRepository(Role)
     private readonly repo: Repository<Role>,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     super();
   }
@@ -180,12 +183,17 @@ export class RoleService extends BaseService<Role> {
     this.logger.log(`delete() | id=${id}`);
 
     try {
-      const res = await this.repo.delete(id);
+      const role = await this.repo.findOne({ where: { id } });
 
-      if (!res.affected) {
+      if (!role) {
         this.logger.warn(`delete() | Role not found | id=${id}`);
         throw new NotFoundException("Role not found");
       }
+
+      await this.repo.remove(role);
+
+      const event: RoleDeletedEvent = { name: role.name };
+      this.eventEmitter.emit(AthenaEvent.ROLE_DELETED, event);
 
       this.logger.log(`delete() | Role deleted | id=${id}`);
     } catch (error: unknown) {

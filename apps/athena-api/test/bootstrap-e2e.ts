@@ -4,12 +4,13 @@ import cookieParser from "cookie-parser";
 import { DataSource } from "typeorm";
 
 import { TestFixtures } from "./fixtures";
+import { startTestMinio, stopTestMinio } from "./test-minio";
 import { startTestPostgres, stopTestPostgres } from "./test-postgres";
 import { AppModule } from "../src/app.module";
 import { IdentityService } from "../src/identity";
 
 export async function bootstrapE2E() {
-  await startTestPostgres();
+  await Promise.all([startTestPostgres(), startTestMinio()]);
 
   const moduleRef = await Test.createTestingModule({
     imports: [AppModule],
@@ -41,5 +42,5 @@ export async function bootstrapE2E() {
 
 export async function shutdownE2E(app: INestApplication) {
   await app.close();
-  await stopTestPostgres();
+  await Promise.all([stopTestPostgres(), stopTestMinio()]);
 }
