@@ -1,3 +1,4 @@
+import { PASSWORD_REGEX } from "@athena/common";
 import { CreateAccountRequest } from "@athena/types";
 import { IsString, IsUUID, Matches, MinLength } from "class-validator";
 
@@ -17,7 +18,7 @@ export class CreateAccountDto implements CreateAccountRequest {
 
   /** Plain-text password (hashed before saving). */
   @IsString()
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/)
+  @Matches(PASSWORD_REGEX)
   password!: string;
 
   /** UUID of the role to assign to this account. */

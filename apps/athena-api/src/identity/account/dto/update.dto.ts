@@ -1,3 +1,4 @@
+import { PASSWORD_REGEX } from "@athena/common";
 import { UpdateAccountRequest } from "@athena/types";
 import { IsOptional, IsString, IsUUID, Matches, MinLength } from "class-validator";
 
@@ -20,7 +21,7 @@ export class UpdateAccountDto implements UpdateAccountRequest {
   /** New plain password (optional). Gets re-hashed. */
   @IsOptional()
   @IsString()
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/)
+  @Matches(PASSWORD_REGEX)
   password?: string;
 
   /** New role to assign to the account. */

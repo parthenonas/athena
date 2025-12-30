@@ -1,3 +1,4 @@
+import { PASSWORD_REGEX } from "@athena/common";
 import { LoginRequest } from "@athena/types";
 import { IsString, Matches } from "class-validator";
 
@@ -12,6 +13,6 @@ export class LoginDto implements LoginRequest {
 
   /** Plain password. Must meet minimal complexity. */
   @IsString()
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/)
+  @Matches(PASSWORD_REGEX)
   password!: string;
 }

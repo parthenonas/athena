@@ -19,6 +19,7 @@ import type { Response, Request } from "express";
 
 import { AccountService } from "./account.service";
 import { AclGuard } from "../acl/acl.guard";
+import { ChangePasswordDto } from "./dto/change-password.dto";
 import { CreateAccountDto } from "./dto/create.dto";
 import { FilterAccountDto } from "./dto/filter.dto";
 import { LoginDto } from "./dto/login.dto";
@@ -207,5 +208,16 @@ export class AccountController {
     this.service.setRefreshCookie(res, refreshToken);
 
     return { accessToken };
+  }
+
+  /**
+   * PATCH /accounts/me/password
+   * Changes the authenticated user's password.
+   */
+  @Patch("me/password")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(JwtAuthGuard)
+  async changePassword(@CurrentUser("sub") userId: string, @Body() dto: ChangePasswordDto) {
+    await this.service.changePassword(userId, dto);
   }
 }
