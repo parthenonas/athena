@@ -11,7 +11,8 @@
     "search": "Search...",
     "copy-link": "Copy Link",
     "download": "Download",
-    "upload": "Upload"
+    "upload": "Upload",
+    "of": "of"
   },
   "components": {
     "common": {
@@ -249,15 +250,20 @@
     },
     "files": {
       "title": "My Files",
-      "description": "Storage for your homework and materials",
-      "upload": "Upload",
-      "delete-title": "Delete File?",
-      "delete-desc": "This action cannot be undone.",
+      "description": "Secure storage for your files.",
+      "upload": "Upload File",
+      "search": "Search files...",
+      "storage-usage": "Storage Usage",
       "columns": {
         "name": "Name",
+        "access": "Access",
         "type": "Type",
         "size": "Size",
         "created": "Date"
+      },
+      "delete-modal": {
+        "title": "Delete File?",
+        "description": "Are you sure? This action cannot be undone and will free up your storage space."
       }
     }
   },

@@ -158,7 +158,7 @@ const handleDownload = (file: FileResponse) => {
       </template>
 
       <template #size-cell="{ row }">
-        <span class="text-sm text-gray-500 font-mono">
+        <span class="text-sm text-gray-500 ">
           {{ formatBytes(row.original.size) }}
         </span>
       </template>

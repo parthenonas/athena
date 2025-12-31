@@ -1,4 +1,4 @@
-import type { Pageable, FileResponse, FilterFileRequest, FileAccess } from '@athena/types'
+import type { Pageable, FileResponse, FilterFileRequest, FileAccess, StorageUsageResponse } from '@athena/types'
 
 export const useMedia = () => {
   const toast = useToast()
@@ -11,11 +11,9 @@ export const useMedia = () => {
     })
   }
 
-  // Добавил access в аргументы
   const uploadFile = async (file: File, access: FileAccess) => {
     const formData = new FormData()
     formData.append('file', file)
-    // NestJS с FileInterceptor читает поля из body автоматически
     formData.append('access', access)
 
     try {
@@ -66,16 +64,12 @@ export const useMedia = () => {
     }
   }
 
-  // Эта функция нужна для скачивания приватных файлов
-  // (публичные можно открывать просто по ссылке, а приватные требуют токен)
   const downloadFile = async (file: FileResponse) => {
-    // Если паблик - открываем в новой вкладке
     if (file.access === 'public') {
       window.open(file.url, '_blank')
       return
     }
 
-    // Если приват - качаем через blob с токеном
     try {
       const blob = await $api<Blob>(file.url, {
         method: 'GET',
@@ -115,11 +109,18 @@ export const useMedia = () => {
     return `${parseFloat((value / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
   }
 
+  const fetchUsage = () => {
+    return useApi<StorageUsageResponse>('/api/media/usage', {
+      method: 'GET'
+    })
+  }
+
   return {
     fetchFiles,
     uploadFile,
     deleteFile,
     downloadFile,
-    formatBytes
+    formatBytes,
+    fetchUsage
   }
 }

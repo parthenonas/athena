@@ -34,3 +34,9 @@ export interface FilterFileRequest {
   sortBy: "originalName" | "size" | "createdAt";
   sortOrder: SortOrder;
 }
+
+export interface StorageUsageResponse {
+  usedBytes: number;
+  limitBytes: number;
+  percentage: number;
+}
