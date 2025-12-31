@@ -25,6 +25,7 @@ import { FilterFileDto } from "./dto/filter.dto";
 import { ReadFileDto } from "./dto/read.dto";
 import { SetQuotaDto } from "./dto/set-quota.dto";
 import { UploadFileDto } from "./dto/upload.dto";
+import { StorageUsageDto } from "./dto/usage.dto";
 import { MediaQuota } from "./entities/media-quota.entity";
 import { MediaService } from "./media.service";
 import { AclGuard } from "../identity/acl/acl.guard";
@@ -65,6 +66,17 @@ export class MediaController {
   ): Promise<Pageable<ReadFileDto>> {
     const appliedPolicies = req.appliedPolicies || [];
     return this.service.findAll(filters, userId, appliedPolicies);
+  }
+
+  /**
+   * GET /media/usage
+   * Returns storage usage stats for the current user.
+   * Useful for displaying progress bars in the UI.
+   */
+  @Get("usage")
+  @RequirePermission(Permission.FILES_READ)
+  async getMyUsage(@CurrentUser() user: AccessTokenPayload): Promise<StorageUsageDto> {
+    return this.service.getUsage(user.sub, user.role);
   }
 
   /**

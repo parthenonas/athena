@@ -29,6 +29,7 @@ import { v4 as uuid } from "uuid";
 import { IdentityService } from "../identity";
 import { FilterFileDto } from "./dto/filter.dto";
 import { ReadFileDto } from "./dto/read.dto";
+import { StorageUsageDto } from "./dto/usage.dto";
 import { StoredFile } from "./entities/stored-file.entity";
 import { BaseService } from "../base/base.service";
 import { MediaQuota } from "./entities/media-quota.entity";
@@ -287,22 +288,12 @@ export class MediaService extends BaseService<StoredFile> implements OnModuleIni
    * Verifies if the user has enough space left.
    */
   private async checkQuota(ownerId: string, roleName: string, newFileSize: number): Promise<void> {
-    const quotaSetting = await this.quotaRepo.findOne({ where: { roleName } });
-
-    const limitBytes = quotaSetting ? parseInt(quotaSetting.limitBytes, 10) : this.defaultQuota;
-
-    const result = await this.repo
-      .createQueryBuilder("f")
-      .select("SUM(f.size)", "total")
-      .where("f.owner_id = :ownerId", { ownerId })
-      .getRawOne();
-
-    const currentUsage = parseInt(result?.total || "0", 10);
-    const available = limitBytes - currentUsage;
+    const { usedBytes, limitBytes } = await this.getUsage(ownerId, roleName);
+    const available = limitBytes - usedBytes;
 
     if (newFileSize > available) {
       const limitMb = Math.round(limitBytes / 1024 / 1024);
-      const usedMb = Math.round(currentUsage / 1024 / 1024);
+      const usedMb = Math.round(usedBytes / 1024 / 1024);
       throw new PayloadTooLargeException(`Storage quota exceeded. Limit: ${limitMb}MB, Used: ${usedMb}MB`);
     }
   }
@@ -387,5 +378,29 @@ export class MediaService extends BaseService<StoredFile> implements OnModuleIni
     if (result.affected) {
       this.logger.log(`Quota for role="${payload.name}" deleted.`);
     }
+  }
+
+  /**
+   * Returns current storage usage and limit for a specific user.
+   */
+  async getUsage(ownerId: string, roleName: string): Promise<StorageUsageDto> {
+    const quotaSetting = await this.quotaRepo.findOne({ where: { roleName } });
+    const limitBytes = quotaSetting ? parseInt(quotaSetting.limitBytes, 10) : this.defaultQuota;
+
+    const result = await this.repo
+      .createQueryBuilder("f")
+      .select("SUM(f.size)", "total")
+      .where("f.owner_id = :ownerId", { ownerId })
+      .getRawOne();
+
+    const usedBytes = parseInt(result?.total || "0", 10);
+
+    const percentage = limitBytes > 0 ? Math.round((usedBytes / limitBytes) * 100) : 100;
+
+    return {
+      usedBytes,
+      limitBytes,
+      percentage: Math.min(percentage, 100),
+    };
   }
 }

@@ -55,6 +55,7 @@ describe("MediaController", () => {
             delete: jest.fn(),
             getQuotas: jest.fn(),
             setQuota: jest.fn(),
+            getUsage: jest.fn(),
           },
         },
         {
@@ -227,6 +228,19 @@ describe("MediaController", () => {
 
       expect(service.setQuota).toHaveBeenCalledWith("student", 500);
       expect(result).toEqual(expectedQuota);
+    });
+  });
+
+  describe("getMyUsage", () => {
+    it("should return storage usage for current user", async () => {
+      const mockUsage = { usedBytes: 500, limitBytes: 1000, percentage: 50 };
+
+      service.getUsage.mockResolvedValue(mockUsage);
+
+      const result = await controller.getMyUsage(mockUserPayload);
+
+      expect(service.getUsage).toHaveBeenCalledWith(mockUserPayload.sub, mockUserPayload.role);
+      expect(result).toEqual(mockUsage);
     });
   });
 });

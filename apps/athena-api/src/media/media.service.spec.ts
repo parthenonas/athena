@@ -319,4 +319,44 @@ describe("MediaService", () => {
       expect(quotaRepo.delete).toHaveBeenCalledWith({ roleName: "deleted_role" });
     });
   });
+
+  describe("getUsage", () => {
+    it("should calculate usage and percentage correctly", async () => {
+      quotaRepo.findOne.mockResolvedValue({ roleName: "student", limitBytes: "104857600" } as any);
+
+      qbMock.getRawOne.mockResolvedValue({ total: "52428800" });
+
+      const result = await service.getUsage("user-1", "student");
+
+      expect(quotaRepo.findOne).toHaveBeenCalledWith({ where: { roleName: "student" } });
+      expect(qbMock.select).toHaveBeenCalledWith("SUM(f.size)", "total");
+      expect(qbMock.where).toHaveBeenCalledWith("f.owner_id = :ownerId", { ownerId: "user-1" });
+
+      expect(result.usedBytes).toBe(52428800);
+      expect(result.limitBytes).toBe(104857600);
+      expect(result.percentage).toBe(50);
+    });
+
+    it("should use default quota if no rule found", async () => {
+      quotaRepo.findOne.mockResolvedValue(null);
+      qbMock.getRawOne.mockResolvedValue({ total: "0" });
+
+      const result = await service.getUsage("user-1", "unknown_role");
+
+      expect(result.limitBytes).toBe(104857600);
+      expect(result.usedBytes).toBe(0);
+      expect(result.percentage).toBe(0);
+    });
+
+    it("should cap percentage at 100%", async () => {
+      quotaRepo.findOne.mockResolvedValue({ roleName: "student", limitBytes: "100" } as any);
+      qbMock.getRawOne.mockResolvedValue({ total: "200" });
+
+      const result = await service.getUsage("user-1", "student");
+
+      expect(result.usedBytes).toBe(200);
+      expect(result.limitBytes).toBe(100);
+      expect(result.percentage).toBe(100);
+    });
+  });
 });
