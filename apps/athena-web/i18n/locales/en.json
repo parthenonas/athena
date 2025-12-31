@@ -14,6 +14,21 @@
     "upload": "Upload"
   },
   "components": {
+    "common": {
+      "file-uploader": {
+        "title": "Upload File",
+        "description": "Select a file to upload to the storage.",
+        "file-label": "File",
+        "drop-label": "Drop your file here",
+        "drop-desc": "or click to browse",
+        "access": {
+          "public": "Public Access",
+          "public-desc": "Accessible by anyone via link.",
+          "private": "Private",
+          "private-desc": "Requires login to view."
+        }
+      }
+    },
     "admin": {
       "roles-slideover": {
         "name-label": "Role Name",

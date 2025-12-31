@@ -7,7 +7,7 @@ definePageMeta({
 })
 
 const { t } = useI18n()
-const { fetchFiles, uploadFile, deleteFile, downloadFile, formatBytes } = useMedia()
+const { fetchFiles, deleteFile, downloadFile, formatBytes } = useMedia()
 const config = useRuntimeConfig()
 
 const search = ref('')
@@ -19,7 +19,7 @@ const filters = reactive({
   sortOrder: 'DESC' as const
 })
 
-const uploadAccess = ref<FileAccess>(FileAccess.Public)
+const isUploadModalOpen = ref(false)
 
 watchDebounced(search, (val) => {
   filters.search = val
@@ -40,29 +40,6 @@ const columns = computed<TableColumn<FileResponse>[]>(() => [
   { accessorKey: 'createdAt', header: t('pages.media.columns.created', 'Uploaded') },
   { id: 'actions', header: '' }
 ])
-
-const fileInput = ref<HTMLInputElement | null>(null)
-const isUploading = ref(false)
-
-const triggerUpload = () => {
-  fileInput.value?.click()
-}
-
-const onFileSelected = async (event: Event) => {
-  const target = event.target as HTMLInputElement
-  if (target.files && target.files.length > 0) {
-    const file = target.files[0]
-    if (!file) return
-    isUploading.value = true
-    try {
-      await uploadFile(file, uploadAccess.value)
-      await refresh()
-    } finally {
-      isUploading.value = false
-      target.value = ''
-    }
-  }
-}
 
 const isDeleteOpen = ref(false)
 const deleteLoading = ref(false)
@@ -108,37 +85,27 @@ const handleDownload = (file: FileResponse) => {
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
         <h1 class="text-2xl font-display font-bold text-gray-900 dark:text-white">
-          {{ $t('pages.media.title', 'File Storage') }}
+          {{ $t('pages.media.title') }}
         </h1>
         <p class="text-gray-500">
-          {{ $t('pages.media.description', 'Manage all uploaded files') }}
+          {{ $t('pages.media.description') }}
         </p>
       </div>
 
-      <div class="flex items-center gap-2">
-        <input
-          ref="fileInput"
-          type="file"
-          class="hidden"
-          @change="onFileSelected"
-        >
-
-        <UButton
-          variant="solid"
-          color="primary"
-          icon="i-lucide-upload-cloud"
-          :label="$t('pages.media.upload', 'Upload')"
-          :loading="isUploading"
-          @click="triggerUpload"
-        />
-      </div>
+      <UButton
+        variant="solid"
+        color="primary"
+        icon="i-lucide-upload-cloud"
+        :label="$t('pages.media.upload')"
+        @click="isUploadModalOpen = true"
+      />
     </div>
 
     <div class="flex gap-4">
       <UInput
         v-model="search"
         icon="i-lucide-search"
-        :placeholder="$t('pages.media.search', 'Search files...')"
+        :placeholder="$t('pages.media.search')"
         class="w-full max-w-sm"
       />
     </div>
@@ -250,6 +217,13 @@ const handleDownload = (file: FileResponse) => {
         :page-count="filters.limit"
       />
     </div>
+
+    <CommonFileUploaderModal
+      v-model="isUploadModalOpen"
+      allow-access-control
+      :default-access="FileAccess.Public"
+      @success="refresh"
+    />
 
     <ConfirmModal
       v-model:open="isDeleteOpen"

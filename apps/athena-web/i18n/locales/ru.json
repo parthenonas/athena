@@ -14,6 +14,21 @@
     "upload": "Загрузить"
   },
   "components": {
+    "common": {
+      "file-uploader": {
+        "title": "Загрузка файла",
+        "description": "Выберите файл для загрузки в хранилище.",
+        "file-label": "Файл",
+        "drop-label": "Перетащите файл сюда",
+        "drop-desc": "или нажмите для выбора",
+        "access": {
+          "public": "Публичный доступ",
+          "public-desc": "Доступен всем по ссылке.",
+          "private": "Приватный",
+          "private-desc": "Требует вход в систему."
+        }
+      }
+    },
     "admin": {
       "roles-slideover": {
         "name-label": "Название роли",
