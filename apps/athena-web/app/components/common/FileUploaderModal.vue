@@ -80,6 +80,7 @@ const onSubmit = async () => {
         </UFormField>
 
         <USwitch
+          v-if="allowAccessControl"
           v-model="isPublic"
           size="lg"
           :label="accessLabel"
