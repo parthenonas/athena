@@ -56,6 +56,7 @@ describe("MediaController", () => {
             getQuotas: jest.fn(),
             setQuota: jest.fn(),
             getUsage: jest.fn(),
+            deleteQuota: jest.fn(),
           },
         },
         {
@@ -241,6 +242,16 @@ describe("MediaController", () => {
 
       expect(service.getUsage).toHaveBeenCalledWith(mockUserPayload.sub, mockUserPayload.role);
       expect(result).toEqual(mockUsage);
+    });
+  });
+
+  describe("deleteQuota (Admin)", () => {
+    it("should call deleteQuota service method", async () => {
+      service.deleteQuota.mockResolvedValue(undefined);
+
+      await controller.deleteQuota("student");
+
+      expect(service.deleteQuota).toHaveBeenCalledWith("student");
     });
   });
 });

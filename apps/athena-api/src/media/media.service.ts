@@ -366,6 +366,19 @@ export class MediaService extends BaseService<StoredFile> implements OnModuleIni
   }
 
   /**
+   * ADMIN ONLY: Deletes (resets) storage quota for a specific role.
+   */
+  async deleteQuota(roleName: string): Promise<void> {
+    this.logger.log(`deleteQuota() | role=${roleName}`);
+
+    const result = await this.quotaRepo.delete({ roleName });
+
+    if (result.affected === 0) {
+      this.logger.warn(`deleteQuota() | No quota found for role=${roleName} (already default)`);
+    }
+  }
+
+  /**
    * EVENT LISTENER: Cleans up quota when a role is deleted.
    * Decoupled communication between Identity and Media modules.
    */

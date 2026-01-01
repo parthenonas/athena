@@ -149,7 +149,7 @@ export const useMedia = () => {
 
   const deleteQuota = async (roleName: string) => {
     try {
-      await $api(`/media/quotas/${roleName}`, {
+      await $api(`/api/media/quotas/${roleName}`, {
         method: 'DELETE'
       })
 

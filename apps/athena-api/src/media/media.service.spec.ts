@@ -358,5 +358,13 @@ describe("MediaService", () => {
       expect(result.limitBytes).toBe(100);
       expect(result.percentage).toBe(100);
     });
+
+    it("deleteQuota should remove quota entity", async () => {
+      quotaRepo.delete.mockResolvedValue({ affected: 1, raw: [] });
+
+      await service.deleteQuota("student");
+
+      expect(quotaRepo.delete).toHaveBeenCalledWith({ roleName: "student" });
+    });
   });
 });

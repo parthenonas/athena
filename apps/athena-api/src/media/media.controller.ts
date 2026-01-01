@@ -189,4 +189,14 @@ export class MediaController {
     const appliedPolicies = req.appliedPolicies || [];
     await this.service.delete(id, userId, appliedPolicies);
   }
+
+  /**
+   * DELETE /media/quotas/:roleName
+   * Reset quota for a specific role to default.
+   */
+  @Delete("quotas/:roleName")
+  @RequirePermission(Permission.ADMIN)
+  async deleteQuota(@Param("roleName") roleName: string): Promise<void> {
+    return this.service.deleteQuota(roleName);
+  }
 }
