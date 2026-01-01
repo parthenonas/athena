@@ -5,6 +5,7 @@ jest.mock("../account/entities/account.entity", () => ({
 import { PostgresErrorCode } from "@athena/common";
 import { Permission, Policy } from "@athena/types";
 import { BadRequestException, ConflictException, NotFoundException } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Test, TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { QueryFailedError, Repository } from "typeorm";
@@ -14,10 +15,12 @@ import { FilterRoleDto } from "./dto/filter.dto";
 import { ReadRoleDto } from "./dto/read.dto";
 import { Role } from "./entities/role.entity";
 import { RoleService } from "./role.service";
+import { AthenaEvent } from "../../shared/events/types";
 
 describe("RoleService", () => {
   let service: RoleService;
   let repo: jest.Mocked<Repository<Role>>;
+  let eventEmitter: jest.Mocked<EventEmitter2>;
 
   const mockRole: Role = {
     id: "role-1",
@@ -74,6 +77,14 @@ describe("RoleService", () => {
             find: jest.fn(),
             create: jest.fn(),
             save: jest.fn(),
+            remove: jest.fn(),
+          },
+        },
+        {
+          provide: EventEmitter2,
+          useValue: {
+            emit: jest.fn(),
+            emitAsync: jest.fn(),
           },
         },
       ],
@@ -81,6 +92,7 @@ describe("RoleService", () => {
 
     service = module.get<RoleService>(RoleService);
     repo = module.get(getRepositoryToken(Role));
+    eventEmitter = module.get(EventEmitter2);
   });
 
   describe("findAll (pagination + search + sort)", () => {
@@ -251,25 +263,32 @@ describe("RoleService", () => {
 
   describe("delete", () => {
     it("should delete a role", async () => {
-      repo.delete = jest.fn().mockResolvedValue({ affected: 1 });
+      repo.findOne.mockResolvedValue(mockRole);
+
+      repo.remove.mockResolvedValue(mockRole);
 
       await expect(service.delete("role-1")).resolves.toBeUndefined();
 
-      expect(repo.delete).toHaveBeenCalledWith("role-1");
+      expect(repo.findOne).toHaveBeenCalledWith({ where: { id: "role-1" } });
+      expect(repo.remove).toHaveBeenCalledWith(mockRole);
+      expect(eventEmitter.emit).toHaveBeenCalledWith(AthenaEvent.ROLE_DELETED, { name: mockRole.name });
     });
 
     it("should throw NotFoundException if role does not exist", async () => {
-      repo.delete = jest.fn().mockResolvedValue({ affected: 0 });
+      repo.findOne.mockResolvedValue(null);
 
       await expect(service.delete("x")).rejects.toBeInstanceOf(NotFoundException);
+      expect(repo.remove).not.toHaveBeenCalled();
     });
 
     it("should throw ConflictException on FK violation", async () => {
+      repo.findOne.mockResolvedValue(mockRole);
+
       const pgError: any = new QueryFailedError("fk error", [], new Error());
       pgError.code = PostgresErrorCode.FOREIGN_KEY_VIOLATION;
       pgError.constraint = "accounts__role_id__fk";
 
-      repo.delete = jest.fn().mockRejectedValue(pgError);
+      repo.remove.mockRejectedValue(pgError);
 
       await expect(service.delete("role-1")).rejects.toMatchObject({
         constructor: ConflictException,
@@ -278,10 +297,12 @@ describe("RoleService", () => {
     });
 
     it("should throw BadRequestException on other db errors", async () => {
+      repo.findOne.mockResolvedValue(mockRole);
+
       const pgError: any = new Error("some db error");
       pgError.code = "99999";
 
-      repo.delete = jest.fn().mockRejectedValue(pgError);
+      repo.remove.mockRejectedValue(pgError);
 
       await expect(service.delete("role-1")).rejects.toBeInstanceOf(BadRequestException);
     });

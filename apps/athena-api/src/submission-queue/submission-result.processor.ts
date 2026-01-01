@@ -4,6 +4,8 @@ import { Logger } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Job } from "bullmq";
 
+import { AthenaEvent, SubmissionCompletedEvent } from "../shared/events/types";
+
 /**
  * @class SubmissionResultProcessor
  * @description BullMQ Processor (Worker) that listens for completed execution results
@@ -35,7 +37,8 @@ export class SubmissionResultProcessor extends WorkerHost {
 
     this.logger.log(`Received result for ${result.submissionId}. Routing to [${meta?.context || "UNKNOWN"}]`);
 
-    await this.eventEmitter.emitAsync("submission.completed", result);
+    const event: SubmissionCompletedEvent = { result };
+    await this.eventEmitter.emitAsync(AthenaEvent.SUBMISSION_COMPLETED, event);
 
     return { processed: true };
   }

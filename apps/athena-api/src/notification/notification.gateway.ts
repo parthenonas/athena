@@ -4,6 +4,8 @@ import { OnEvent } from "@nestjs/event-emitter";
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 
+import { AthenaEvent } from "../shared/events/types";
+
 /**
  * @class NotificationGateway
  * @description WebSocket Gateway responsible for real-time notifications to clients.
@@ -55,7 +57,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
    * 2. Checks if a `socketId` is present in the metadata (Boomerang pattern).
    * 3. If present, emits the 'execution_result' WS event strictly to that socket.
    */
-  @OnEvent("submission.completed")
+  @OnEvent(AthenaEvent.SUBMISSION_COMPLETED)
   handleSubmissionResult(event: SubmissionCompletedEvent) {
     const { metadata, ...result } = event;
 
