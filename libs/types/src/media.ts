@@ -40,3 +40,8 @@ export interface StorageUsageResponse {
   limitBytes: number;
   percentage: number;
 }
+
+export class MediaQuotaRequest {
+  roleName: string;
+  limitBytes: number;
+}

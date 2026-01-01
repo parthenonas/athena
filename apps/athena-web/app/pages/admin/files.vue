@@ -21,6 +21,8 @@ const filters = reactive({
 
 const isUploadModalOpen = ref(false)
 
+const isQuotasOpen = ref(false)
+
 watchDebounced(search, (val) => {
   filters.search = val
   filters.page = 1
@@ -92,13 +94,23 @@ const handleDownload = (file: FileResponse) => {
         </p>
       </div>
 
-      <UButton
-        variant="solid"
-        color="primary"
-        icon="i-lucide-upload-cloud"
-        :label="$t('pages.media.upload')"
-        @click="isUploadModalOpen = true"
-      />
+      <div class="flex items-center gap-2">
+        <UButton
+          color="neutral"
+          variant="outline"
+          icon="i-lucide-database"
+          :label="$t('pages.media.manage-quotas')"
+          @click="isQuotasOpen = true"
+        />
+
+        <UButton
+          variant="solid"
+          color="primary"
+          icon="i-lucide-upload-cloud"
+          :label="$t('pages.media.upload')"
+          @click="isUploadModalOpen = true"
+        />
+      </div>
     </div>
 
     <div class="flex gap-4">
@@ -234,5 +246,7 @@ const handleDownload = (file: FileResponse) => {
       :loading="deleteLoading"
       @confirm="onConfirmDelete"
     />
+
+    <AdminQuotasSlideover v-model="isQuotasOpen" />
   </div>
 </template>

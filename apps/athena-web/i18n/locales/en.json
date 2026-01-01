@@ -50,6 +50,20 @@
           "login-min": "Login must be at least 3 characters",
           "password-rule": "Password must contain uppercase and lowercase letters, numbers, and special characters"
         }
+      },
+      "quotas": {
+        "title": "Quota Management",
+        "info-title": "Default Policy",
+        "info-desc": "All users have a default limit of 100 MB. Use the table below to configure exceptions for specific roles.",
+        "active-rules": "Active Exceptions",
+        "add-rule": "Add Rule",
+        "select-role": "Select Role",
+        "search-role": "Search role...",
+        "limit-mb": "Limit (MB)",
+        "role": "Role",
+        "limit": "Limit",
+        "reset-tooltip": "Reset to default (Delete)",
+        "no-rules": "No active exceptions. Everyone uses the default limit."
       }
     }
   },
@@ -246,7 +260,8 @@
       "delete-modal": {
         "title": "Delete File?",
         "description": "Are you sure? This action cannot be undone."
-      }
+      },
+      "manage-quotas": "Manage Quotas"
     },
     "files": {
       "title": "My Files",
@@ -350,6 +365,11 @@
         "description": "File removed permanently",
         "error": "Delete failed"
       }
+    },
+   "quotas": {
+      "updated": "Quota updated",
+      "deleted": "Quota reset to default",
+      "error": "Quota operation failed"
     }
   }
 }

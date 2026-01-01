@@ -78,6 +78,12 @@ const UTableStub = {
   `
 }
 
+const AdminQuotasSlideoverStub = {
+  name: 'AdminQuotasSlideover',
+  template: '<div data-testid="quotas-slideover" />',
+  props: ['modelValue']
+}
+
 const CommonFileUploaderModalStub = {
   name: 'CommonFileUploaderModal',
   template: '<div data-testid="uploader-modal" />',
@@ -133,6 +139,7 @@ describe('Admin Files Page', () => {
         UTable: UTableStub,
         CommonFileUploaderModal: CommonFileUploaderModalStub,
         ConfirmModal: ConfirmModalStub,
+        AdminQuotasSlideover: AdminQuotasSlideoverStub,
         UButton: UButtonStub,
         UInput: UInputStub,
         UIcon: UIconStub,
@@ -183,6 +190,18 @@ describe('Admin Files Page', () => {
     const modal = wrapper.findComponent(CommonFileUploaderModalStub)
     expect(modal.props('modelValue')).toBe(true)
     expect(modal.props('defaultAccess')).toBe('public')
+  })
+
+  it('should open Quotas Slideover when clicking manage quotas button', async () => {
+    const wrapper = await mountSuspended(FilesPage, defaultMocks)
+
+    const uploadBtn = wrapper.findAllComponents(UButtonStub)
+      .find(b => b.props('label') === 'pages.media.manage-quotas')
+
+    await uploadBtn?.trigger('click')
+
+    const modal = wrapper.findComponent(AdminQuotasSlideoverStub)
+    expect(modal.props('modelValue')).toBe(true)
   })
 
   it('should refresh list on upload success', async () => {

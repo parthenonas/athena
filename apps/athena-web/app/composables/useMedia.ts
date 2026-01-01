@@ -1,4 +1,4 @@
-import type { Pageable, FileResponse, FilterFileRequest, FileAccess, StorageUsageResponse } from '@athena/types'
+import type { Pageable, FileResponse, FilterFileRequest, FileAccess, StorageUsageResponse, MediaQuotaRequest } from '@athena/types'
 
 export const useMedia = () => {
   const toast = useToast()
@@ -115,12 +115,71 @@ export const useMedia = () => {
     })
   }
 
+  const fetchQuotas = () => {
+    return useApi<MediaQuotaRequest[]>('/api/media/quotas', {
+      method: 'GET'
+    })
+  }
+
+  const setQuota = async (roleName: string, limitBytes: number) => {
+    try {
+      const data = await $api<MediaQuotaRequest>('/api/media/quotas', {
+        method: 'POST',
+        body: { roleName, limitBytes }
+      })
+
+      toast.add({
+        title: t('common.success'),
+        description: t('toasts.quotas.updated', { role: roleName }),
+        color: 'success',
+        icon: 'i-lucide-check-circle'
+      })
+      return data
+    } catch (error: unknown) {
+      console.error(error)
+      toast.add({
+        title: t('common.error'),
+        description: t('toasts.quotas.error'),
+        color: 'error',
+        icon: 'i-lucide-alert-circle'
+      })
+      throw error
+    }
+  }
+
+  const deleteQuota = async (roleName: string) => {
+    try {
+      await $api(`/media/quotas/${roleName}`, {
+        method: 'DELETE'
+      })
+
+      toast.add({
+        title: t('common.success'),
+        description: t('toasts.quotas.deleted'),
+        color: 'success',
+        icon: 'i-lucide-trash-2'
+      })
+    } catch (error: unknown) {
+      console.error(error)
+      toast.add({
+        title: t('common.error'),
+        description: t('toasts.quotas.error'),
+        color: 'error',
+        icon: 'i-lucide-alert-circle'
+      })
+      throw error
+    }
+  }
+
   return {
     fetchFiles,
     uploadFile,
     deleteFile,
     downloadFile,
     formatBytes,
-    fetchUsage
+    fetchUsage,
+    fetchQuotas,
+    setQuota,
+    deleteQuota
   }
 }
