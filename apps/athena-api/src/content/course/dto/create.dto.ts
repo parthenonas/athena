@@ -1,3 +1,4 @@
+import { CreateCourseRequest } from "@athena/types";
 import { IsArray, IsBoolean, IsOptional, IsString, MinLength } from "class-validator";
 
 /**
@@ -11,7 +12,7 @@ import { IsArray, IsBoolean, IsOptional, IsString, MinLength } from "class-valid
  * - array of tags
  * - isPublished (default: false)
  */
-export class CreateCourseDto {
+export class CreateCourseDto implements CreateCourseRequest {
   /** Human-readable title of the course. */
   @IsString()
   @MinLength(2)
