@@ -1,4 +1,4 @@
-import { BlockType } from "@athena/types";
+import { BlockRequiredAction, BlockResponse, BlockType } from "@athena/types";
 import { Expose } from "class-transformer";
 
 /**
@@ -7,7 +7,7 @@ import { Expose } from "class-transformer";
  *
  * Exposes polymorphic content and ordering information.
  */
-export class ReadBlockDto {
+export class ReadBlockDto implements BlockResponse {
   /** Block UUID. */
   @Expose()
   id!: string;
@@ -26,6 +26,13 @@ export class ReadBlockDto {
    */
   @Expose()
   content!: Record<string, unknown>;
+
+  /**
+   * What the student must do to complete this block.
+   * Defaults to VIEW if not provided.
+   */
+  @Expose()
+  requiredAction!: BlockRequiredAction;
 
   /**
    * Double precision index for sorting.

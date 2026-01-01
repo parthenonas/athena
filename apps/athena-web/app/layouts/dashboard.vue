@@ -51,11 +51,7 @@ const studioItems = computed<NavigationMenuItem[]>(() => ([
   {
     label: t('pages.dashboard.course-manager'),
     icon: 'i-lucide-library',
-    to: '/studio/courses',
-    children: [
-      { label: t('pages.dashboard.drafts') },
-      { label: t('pages.dashboard.published') }
-    ]
+    to: '/studio/courses'
   },
   {
     label: t('pages.dashboard.assignments'),
@@ -246,7 +242,7 @@ const footerMenuItems = computed(() => [
               color="neutral"
               size="sm"
               :icon="collapsed ? undefined : 'i-lucide-languages'"
-              :label="locale === 'ru' ? 'RU' : 'RN'"
+              :label="locale === 'ru' ? 'RU' : 'EN'"
               class="font-display font-bold"
               @click="toggleLang"
             />

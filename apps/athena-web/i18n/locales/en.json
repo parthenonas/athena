@@ -12,7 +12,8 @@
     "copy-link": "Copy Link",
     "download": "Download",
     "upload": "Upload",
-    "of": "of"
+    "of": "of",
+    "edit": "Edit"
   },
   "components": {
     "common": {
@@ -28,6 +29,18 @@
           "private": "Private",
           "private-desc": "Requires login to view."
         }
+      }
+    },
+    "studio": {
+      "course-slideover": {
+        "create-title": "New Course",
+        "edit-title": "Edit Course",
+        "create-desc": "Fill in the details to start a new learning journey.",
+        "edit-desc": "Update the core information of your course.",
+        "title-label": "Title",
+        "desc-label": "Description",
+        "tags-label": "Tags",
+        "tags-placeholder": "Type and press Enter to add tag..."
       }
     },
     "admin": {
@@ -280,6 +293,23 @@
         "title": "Delete File?",
         "description": "Are you sure? This action cannot be undone and will free up your storage space."
       }
+    },
+    "courses": {
+      "title": "Course Manager",
+      "subtitle": "Create, manage, and organize your educational content.",
+      "create": "Create Course",
+      "builder": "Open Builder",
+      "delete-title": "Delete Course?",
+      "delete-confirm": "Are you sure? This action cannot be undone and will delete all lessons within this course.",
+      "columns": {
+        "title": "Title",
+        "created-at": "Created At",
+        "updated-at": "Updated At",
+        "tags": "Tags",
+        "status": "Status"
+      },
+      "published": "Published",
+      "draft": "Draft"
     }
   },
   "permissions": {
@@ -370,6 +400,15 @@
       "updated": "Quota updated",
       "deleted": "Quota reset to default",
       "error": "Quota operation failed"
+    },
+    "courses": {
+      "created": "Course created successfully",
+      "updated": "Course updated successfully",
+      "deleted": "Course deleted successfully",
+      "conflict": "A course with this title already exists",
+      "create-error": "Failed to create course",
+      "update-error": "Failed to update course",
+      "delete-error": "Failed to delete course"
     }
   }
 }

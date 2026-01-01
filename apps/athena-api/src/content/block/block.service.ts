@@ -1,4 +1,4 @@
-import { BlockType, Policy } from "@athena/types";
+import { BlockRequiredAction, BlockType, Policy } from "@athena/types";
 import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { plainToInstance } from "class-transformer";
@@ -88,6 +88,7 @@ export class BlockService extends BaseService<Block> {
         type: dto.type,
         content: dto.content,
         orderIndex,
+        requiredAction: dto.requiredAction ?? BlockRequiredAction.VIEW,
       });
 
       const savedBlock = await this.blockRepo.save(block);
@@ -204,6 +205,10 @@ export class BlockService extends BaseService<Block> {
 
       if (dto.content) {
         block.content = dto.content;
+      }
+
+      if (dto.requiredAction) {
+        block.requiredAction = dto.requiredAction;
       }
 
       const savedBlock = await this.blockRepo.save(block);

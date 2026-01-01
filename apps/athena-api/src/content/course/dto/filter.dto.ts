@@ -1,3 +1,4 @@
+import { FilterCourseRequest, type SortOrder } from "@athena/types";
 import { Type } from "class-transformer";
 import { IsIn, IsInt, IsOptional, IsString, Max, Min } from "class-validator";
 
@@ -10,7 +11,7 @@ import { IsIn, IsInt, IsOptional, IsString, Max, Min } from "class-validator";
  * - Pagination (page, limit)
  * - Sorting (title, createdAt, updatedAt)
  */
-export class FilterCourseDto {
+export class FilterCourseDto implements FilterCourseRequest {
   /** Search by title (ILIKE %search%). */
   @IsOptional()
   @IsString()
@@ -39,5 +40,5 @@ export class FilterCourseDto {
   /** Sorting direction. */
   @IsOptional()
   @IsIn(["ASC", "DESC", "asc", "desc"])
-  sortOrder: "ASC" | "DESC" | "asc" | "desc" = "DESC";
+  sortOrder: SortOrder = "DESC";
 }

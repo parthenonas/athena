@@ -84,7 +84,7 @@ const handleDownload = (file: FileResponse) => {
 
 <template>
   <div class="p-4 space-y-4">
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div class="flex justify-between items-center">
       <div>
         <h1 class="text-2xl font-display font-bold text-gray-900 dark:text-white">
           {{ $t('pages.media.title') }}
@@ -94,7 +94,7 @@ const handleDownload = (file: FileResponse) => {
         </p>
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="flex gap-4">
         <UButton
           color="neutral"
           variant="outline"

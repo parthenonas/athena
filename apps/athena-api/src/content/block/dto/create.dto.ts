@@ -1,4 +1,4 @@
-import { BlockType } from "@athena/types";
+import { BlockRequiredAction, BlockType, CreateBlockRequest } from "@athena/types";
 import { IsEnum, IsNotEmpty, IsNumber, IsObject, IsOptional, IsUUID } from "class-validator";
 
 /**
@@ -11,7 +11,7 @@ import { IsEnum, IsNotEmpty, IsNumber, IsObject, IsOptional, IsUUID } from "clas
  * - content (required) polymorphic JSON payload
  * - orderIndex (optional) defaults to end of list
  */
-export class CreateBlockDto {
+export class CreateBlockDto implements CreateBlockRequest {
   /** The UUID of the parent Lesson. */
   @IsUUID()
   @IsNotEmpty()
@@ -36,4 +36,12 @@ export class CreateBlockDto {
   @IsOptional()
   @IsNumber()
   orderIndex?: number;
+
+  /**
+   * What the student must do to complete this block.
+   * Defaults to VIEW if not provided.
+   */
+  @IsOptional()
+  @IsEnum(BlockRequiredAction)
+  requiredAction?: BlockRequiredAction;
 }
