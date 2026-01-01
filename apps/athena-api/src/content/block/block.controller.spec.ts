@@ -1,4 +1,4 @@
-import { BlockType, CodeExecutionMode, Policy, ProgrammingLanguage } from "@athena/types";
+import { BlockRequiredAction, BlockType, CodeExecutionMode, Policy, ProgrammingLanguage } from "@athena/types";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
@@ -7,10 +7,10 @@ import { Request } from "express";
 import { BlockController } from "./block.controller";
 import { BlockService } from "./block.service";
 import { CreateBlockDto } from "./dto/create.dto";
+import { BlockDryRunDto } from "./dto/dry-run.dto";
 import { ReadBlockDto } from "./dto/read.dto";
 import { ReorderBlockDto, UpdateBlockDto } from "./dto/update.dto";
 import { AclGuard, JwtAuthGuard } from "../../identity";
-import { BlockDryRunDto } from "./dto/dry-run.dto";
 
 const USER_ID = "user-uuid";
 const LESSON_ID = "lesson-uuid";
@@ -22,6 +22,7 @@ const mockReadBlock: ReadBlockDto = {
   type: BlockType.Text,
   content: { json: { type: "doc" } },
   orderIndex: 1024,
+  requiredAction: BlockRequiredAction.VIEW,
   createdAt: new Date(),
   updatedAt: new Date(),
 };

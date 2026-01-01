@@ -5,13 +5,13 @@ import path from "path";
 import { CodeExecutionMode, ExecutionStatus, ProgrammingLanguage } from "@athena/types";
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { RunnerJobDataDto } from "src/submission/dto/runner-job-data.dto";
-import { SubmissionResultDto } from "src/submission/dto/submission-result.dto";
 
 import { LANGUAGES_CONFIG } from "./config/languages.config";
 import { BoxContext } from "./interfaces/box-content.interface";
 import { generateWrapper } from "./templates/sql-wrapper.template";
 import { ProcessExecutor } from "./utils/process.executor";
+import { RunnerJobDataDto } from "../submission/dto/runner-job-data.dto";
+import { SubmissionResultDto } from "../submission/dto/submission-result.dto";
 
 @Injectable()
 export class SandboxService implements OnModuleInit {

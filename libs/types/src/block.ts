@@ -94,3 +94,34 @@ export interface SurveyQuestion {
   type: SurveyQuestionType;
   options?: SurveyOption[];
 }
+
+export enum BlockRequiredAction {
+  VIEW = "view",
+  INTERACT = "interact",
+  SUBMIT = "submit",
+  PASS = "pass",
+}
+
+export interface CreateBlockRequest {
+  type: BlockType;
+  content: Record<string, unknown>;
+  orderIndex?: number;
+  requiredAction?: BlockRequiredAction;
+}
+
+export interface BlockDryRunRequest {
+  lessonId: string;
+  content: CodeBlockContent;
+  socketId: string;
+}
+
+export interface BlockResponse {
+  id: string;
+  lessonId: string;
+  type: BlockType;
+  content: Record<string, unknown>;
+  requiredAction: BlockRequiredAction;
+  orderIndex: number;
+  createdAt: Date;
+  updatedAt: Date;
+}

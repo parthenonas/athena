@@ -4,6 +4,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { Job } from "bullmq";
 
 import { SubmissionResultProcessor } from "./submission-result.processor";
+import { SubmissionCompletedEvent } from "../shared/events/types";
 
 describe("SubmissionResultProcessor", () => {
   let processor: SubmissionResultProcessor;
@@ -41,6 +42,10 @@ describe("SubmissionResultProcessor", () => {
         metadata: { context: "LEARN" },
       };
 
+      const payload: SubmissionCompletedEvent = {
+        result: mockResult,
+      };
+
       const mockJob = {
         data: mockResult,
         id: "job-1",
@@ -48,7 +53,7 @@ describe("SubmissionResultProcessor", () => {
 
       const result = await processor.process(mockJob);
 
-      expect(eventEmitter.emitAsync).toHaveBeenCalledWith("submission.completed", mockResult);
+      expect(eventEmitter.emitAsync).toHaveBeenCalledWith("submission.completed", payload);
 
       expect(result).toEqual({ processed: true });
     });

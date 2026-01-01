@@ -1,3 +1,4 @@
+import { CourseResponse } from "@athena/types";
 import { Expose } from "class-transformer";
 
 /**
@@ -7,7 +8,7 @@ import { Expose } from "class-transformer";
  * Does NOT expose deletedAt (soft delete)
  * Does NOT include internal relations
  */
-export class ReadCourseDto {
+export class ReadCourseDto implements CourseResponse {
   /** Course UUID. */
   @Expose()
   id!: string;

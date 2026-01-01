@@ -1,3 +1,4 @@
+import { UpdateCourseRequest } from "@athena/types";
 import { IsArray, IsBoolean, IsOptional, IsString, IsUUID, MinLength } from "class-validator";
 
 /**
@@ -6,7 +7,7 @@ import { IsArray, IsBoolean, IsOptional, IsString, IsUUID, MinLength } from "cla
  *
  * All fields optional.
  */
-export class UpdateCourseDto {
+export class UpdateCourseDto implements UpdateCourseRequest {
   /** Optional new title. */
   @IsOptional()
   @IsString()

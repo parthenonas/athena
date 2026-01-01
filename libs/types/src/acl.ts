@@ -39,6 +39,10 @@ export enum Permission {
   SCHEDULE_UPDATE = "schedule.update",
   SCHEDULE_DELETE = "schedule.delete",
 
+  FILES_READ = "files.read",
+  FILES_CREATE = "files.create",
+  FILES_DELETE = "files.delete",
+
   ADMIN = "admin",
 }
 

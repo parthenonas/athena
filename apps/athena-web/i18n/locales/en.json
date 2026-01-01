@@ -1,14 +1,48 @@
 {
   "common": {
     "save": "Save",
+    "copy": "Copy",
     "cancel": "Cancel",
     "success": "Success",
     "error": "Error",
     "deleted": "Deleted successfully",
     "confirm": "Confirm",
-    "delete": "Delete"
+    "delete": "Delete",
+    "search": "Search...",
+    "copy-link": "Copy Link",
+    "download": "Download",
+    "upload": "Upload",
+    "of": "of",
+    "edit": "Edit"
   },
   "components": {
+    "common": {
+      "file-uploader": {
+        "title": "Upload File",
+        "description": "Select a file to upload to the storage.",
+        "file-label": "File",
+        "drop-label": "Drop your file here",
+        "drop-desc": "or click to browse",
+        "access": {
+          "public": "Public Access",
+          "public-desc": "Accessible by anyone via link.",
+          "private": "Private",
+          "private-desc": "Requires login to view."
+        }
+      }
+    },
+    "studio": {
+      "course-slideover": {
+        "create-title": "New Course",
+        "edit-title": "Edit Course",
+        "create-desc": "Fill in the details to start a new learning journey.",
+        "edit-desc": "Update the core information of your course.",
+        "title-label": "Title",
+        "desc-label": "Description",
+        "tags-label": "Tags",
+        "tags-placeholder": "Type and press Enter to add tag..."
+      }
+    },
     "admin": {
       "roles-slideover": {
         "name-label": "Role Name",
@@ -29,6 +63,20 @@
           "login-min": "Login must be at least 3 characters",
           "password-rule": "Password must contain uppercase and lowercase letters, numbers, and special characters"
         }
+      },
+      "quotas": {
+        "title": "Quota Management",
+        "info-title": "Default Policy",
+        "info-desc": "All users have a default limit of 100 MB. Use the table below to configure exceptions for specific roles.",
+        "active-rules": "Active Exceptions",
+        "add-rule": "Add Rule",
+        "select-role": "Select Role",
+        "search-role": "Search role...",
+        "limit-mb": "Limit (MB)",
+        "role": "Role",
+        "limit": "Limit",
+        "reset-tooltip": "Reset to default (Delete)",
+        "no-rules": "No active exceptions. Everyone uses the default limit."
       }
     }
   },
@@ -107,6 +155,7 @@
       "assignments": "Assignments",
       "users": "Users",
       "roles": "Roles",
+      "files": "Files",
       "system-settings": "System Settings",
       "menu": {
         "signed-in-as": "Signed in as",
@@ -209,6 +258,58 @@
         "title": "Delete Account?",
         "description": "This action cannot be undone. Are you sure you want to delete this account?"
       }
+    },
+    "media": {
+      "title": "File Storage",
+      "description": "Manage all uploaded files and quotas.",
+      "upload": "Upload File",
+      "search": "Search files...",
+      "columns": {
+        "name": "Name",
+        "type": "Type",
+        "size": "Size",
+        "created": "Uploaded"
+      },
+      "delete-modal": {
+        "title": "Delete File?",
+        "description": "Are you sure? This action cannot be undone."
+      },
+      "manage-quotas": "Manage Quotas"
+    },
+    "files": {
+      "title": "My Files",
+      "description": "Secure storage for your files.",
+      "upload": "Upload File",
+      "search": "Search files...",
+      "storage-usage": "Storage Usage",
+      "columns": {
+        "name": "Name",
+        "access": "Access",
+        "type": "Type",
+        "size": "Size",
+        "created": "Date"
+      },
+      "delete-modal": {
+        "title": "Delete File?",
+        "description": "Are you sure? This action cannot be undone and will free up your storage space."
+      }
+    },
+    "courses": {
+      "title": "Course Manager",
+      "subtitle": "Create, manage, and organize your educational content.",
+      "create": "Create Course",
+      "builder": "Open Builder",
+      "delete-title": "Delete Course?",
+      "delete-confirm": "Are you sure? This action cannot be undone and will delete all lessons within this course.",
+      "columns": {
+        "title": "Title",
+        "created-at": "Created At",
+        "updated-at": "Updated At",
+        "tags": "Tags",
+        "status": "Status"
+      },
+      "published": "Published",
+      "draft": "Draft"
     }
   },
   "permissions": {
@@ -282,6 +383,32 @@
       "password-changed": {
         "error": "Failed to change password"
       }
+    },
+    "media": {
+      "uploaded": {
+        "title": "File Uploaded",
+        "description": "File saved successfully",
+        "error": "Upload failed"
+      },
+      "deleted": {
+        "title": "File Deleted",
+        "description": "File removed permanently",
+        "error": "Delete failed"
+      }
+    },
+   "quotas": {
+      "updated": "Quota updated",
+      "deleted": "Quota reset to default",
+      "error": "Quota operation failed"
+    },
+    "courses": {
+      "created": "Course created successfully",
+      "updated": "Course updated successfully",
+      "deleted": "Course deleted successfully",
+      "conflict": "A course with this title already exists",
+      "create-error": "Failed to create course",
+      "update-error": "Failed to update course",
+      "delete-error": "Failed to delete course"
     }
   }
 }

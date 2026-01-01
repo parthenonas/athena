@@ -9,15 +9,15 @@ const toggleLang = () => {
 
 const authStore = useAuthStore()
 
-const sharedItems: NavigationMenuItem[] = [
+const sharedItems = computed<NavigationMenuItem[]>(() => ([
   {
     label: t('pages.dashboard.dashboard'),
     icon: 'i-lucide-layout-dashboard',
     to: '/dashboard'
   }
-]
+]))
 
-const studentItems: NavigationMenuItem[] = [
+const studentItems = computed<NavigationMenuItem[]>(() => ([
   {
     label: t('pages.dashboard.my-learning'),
     icon: 'i-lucide-book-open',
@@ -40,9 +40,9 @@ const studentItems: NavigationMenuItem[] = [
     icon: 'i-lucide-messages-square',
     to: '/community'
   }
-]
+]))
 
-const studioItems: NavigationMenuItem[] = [
+const studioItems = computed<NavigationMenuItem[]>(() => ([
   {
     label: t('pages.dashboard.studio-overview'),
     icon: 'i-lucide-presentation',
@@ -51,11 +51,7 @@ const studioItems: NavigationMenuItem[] = [
   {
     label: t('pages.dashboard.course-manager'),
     icon: 'i-lucide-library',
-    to: '/studio/courses',
-    children: [
-      { label: t('pages.dashboard.drafts') },
-      { label: t('pages.dashboard.published') }
-    ]
+    to: '/studio/courses'
   },
   {
     label: t('pages.dashboard.assignments'),
@@ -63,9 +59,9 @@ const studioItems: NavigationMenuItem[] = [
     to: '/studio/grading',
     badge: '12'
   }
-]
+]))
 
-const adminItems: NavigationMenuItem[] = [
+const adminItems = computed<NavigationMenuItem[]>(() => ([
   {
     label: t('pages.dashboard.users'),
     icon: 'i-lucide-users',
@@ -77,11 +73,16 @@ const adminItems: NavigationMenuItem[] = [
     to: '/admin/roles'
   },
   {
+    label: t('pages.dashboard.files'),
+    icon: 'i-lucide-hard-drive',
+    to: '/admin/files'
+  },
+  {
     label: t('pages.dashboard.system-settings'),
     icon: 'i-lucide-settings-2',
     to: '/admin/settings'
   }
-]
+]))
 
 const footerMenuItems = computed(() => [
   [
@@ -241,7 +242,7 @@ const footerMenuItems = computed(() => [
               color="neutral"
               size="sm"
               :icon="collapsed ? undefined : 'i-lucide-languages'"
-              :label="locale === 'ru' ? 'RU' : 'RN'"
+              :label="locale === 'ru' ? 'RU' : 'EN'"
               class="font-display font-bold"
               @click="toggleLang"
             />

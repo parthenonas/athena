@@ -11,19 +11,19 @@ export const useRoles = () => {
   const { t } = useI18n()
 
   const fetchRoles = (params: FilterRoleRequest) => {
-    return useApi<Pageable<RoleResponse>>('/roles', {
+    return useApi<Pageable<RoleResponse>>('/api/roles', {
       method: 'GET',
       params
     })
   }
 
   const fetchRole = async (id: string) => {
-    return await $api<RoleResponse>(`/roles/${id}`, { method: 'GET' })
+    return await $api<RoleResponse>(`/api/roles/${id}`, { method: 'GET' })
   }
 
   const createRole = async (body: CreateRoleRequest) => {
     try {
-      const data = await $api<RoleResponse>('/roles', {
+      const data = await $api<RoleResponse>('/api/roles', {
         method: 'POST',
         body
       })
@@ -49,7 +49,7 @@ export const useRoles = () => {
 
   const updateRole = async (id: string, body: UpdateRoleRequest) => {
     try {
-      const data = await $api<RoleResponse>(`/roles/${id}`, {
+      const data = await $api<RoleResponse>(`/api/roles/${id}`, {
         method: 'PATCH',
         body
       })
@@ -75,7 +75,7 @@ export const useRoles = () => {
 
   const deleteRole = async (id: string) => {
     try {
-      await $api(`/roles/${id}`, {
+      await $api(`/api/roles/${id}`, {
         method: 'DELETE'
       })
 
