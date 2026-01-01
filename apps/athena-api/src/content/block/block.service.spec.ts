@@ -1,4 +1,4 @@
-import { BlockType, Policy, ProgrammingLanguage } from "@athena/types";
+import { BlockRequiredAction, BlockType, Policy, ProgrammingLanguage } from "@athena/types";
 import { BadRequestException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
@@ -40,6 +40,7 @@ const mockBlock = {
   type: BlockType.Text,
   content: { json: { type: "doc" } },
   orderIndex: 1024,
+  requiredAction: BlockRequiredAction.VIEW,
   createdAt: new Date(),
   updatedAt: new Date(),
 } as Block;
