@@ -1,9 +1,10 @@
+import { BlockDryRunRequest } from "@athena/types";
 import { Type } from "class-transformer";
 import { IsNotEmpty, IsString, IsUUID, ValidateNested } from "class-validator";
 
 import { RunnerCodeBlockContentDto } from "../../../shared/dto/runner-code-block-content.dto";
 
-export class BlockDryRunDto {
+export class BlockDryRunDto implements BlockDryRunRequest {
   @IsUUID()
   @IsNotEmpty()
   lessonId!: string;
