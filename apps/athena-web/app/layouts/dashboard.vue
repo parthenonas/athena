@@ -114,6 +114,9 @@ const footerMenuItems = computed(() => [
     <UDashboardSidebar
       collapsible
       resizable
+      :min-size="20"
+      :default-size="25"
+      :max-size="30"
     >
       <template #resize-handle="{ onMouseDown, onTouchStart, onDoubleClick }">
         <UDashboardResizeHandle
@@ -123,11 +126,11 @@ const footerMenuItems = computed(() => [
           @dblclick="onDoubleClick"
         />
       </template>
-      <template #default="{ collapsed }">
-        <div class="flex items-center gap-3 ">
+      <template #header="{ collapsed }">
+        <div class="flex items-center gap-3 w-full">
           <NuxtLink
             to="/"
-            class="font-display  font-bold text-2xl tracking-tighter text-gray-900 dark:text-white hover:text-primary-500 transition-colors cursor-pointer"
+            class="font-display font-bold text-2xl tracking-tighter text-gray-900 dark:text-white hover:text-primary-500 transition-colors cursor-pointer"
             :class="{
               'w-full text-center': collapsed
             }"
@@ -143,7 +146,9 @@ const footerMenuItems = computed(() => [
             class="font-display font-bold rounded-none"
           />
         </div>
+      </template>
 
+      <template #default="{ collapsed }">
         <UNavigationMenu
           :collapsed="collapsed"
           :items="sharedItems"

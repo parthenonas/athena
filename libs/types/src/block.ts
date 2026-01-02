@@ -103,6 +103,7 @@ export enum BlockRequiredAction {
 }
 
 export interface CreateBlockRequest {
+  lessonId: string;
   type: BlockType;
   content: Record<string, unknown>;
   orderIndex?: number;
@@ -125,3 +126,5 @@ export interface BlockResponse {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export type UpdateBlockRequest = Partial<CreateBlockRequest>;

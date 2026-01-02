@@ -1,3 +1,4 @@
+import { LessonResponse } from "@athena/types";
 import { Exclude, Expose } from "class-transformer";
 
 /**
@@ -6,7 +7,7 @@ import { Exclude, Expose } from "class-transformer";
  * Excludes sensitive or internal database fields.
  */
 @Exclude()
-export class ReadLessonDto {
+export class ReadLessonDto implements LessonResponse {
   @Expose()
   id!: string;
 

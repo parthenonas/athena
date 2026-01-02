@@ -41,6 +41,14 @@
         "desc-label": "Description",
         "tags-label": "Tags",
         "tags-placeholder": "Type and press Enter to add tag..."
+      },
+      "lesson-modal": {
+        "create-title": "Create Lesson",
+        "edit-title": "Edit Lesson",
+        "title-label": "Lesson Title",
+        "goals-label": "Learning Goals",
+        "draft-label": "Save as Draft",
+        "draft-help": "Students won't see this lesson until you publish it."
       }
     },
     "admin": {
@@ -310,6 +318,24 @@
       },
       "published": "Published",
       "draft": "Draft"
+    },
+    "studio": {
+      "builder": {
+        "add-block": "Add Content",
+        "block-settings": "Block Settings",
+        "structure": "Course Structure",
+        "no-lesson-selected": "No Lesson Selected",
+        "select-lesson-hint": "Select a lesson from the sidebar to start editing",
+        "delete-lesson-title": "Delete Lesson?",
+        "delete-lesson-confirm": "Are you sure? This will permanently delete the lesson and all its content blocks.",
+        "add-lesson": "Add Lesson",
+        "properties": "Properties",
+        "preview": "Preview",
+        "show-inspector": "Show Inspector",
+        "hide-inspector": "Hide Inspector",
+        "no-blocks": "No content blocks yet. Add one to start.",
+        "select-element": "Select a lesson or block to edit properties."
+      }
     }
   },
   "permissions": {
@@ -409,6 +435,14 @@
       "create-error": "Failed to create course",
       "update-error": "Failed to update course",
       "delete-error": "Failed to delete course"
+    },
+    "lessons": {
+      "created": "Lesson created successfully",
+      "updated": "Lesson updated",
+      "deleted": "Lesson deleted",
+      "create-error": "Failed to create lesson",
+      "update-error": "Failed to update lesson",
+      "delete-error": "Failed to delete lesson"
     }
   }
 }
