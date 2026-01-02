@@ -314,6 +314,8 @@
     },
     "studio": {
       "builder": {
+        "delete-block-title": "Удалить блок?",
+        "delete-block-confirm": "Вы уверены? Это действие нельзя отменить.",
         "add-block": "Добавить блок",
         "block-settings": "Настройки блока",
         "structure": "Структура курса",

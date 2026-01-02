@@ -321,6 +321,8 @@
     },
     "studio": {
       "builder": {
+        "delete-block-title": "Delete Content Block?",
+        "delete-block-confirm": "Are you sure? This action cannot be undone.",
         "add-block": "Add Content",
         "block-settings": "Block Settings",
         "structure": "Course Structure",

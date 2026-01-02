@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { BlockType } from '@athena/types'
 import type { LessonResponse } from '@athena/types'
+import { VueDraggable, type SortableEvent } from 'vue-draggable-plus'
 
 definePageMeta({
   layout: 'studio'
@@ -9,7 +10,7 @@ definePageMeta({
 const route = useRoute()
 const { t, locale, setLocale } = useI18n()
 
-const { fetchAllLessons, deleteLesson, fetchBlocks, createBlock, deleteBlock } = useStudio()
+const { fetchAllLessons, deleteLesson, fetchBlocks, createBlock, deleteBlock, reorderBlock } = useStudio()
 const authStore = useAuthStore()
 
 const courseId = route.params.id as string
@@ -60,19 +61,19 @@ const onLessonSaved = async () => {
   }
 }
 
-const isDeleteOpen = ref(false)
+const isDeleteLessonOpen = ref(false)
 const lessonToDelete = ref<LessonResponse | null>(null)
-const deleteLoading = ref(false)
+const deleteLessonLoading = ref(false)
 
 const openDeleteLesson = (lesson: LessonResponse) => {
   lessonToDelete.value = lesson
-  isDeleteOpen.value = true
+  isDeleteLessonOpen.value = true
 }
 
-const onConfirmDelete = async () => {
+const onConfirmDeleteLesson = async () => {
   if (!lessonToDelete.value) return
 
-  deleteLoading.value = true
+  deleteLessonLoading.value = true
   try {
     await deleteLesson(lessonToDelete.value.id)
 
@@ -81,9 +82,9 @@ const onConfirmDelete = async () => {
     }
 
     await refreshLessons()
-    isDeleteOpen.value = false
+    isDeleteLessonOpen.value = false
   } finally {
-    deleteLoading.value = false
+    deleteLessonLoading.value = false
     lessonToDelete.value = null
   }
 }
@@ -113,15 +114,59 @@ const onAddBlock = async (type: BlockType) => {
   isInspectorOpen.value = true
 }
 
-const onDeleteBlock = async (id: string) => {
-  if (!confirm('Delete block?')) return
+const isDeleteBlockOpen = ref(false)
+const blockToDelete = ref<string | null>(null)
+const deleteBlockLoading = ref(false)
 
+const openDeleteBlock = (id: string) => {
+  blockToDelete.value = id
+  isDeleteBlockOpen.value = true
+}
+
+const onConfirmDeleteBlock = async () => {
+  if (!blockToDelete.value) return
+
+  deleteBlockLoading.value = true
   try {
-    await deleteBlock(id)
-    await refetchBlocks()
-    if (activeBlockId.value === id) activeBlockId.value = null
+    await deleteBlock(blockToDelete.value)
+
+    if (blocks.value) {
+      blocks.value = blocks.value.filter(b => b.id !== blockToDelete.value)
+    }
+    if (activeBlockId.value === blockToDelete.value) activeBlockId.value = null
+    isDeleteBlockOpen.value = false
   } catch (e) {
     console.error(e)
+  } finally {
+    deleteBlockLoading.value = false
+    blockToDelete.value = null
+  }
+}
+
+const onBlockDrop = async (event: SortableEvent) => {
+  const { newIndex, oldIndex } = event
+  if (newIndex === oldIndex) return
+
+  const movedBlock = blocks.value[newIndex!]
+  const prevBlock = blocks.value[newIndex! - 1]
+  const nextBlock = blocks.value[newIndex! + 1]
+
+  let newOrder = 0
+  if (!prevBlock) {
+    newOrder = (nextBlock?.orderIndex || 0) / 2
+  } else if (!nextBlock) {
+    newOrder = (prevBlock?.orderIndex || 0) + 1024
+  } else {
+    newOrder = (prevBlock.orderIndex + nextBlock.orderIndex) / 2
+  }
+
+  movedBlock!.orderIndex = newOrder
+
+  try {
+    await reorderBlock(movedBlock!.id, newOrder)
+  } catch (e) {
+    console.error('Failed to reorder', e)
+    await refetchBlocks()
   }
 }
 
@@ -373,9 +418,13 @@ const addBlockItems = computed(() => [
             <p>{{ $t('pages.studio.builder.no-blocks') }}</p>
           </div>
 
-          <div
+          <VueDraggable
             v-else
+            v-model="blocks"
+            :animation="150"
+            handle=".drag-handle"
             class="space-y-4"
+            @end="onBlockDrop"
           >
             <div
               v-for="(block) in blocks"
@@ -401,13 +450,13 @@ const addBlockItems = computed(() => [
                     icon="i-lucide-grip-vertical"
                     variant="ghost"
                     color="neutral"
-                    class="cursor-grab"
+                    class="cursor-grab drag-handle"
                   />
                   <UButton
                     icon="i-lucide-trash"
                     variant="ghost"
                     color="error"
-                    @click.stop="onDeleteBlock(block.id)"
+                    @click.stop="openDeleteBlock(block.id)"
                   />
                 </div>
               </div>
@@ -418,7 +467,7 @@ const addBlockItems = computed(() => [
                 </div>
               </div>
             </div>
-          </div>
+          </VueDraggable>
 
           <div class="sticky bottom-4 mt-8 flex justify-center z-20">
             <UDropdownMenu
@@ -518,12 +567,21 @@ const addBlockItems = computed(() => [
     />
 
     <ConfirmModal
-      v-model:open="isDeleteOpen"
+      v-model:open="isDeleteLessonOpen"
       danger
       :title="$t('pages.studio.builder.delete-lesson-title')"
       :description="$t('pages.studio.builder.delete-lesson-confirm')"
-      :loading="deleteLoading"
-      @confirm="onConfirmDelete"
+      :loading="deleteLessonLoading"
+      @confirm="onConfirmDeleteLesson"
+    />
+
+    <ConfirmModal
+      v-model:open="isDeleteBlockOpen"
+      danger
+      :title="$t('pages.studio.builder.delete-block-title')"
+      :description="$t('pages.studio.builder.delete-block-confirm')"
+      :loading="deleteBlockLoading"
+      @confirm="onConfirmDeleteBlock"
     />
   </UDashboardGroup>
 </template>
