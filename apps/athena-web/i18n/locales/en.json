@@ -15,6 +15,27 @@
     "of": "of",
     "edit": "Edit"
   },
+  "editor": {
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "inline_code": "Inline Code",
+    "link": "Link",
+    "code_snippet": "Code Snippet",
+    "h1": "Heading 1",
+    "h2": "Heading 2",
+    "h3": "Heading 3",
+    "bullet_list": "Bullet List",
+    "ordered_list": "Numbered List",
+    "quote": "Quote",
+    "code_block": "Code Block",
+    "text": "Text",
+    "paragraph": "Paragraph",
+    "lists": "Lists",
+    "insert": "Insert",
+    "divider": "Divider",
+    "placeholder": "Type '/' for commands..."
+  },
   "components": {
     "common": {
       "file-uploader": {

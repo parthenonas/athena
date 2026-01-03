@@ -120,7 +120,9 @@ export interface BlockResponse {
   id: string;
   lessonId: string;
   type: BlockType;
-  content: Record<string, unknown>;
+  content: {
+    json: Record<string, unknown>;
+  };
   requiredAction: BlockRequiredAction;
   orderIndex: number;
   createdAt: Date;

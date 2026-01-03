@@ -10,13 +10,12 @@ definePageMeta({
 const route = useRoute()
 const { t, locale, setLocale } = useI18n()
 
-const { fetchAllLessons, deleteLesson, fetchBlocks, createBlock, deleteBlock, reorderBlock } = useStudio()
+const { fetchAllLessons, deleteLesson, fetchBlocks, createBlock, deleteBlock, reorderBlock, updateBlock } = useStudio()
 const authStore = useAuthStore()
 
 const courseId = route.params.id as string
 
 const { data: lessons, refresh: refreshLessons } = await useAsyncData<LessonResponse[]>(
-  `lessons-${courseId}`,
   () => fetchAllLessons(courseId),
   { default: () => [] }
 )
@@ -33,7 +32,7 @@ watchEffect(() => {
   }
 })
 
-const { data: blocks, refresh: refetchBlocks } = useAsyncData(`blocks-${activeLessonId.value}`, async () => {
+const { data: blocks, refresh: refetchBlocks } = useAsyncData(async () => {
   return await fetchBlocks(activeLessonId.value!)
 }, { default: () => [], watch: [activeLessonId] })
 
@@ -100,8 +99,8 @@ const onAddBlock = async (type: BlockType) => {
   if (!activeLessonId.value) return
 
   let content = {}
-  if (type === BlockType.Text) content = { json: { type: 'doc', content: [] } }
-  if (type === BlockType.Code) content = { language: 'javascript', initialCode: '// Write your code here' }
+  if (type === BlockType.Text) content = { json: { type: 'doc', content: [{ type: 'paragraph' }] } }
+  if (type === BlockType.Code) content = { language: 'python', initialCode: '// Write your code here' }
 
   const newBlock = await createBlock({
     lessonId: activeLessonId.value,
@@ -221,6 +220,14 @@ const addBlockItems = computed(() => [
     onSelect: () => onAddBlock(t.type)
   }))
 ])
+
+const updateBlockContent = useDebounceFn(async (id: string, content: Record<string, unknown>) => {
+  try {
+    await updateBlock(id, { content })
+  } catch (e) {
+    console.error('Failed to autosave block', e)
+  }
+}, 1000)
 </script>
 
 <template>
@@ -437,7 +444,7 @@ const addBlockItems = computed(() => [
               ]"
               @click="activeBlockId = block.id"
             >
-              <div class="flex items-center justify-between px-4 py-2 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50 rounded-t-lg">
+              <div class="flex items-center justify-between px-4 py-2">
                 <div class="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase">
                   <UIcon
                     :name="blockTypes.find(t => t.type === block.type)?.icon || 'i-lucide-box'"
@@ -461,8 +468,21 @@ const addBlockItems = computed(() => [
                 </div>
               </div>
 
-              <div class="p-4 min-h-15 cursor-pointer">
-                <div class="text-sm text-gray-400 italic">
+              <div
+                class="p-4 cursor-text"
+                @click.stop
+              >
+                <StudioBlocksText
+                  v-if="block.type === BlockType.Text"
+                  v-model="block.content"
+                  @change="updateBlockContent(block.id, block.content)"
+                  @focus="activeBlockId = block.id"
+                />
+
+                <div
+                  v-else
+                  class="text-sm text-gray-400 italic"
+                >
                   {{ block.type }} content preview...
                 </div>
               </div>

@@ -125,16 +125,16 @@ describe("BlockController", () => {
 
   describe("update", () => {
     it("should update block passing policies", async () => {
-      const dto: UpdateBlockDto = { content: { new: "data" } };
+      const dto: UpdateBlockDto = { content: { json: { new: "data" } } };
       const policies = [Policy.OWN_ONLY];
       const req = { appliedPolicies: policies } as unknown as Request;
 
-      service.update.mockResolvedValue({ ...mockReadBlock, content: { new: "data" } });
+      service.update.mockResolvedValue({ ...mockReadBlock, content: { json: { new: "data" } } });
 
       const result = await controller.update(BLOCK_ID, dto, USER_ID, req);
 
       expect(service.update).toHaveBeenCalledWith(BLOCK_ID, dto, USER_ID, policies);
-      expect(result.content).toEqual({ new: "data" });
+      expect(result.content).toEqual({ json: { new: "data" } });
     });
   });
 

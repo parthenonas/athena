@@ -25,7 +25,7 @@ export class ReadBlockDto implements BlockResponse {
    * Structure depends on `type`.
    */
   @Expose()
-  content!: Record<string, unknown>;
+  content!: { json: Record<string, unknown> };
 
   /**
    * What the student must do to complete this block.
