@@ -1,4 +1,13 @@
 {
+  "blocks": {
+    "type": {
+      "text": "Text",
+      "code": "Code",
+      "video": "Video",
+      "image": "Image",
+      "quiz": "Quiz"
+    }
+  },
   "common": {
     "save": "Save",
     "copy": "Copy",
@@ -13,7 +22,8 @@
     "download": "Download",
     "upload": "Upload",
     "of": "of",
-    "edit": "Edit"
+    "edit": "Edit",
+    "drag": "Drag to reorder"
   },
   "editor": {
     "bold": "Bold",
@@ -342,9 +352,9 @@
     },
     "studio": {
       "builder": {
+        "add-block": "Add Block",
+        "block_preview": "Content preview...",
         "delete-block-title": "Delete Content Block?",
-        "delete-block-confirm": "Are you sure? This action cannot be undone.",
-        "add-block": "Add Content",
         "block-settings": "Block Settings",
         "structure": "Course Structure",
         "no-lesson-selected": "No Lesson Selected",
@@ -357,7 +367,46 @@
         "show-inspector": "Show Inspector",
         "hide-inspector": "Hide Inspector",
         "no-blocks": "No content blocks yet. Add one to start.",
-        "select-element": "Select a lesson or block to edit properties."
+        "select-element": "Select a lesson or block to edit properties.",
+        "inspector": {
+          "lesson": "Lesson",
+          "type": "Type",
+          "general": "General Settings",
+          "status": "Status",
+          "is-draft": "Draft Mode",
+          "is-draft-hint": "Hidden from students",
+          "lesson-properties": "Lesson Properties",
+          "video-settings": "Video Configuration",
+          "image-settings": "Image Configuration",
+          "code-settings": "Code Execution",
+          "required-action": "Required Action",
+          "no-settings": "No specific settings available for this block type.",
+          "blocks": {
+            "text": {
+              "title": "Text Editor",
+              "description": "Edit text content directly in the canvas area."
+            },
+            "video": {
+              "settings": "Video Configuration",
+              "url": "Video URL",
+              "duration": "Duration (sec)",
+              "size": "Size (bytes)"
+            },
+            "image": {
+              "settings": "Image Configuration",
+              "url": "Image URL",
+              "caption": "Caption",
+              "caption-placeholder": "Image description..."
+            },
+            "code": {
+              "settings": "Code Execution",
+              "language": "Language",
+              "execution_mode": "Execution Mode",
+              "time-limit": "Time Limit (ms)",
+              "memory-limit": "Memory Limit (MB)"
+            }
+          }
+        }
       }
     }
   },

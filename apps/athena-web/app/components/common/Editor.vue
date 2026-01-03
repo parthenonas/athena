@@ -119,6 +119,7 @@ const suggestionItems = computed<EditorSuggestionMenuItem[][]>(() => [
       :disabled="readOnly"
       :placeholder="$t('editor.placeholder')"
       class="prose dark:prose-invert max-w-none focus:outline-none min-h-12"
+      :ui="{ content: 'p-0!' }"
       @focus="emit('focus')"
       @blur="emit('blur')"
     >
@@ -132,8 +133,6 @@ const suggestionItems = computed<EditorSuggestionMenuItem[][]>(() => [
         :editor="editor"
         :items="suggestionItems"
       />
-
-      <UEditorDragHandle :editor="editor" />
     </UEditor>
   </div>
 </template>
