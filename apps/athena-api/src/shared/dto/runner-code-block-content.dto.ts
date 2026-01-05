@@ -1,4 +1,4 @@
-import { CodeBlockContent, ProgrammingLanguage, CodeExecutionMode } from "@athena/types";
+import { CodeBlockContent, ProgrammingLanguage, CodeExecutionMode, type TextBlockContent } from "@athena/types";
 import { IsNotEmpty, IsString, IsOptional, IsNumber } from "class-validator";
 
 /**
@@ -9,6 +9,9 @@ export class RunnerCodeBlockContentDto implements CodeBlockContent {
   /** Programming language (e.g., 'python', 'javascript'). */
   @IsNotEmpty()
   language!: ProgrammingLanguage;
+
+  @IsNotEmpty()
+  taskText!: TextBlockContent;
 
   /** The source code to be compiled or executed. */
   @IsString()

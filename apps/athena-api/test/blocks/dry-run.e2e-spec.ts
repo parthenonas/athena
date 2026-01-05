@@ -68,6 +68,7 @@ describe("POST /blocks/dry-run (e2e)", () => {
       lessonId: lessonId,
       socketId: "socket-abc-123",
       content: {
+        taskText: { json: {} },
         language: ProgrammingLanguage.Python,
         initialCode: "print('Hello E2E')",
         executionMode: CodeExecutionMode.IoCheck,
@@ -94,6 +95,7 @@ describe("POST /blocks/dry-run (e2e)", () => {
       lessonId: lessonId,
       socketId: "socket-hacker",
       content: {
+        taskText: { json: {} },
         language: ProgrammingLanguage.Python,
         initialCode: "print('hack')",
         executionMode: CodeExecutionMode.IoCheck,

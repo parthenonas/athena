@@ -171,6 +171,7 @@ describe("BlockController", () => {
       lessonId: LESSON_ID,
       socketId: "socket-abc-123",
       content: {
+        taskText: { json: {} },
         language: ProgrammingLanguage.Python,
         initialCode: "print('Hello World')",
         executionMode: CodeExecutionMode.IoCheck,

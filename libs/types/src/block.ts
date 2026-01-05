@@ -53,7 +53,8 @@ export interface ImageBlockContent {
 
 export interface CodeBlockContent {
   language: ProgrammingLanguage;
-  initialCode: string;
+  taskText: TextBlockContent;
+  initialCode?: string;
   executionMode: CodeExecutionMode;
   inputData?: string;
   outputData?: string;
@@ -75,12 +76,12 @@ export interface QuizQuestion {
   correctAnswerText?: string;
 }
 
-export interface QuizContent {
+export interface QuizBlockContent {
   questions: QuizQuestion[];
   passPercentage: number;
 }
 
-export interface SurveyContent {
+export interface SurveyBlockContent {
   questions: SurveyQuestion[];
 }
 
@@ -105,7 +106,7 @@ export enum BlockRequiredAction {
 export interface CreateBlockRequest {
   lessonId: string;
   type: BlockType;
-  content: Record<string, unknown>;
+  content: BlockContent;
   orderIndex?: number;
   requiredAction?: BlockRequiredAction;
 }
@@ -120,13 +121,28 @@ export interface BlockResponse {
   id: string;
   lessonId: string;
   type: BlockType;
-  content: {
-    json: Record<string, unknown>;
-  };
   requiredAction: BlockRequiredAction;
   orderIndex: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
+export interface TextBlockResponse extends BlockResponse {
+  content: TextBlockContent;
+}
+
+export interface CodeBlockResponse extends BlockResponse {
+  content: CodeBlockContent;
+}
+
+export interface QuizBlockResponse extends BlockResponse {
+  content: QuizBlockContent;
+}
+
+export interface SurveyBlockResponse extends BlockResponse {
+  content: SurveyBlockContent;
+}
+
 export type UpdateBlockRequest = Partial<CreateBlockRequest>;
+
+export type BlockContent = CodeBlockContent | TextBlockContent | QuizBlockContent | SurveyBlockContent;

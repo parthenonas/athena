@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { BlockType } from '@athena/types'
-import type { LessonResponse, UpdateLessonRequest, UpdateBlockRequest, BlockResponse } from '@athena/types'
+import { BlockType, CodeExecutionMode } from '@athena/types'
+import type { LessonResponse, UpdateLessonRequest, UpdateBlockRequest, BlockResponse, TextBlockContent, CodeBlockContent, BlockContent } from '@athena/types'
 import type { SortableEvent } from 'vue-draggable-plus'
 import { useDebounceFn } from '@vueuse/core'
 
@@ -54,6 +54,7 @@ const { data: blocks, refresh: refetchBlocks } = useAsyncData(`blocks-${activeLe
 
 const activeBlock = computed(() =>
   blocks.value.find(b => b.id === activeBlockId.value)
+
 )
 
 const isInspectorOpen = ref(true)
@@ -125,9 +126,17 @@ const onReorderLessons = async (event: SortableEvent) => {
 const onAddBlock = async (type: BlockType) => {
   if (!activeLessonId.value) return
 
-  let content = {}
-  if (type === BlockType.Text) content = { json: { type: 'doc', content: [] } }
-  if (type === BlockType.Code) content = { language: 'python', initialCode: '' }
+  let content = {} as BlockContent
+  if (type === BlockType.Text) {
+    content = { json: { type: 'doc', content: [{ type: 'paragraph' }] } } as TextBlockContent
+  }
+  if (type === BlockType.Code) {
+    content = {
+      language: 'python',
+      initialCode: '',
+      taskText: { json: { type: 'doc', content: [{ type: 'paragraph' }] } } as TextBlockContent,
+      executionMode: CodeExecutionMode.IoCheck } as CodeBlockContent
+  }
 
   const newBlock = await createBlock({
     lessonId: activeLessonId.value,
@@ -163,15 +172,18 @@ const onConfirmDeleteBlock = async () => {
   }
 }
 
-const onUpdateBlock = useDebounceFn(async (id: string, payload: UpdateBlockRequest) => {
-  const blockIndex = blocks.value.findIndex(b => b.id === id)
-  if (blockIndex !== -1) {
-    blocks.value[blockIndex] = { ...blocks.value[blockIndex], ...payload } as BlockResponse
-  }
+const onUpdateBlock = (id: string, payload: UpdateBlockRequest) => {
+  blocks.value = blocks.value.map(b =>
+    b.id === id ? { ...b, ...payload } as BlockResponse : b
+  )
+  serverUpdateBlock(id, payload)
+}
+
+const serverUpdateBlock = useDebounceFn(async (id: string, payload: UpdateBlockRequest) => {
   try {
     await updateBlock(id, payload)
   } catch (e) {
-    console.error(e)
+    console.error('Block save failed', e)
   }
 }, 500)
 

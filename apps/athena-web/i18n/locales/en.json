@@ -6,6 +6,22 @@
       "video": "Video",
       "image": "Image",
       "quiz": "Quiz"
+    },
+    "code": {
+      "task-description": "Task Description",
+      "run": "Run",
+      "running": "Running...",
+      "tabs": {
+        "solution": "Solution",
+        "tests": "Unit Tests"
+      },
+      "tests-hint": "Hidden execution code. Use assertions to verify the student's solution.",
+      "console": {
+        "title": "Console Output",
+        "empty": "Output will appear here...",
+        "success": "Tests passed successfully!",
+        "error": "Execution error"
+      }
     }
   },
   "common": {
@@ -399,11 +415,18 @@
               "caption-placeholder": "Image description..."
             },
             "code": {
-              "settings": "Code Execution",
+              "environment": "Execution Environment",
               "language": "Language",
-              "execution_mode": "Execution Mode",
-              "time-limit": "Time Limit (ms)",
-              "memory-limit": "Memory Limit (MB)"
+              "time-limit": "Time (ms)",
+              "memory-limit": "Memory (MB)",
+              "validation": "Validation Logic",
+              "mode-io": "I/O Comparison",
+              "mode-unit": "Unit Tests",
+              "input-stdin": "Input (STDIN)",
+              "output-stdout": "Expected Output (STDOUT)",
+              "io-hint": "Standard input will be piped to the program, and output compared exactly.",
+              "unit-test-title": "Edit Tests in Canvas",
+              "unit-test-desc": "Switch to the 'Tests' tab in the main editor window to write your assertion code."
             }
           }
         }

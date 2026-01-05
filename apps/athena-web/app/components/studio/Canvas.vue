@@ -1,20 +1,23 @@
 <script setup lang="ts">
 import { VueDraggable, type SortableEvent } from 'vue-draggable-plus'
-import { BlockType, type BlockResponse } from '@athena/types'
+import { BlockType, type BlockResponse, type CodeBlockResponse, type TextBlockResponse, type UpdateBlockRequest } from '@athena/types'
 
 const props = defineProps<{
   blocks: BlockResponse[]
   activeBlockId: string | null
   loading?: boolean
+  readOnly?: boolean
+  executionStates?: Record<string, { isRunning: boolean, output: string }>
 }>()
 
 const emit = defineEmits<{
   (e: 'update:blocks', value: BlockResponse[]): void
   (e: 'update:activeBlockId', id: string | null): void
   (e: 'add', type: BlockType): void
-  (e: 'update', id: string, content: unknown): void
+  (e: 'update', id: string, payload: UpdateBlockRequest): void
   (e: 'delete', id: string): void
   (e: 'reorder', event: SortableEvent): void
+  (e: 'run', blockId: string, code: string): void
 }>()
 
 const { t } = useI18n()
@@ -44,6 +47,8 @@ const onBackgroundClick = () => {
     emit('update:activeBlockId', null)
   }
 }
+
+watch(props.blocks, newVal => console.log(newVal))
 </script>
 
 <template>
@@ -107,9 +112,23 @@ const onBackgroundClick = () => {
           <div class="cursor-text w-full">
             <StudioBlocksText
               v-if="block.type === BlockType.Text"
-              v-model="block.content"
-              @change="emit('update', block.id, { content: block.content })"
+              :model-value="(block as TextBlockResponse).content"
+              :read-only="readOnly"
+              @update:model-value="emit('update', block.id, { ...block, content: $event })"
+              @change="emit('update', block.id, { ...block, content: $event })"
               @focus="emit('update:activeBlockId', block.id)"
+            />
+
+            <StudioBlocksCode
+              v-else-if="block.type === BlockType.Code"
+              :model-value="(block as CodeBlockResponse).content"
+              :read-only="readOnly"
+              :is-running="executionStates?.[block.id]?.isRunning"
+              :output="executionStates?.[block.id]?.output"
+              @update:model-value="emit('update', block.id, { ...block, content: $event })"
+              @change="emit('update', block.id, { ...block, content: $event })"
+              @focus="emit('update:activeBlockId', block.id)"
+              @run="(code) => emit('run', block.id, code)"
             />
 
             <div

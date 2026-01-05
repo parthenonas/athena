@@ -233,6 +233,7 @@ describe("BlockService", () => {
       const validCodeUpdate: UpdateBlockDto = {
         type: BlockType.Code,
         content: {
+          taskText: { json: {} },
           language: ProgrammingLanguage.Python,
           initialCode: "print('Hello')",
         },
@@ -297,6 +298,7 @@ describe("BlockService", () => {
     const dryRunDto: BlockDryRunDto = {
       lessonId: LESSON_ID,
       content: {
+        taskText: { json: {} },
         language: ProgrammingLanguage.Python,
         initialCode: "print('test')",
         executionMode: "io_check" as any,
