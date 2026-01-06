@@ -1,4 +1,50 @@
 {
+  "blocks": {
+    "type": {
+      "text": "Text",
+      "code": "Code",
+      "video": "Video",
+      "image": "Image",
+      "quiz": "Quiz"
+    },
+    "code": {
+      "task-description": "Task Description",
+      "run": "Run",
+      "running": "Running...",
+      "tabs": {
+        "solution": "Solution",
+        "tests": "Unit Tests",
+        "setup": "Setup Scripts"
+      },
+      "setup-hint": "This code will be executed before tests are run (for example, initializing the database or importing libraries).",
+      "tests-hint": "Hidden execution code. Use assertions to verify the student's solution.",
+      "console": {
+        "title": "Console Output",
+        "empty": "Output will appear here...",
+        "success": "Tests passed successfully!",
+        "error": "Execution error"
+      }
+    }
+  },
+  "execution": {
+    "status": {
+      "ac": "Accepted",
+      "wa": "Wrong Answer",
+      "tle": "Time Limit Exceeded",
+      "wtle": "Wall Time Limit Exceeded",
+      "mle": "Memory Limit Exceeded",
+      "ce": "Compilation Error",
+      "rte": "Runtime Error",
+      "syserr": "System Error",
+      "process": "Processing...",
+      "queue": "Queued..."
+    },
+    "labels": {
+      "time": "Time",
+      "memory": "Memory",
+      "exit_code": "Exit Code"
+    }
+  },
   "common": {
     "save": "Save",
     "copy": "Copy",
@@ -13,7 +59,29 @@
     "download": "Download",
     "upload": "Upload",
     "of": "of",
-    "edit": "Edit"
+    "edit": "Edit",
+    "drag": "Drag to reorder"
+  },
+  "editor": {
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "inline_code": "Inline Code",
+    "link": "Link",
+    "code_snippet": "Code Snippet",
+    "h1": "Heading 1",
+    "h2": "Heading 2",
+    "h3": "Heading 3",
+    "bullet_list": "Bullet List",
+    "ordered_list": "Numbered List",
+    "quote": "Quote",
+    "code_block": "Code Block",
+    "text": "Text",
+    "paragraph": "Paragraph",
+    "lists": "Lists",
+    "insert": "Insert",
+    "divider": "Divider",
+    "placeholder": "Type '/' for commands..."
   },
   "components": {
     "common": {
@@ -41,6 +109,14 @@
         "desc-label": "Description",
         "tags-label": "Tags",
         "tags-placeholder": "Type and press Enter to add tag..."
+      },
+      "lesson-modal": {
+        "create-title": "Create Lesson",
+        "edit-title": "Edit Lesson",
+        "title-label": "Lesson Title",
+        "goals-label": "Learning Goals",
+        "draft-label": "Save as Draft",
+        "draft-help": "Students won't see this lesson until you publish it."
       }
     },
     "admin": {
@@ -310,6 +386,72 @@
       },
       "published": "Published",
       "draft": "Draft"
+    },
+    "studio": {
+      "builder": {
+        "add-block": "Add Block",
+        "block_preview": "Content preview...",
+        "delete-block-title": "Delete Content Block?",
+        "block-settings": "Block Settings",
+        "structure": "Course Structure",
+        "no-lesson-selected": "No Lesson Selected",
+        "select-lesson-hint": "Select a lesson from the sidebar to start editing",
+        "delete-lesson-title": "Delete Lesson?",
+        "delete-lesson-confirm": "Are you sure? This will permanently delete the lesson and all its content blocks.",
+        "add-lesson": "Add Lesson",
+        "properties": "Properties",
+        "preview": "Preview",
+        "show-inspector": "Show Inspector",
+        "hide-inspector": "Hide Inspector",
+        "no-blocks": "No content blocks yet. Add one to start.",
+        "select-element": "Select a lesson or block to edit properties.",
+        "inspector": {
+          "lesson": "Lesson",
+          "type": "Type",
+          "general": "General Settings",
+          "status": "Status",
+          "is-draft": "Draft Mode",
+          "is-draft-hint": "Hidden from students",
+          "lesson-properties": "Lesson Properties",
+          "video-settings": "Video Configuration",
+          "image-settings": "Image Configuration",
+          "code-settings": "Code Execution",
+          "required-action": "Required Action",
+          "no-settings": "No specific settings available for this block type.",
+          "blocks": {
+            "text": {
+              "title": "Text Editor",
+              "description": "Edit text content directly in the canvas area."
+            },
+            "video": {
+              "settings": "Video Configuration",
+              "url": "Video URL",
+              "duration": "Duration (sec)",
+              "size": "Size (bytes)"
+            },
+            "image": {
+              "settings": "Image Configuration",
+              "url": "Image URL",
+              "caption": "Caption",
+              "caption-placeholder": "Image description..."
+            },
+            "code": {
+              "environment": "Execution Environment",
+              "language": "Language",
+              "time-limit": "Time (ms)",
+              "memory-limit": "Memory (MB)",
+              "validation": "Validation Logic",
+              "mode-io": "I/O Comparison",
+              "mode-unit": "Unit Tests",
+              "input-stdin": "Input (STDIN)",
+              "output-stdout": "Expected Output (STDOUT)",
+              "io-hint": "Standard input will be piped to the program, and output compared exactly.",
+              "unit-test-title": "Edit Tests in Canvas",
+              "unit-test-desc": "Switch to the 'Tests' tab in the main editor window to write your assertion code."
+            }
+          }
+        }
+      }
     }
   },
   "permissions": {
@@ -409,6 +551,14 @@
       "create-error": "Failed to create course",
       "update-error": "Failed to update course",
       "delete-error": "Failed to delete course"
+    },
+    "lessons": {
+      "created": "Lesson created successfully",
+      "updated": "Lesson updated",
+      "deleted": "Lesson deleted",
+      "create-error": "Failed to create lesson",
+      "update-error": "Failed to update lesson",
+      "delete-error": "Failed to delete lesson"
     }
   }
 }

@@ -1,4 +1,4 @@
-import { BlockRequiredAction, BlockType, CreateBlockRequest } from "@athena/types";
+import { type BlockContent, BlockRequiredAction, BlockType, CreateBlockRequest } from "@athena/types";
 import { IsEnum, IsNotEmpty, IsNumber, IsObject, IsOptional, IsUUID } from "class-validator";
 
 /**
@@ -27,7 +27,7 @@ export class CreateBlockDto implements CreateBlockRequest {
    */
   @IsObject()
   @IsNotEmpty()
-  content!: Record<string, unknown>;
+  content!: BlockContent;
 
   /**
    * Specific order index.

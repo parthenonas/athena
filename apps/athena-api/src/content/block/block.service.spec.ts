@@ -1,4 +1,4 @@
-import { BlockRequiredAction, BlockType, Policy, ProgrammingLanguage } from "@athena/types";
+import { BlockRequiredAction, BlockType, CodeExecutionMode, Policy, ProgrammingLanguage } from "@athena/types";
 import { BadRequestException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
@@ -146,7 +146,7 @@ describe("BlockService", () => {
       const invalidDto: CreateBlockDto = {
         lessonId: LESSON_ID,
         type: BlockType.Code,
-        content: { garbage: "data" },
+        content: { json: { garbage: "data" } },
       };
 
       await expect(service.create(invalidDto, USER_ID)).rejects.toThrow(BadRequestException);
@@ -219,7 +219,7 @@ describe("BlockService", () => {
 
       const badUpdateDto: UpdateBlockDto = {
         type: BlockType.Code,
-        content: { just: "trash" },
+        content: { json: { just: "trash" } },
       };
 
       await expect(service.update(BLOCK_ID, badUpdateDto, USER_ID)).rejects.toThrow(BadRequestException);
@@ -233,8 +233,10 @@ describe("BlockService", () => {
       const validCodeUpdate: UpdateBlockDto = {
         type: BlockType.Code,
         content: {
+          taskText: { json: {} },
           language: ProgrammingLanguage.Python,
           initialCode: "print('Hello')",
+          executionMode: CodeExecutionMode.IoCheck,
         },
       };
 
@@ -297,11 +299,13 @@ describe("BlockService", () => {
     const dryRunDto: BlockDryRunDto = {
       lessonId: LESSON_ID,
       content: {
+        taskText: { json: {} },
         language: ProgrammingLanguage.Python,
         initialCode: "print('test')",
         executionMode: "io_check" as any,
       },
       socketId: "socket-123",
+      blockId: "block-123",
     };
 
     it("should initiate dry run if allowed", async () => {

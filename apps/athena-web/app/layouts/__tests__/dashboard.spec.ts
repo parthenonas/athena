@@ -45,6 +45,7 @@ describe('Dashboard Layout', () => {
             template: `
               <div>
                 <slot :collapsed="false" />
+                <slot name="header" :collapsed="false" />
                 <slot name="footer" :collapsed="false" />
               </div>
             `

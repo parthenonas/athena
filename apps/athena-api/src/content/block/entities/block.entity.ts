@@ -1,4 +1,4 @@
-import { BlockRequiredAction, BlockType } from "@athena/types";
+import { type BlockContent, BlockRequiredAction, BlockType } from "@athena/types";
 import {
   Column,
   CreateDateColumn,
@@ -32,7 +32,7 @@ export class Block {
   type!: BlockType;
 
   @Column({ type: "jsonb", default: {} })
-  content!: Record<string, unknown>;
+  content!: BlockContent;
 
   @Column({
     type: "enum",

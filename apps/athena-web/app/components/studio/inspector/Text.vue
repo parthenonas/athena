@@ -1,0 +1,9 @@
+<template>
+  <UAlert
+    icon="i-lucide-info"
+    color="neutral"
+    variant="subtle"
+    :title="$t('pages.studio.builder.inspector.blocks.text.title')"
+    :description="$t('pages.studio.builder.inspector.blocks.text.description')"
+  />
+</template>
