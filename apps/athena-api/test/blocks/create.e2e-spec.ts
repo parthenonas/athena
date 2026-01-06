@@ -1,4 +1,4 @@
-import { Permission, ProgrammingLanguage, BlockType } from "@athena/types";
+import { Permission, ProgrammingLanguage, BlockType, CodeExecutionMode } from "@athena/types";
 import { INestApplication } from "@nestjs/common";
 import request from "supertest";
 import { v4 as uuid } from "uuid";
@@ -93,7 +93,8 @@ describe("POST /blocks (e2e)", () => {
       content: {
         language: ProgrammingLanguage.Python,
         initialCode: "print('Hello')",
-        executionMode: "io_check",
+        executionMode: CodeExecutionMode.IoCheck,
+        taskText: { json: {} },
       },
       orderIndex: 500,
     };
@@ -159,7 +160,9 @@ describe("POST /blocks (e2e)", () => {
     const dto: CreateBlockDto = {
       lessonId: creatorLessonId,
       type: BlockType.Code,
-      content: { language: ProgrammingLanguage.Python },
+      content: {
+        language: ProgrammingLanguage.Python,
+      } as any,
     };
 
     const res = await http.post("/blocks").set("Authorization", `Bearer ${creatorToken}`).send(dto);

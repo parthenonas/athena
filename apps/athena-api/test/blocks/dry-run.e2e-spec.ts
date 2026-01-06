@@ -67,6 +67,7 @@ describe("POST /blocks/dry-run (e2e)", () => {
     const dto: BlockDryRunDto = {
       lessonId: lessonId,
       socketId: "socket-abc-123",
+      blockId: "blockId",
       content: {
         taskText: { json: {} },
         language: ProgrammingLanguage.Python,
@@ -94,6 +95,7 @@ describe("POST /blocks/dry-run (e2e)", () => {
     const dto: BlockDryRunDto = {
       lessonId: lessonId,
       socketId: "socket-hacker",
+      blockId: "block-id",
       content: {
         taskText: { json: {} },
         language: ProgrammingLanguage.Python,

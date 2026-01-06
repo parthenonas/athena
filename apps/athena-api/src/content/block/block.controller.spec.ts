@@ -73,7 +73,7 @@ describe("BlockController", () => {
       const dto: CreateBlockDto = {
         lessonId: LESSON_ID,
         type: BlockType.Text,
-        content: { text: "hello" },
+        content: { json: { text: "hello" } },
       };
 
       service.create.mockResolvedValue(mockReadBlock);
@@ -170,6 +170,7 @@ describe("BlockController", () => {
     const dryRunDto: BlockDryRunDto = {
       lessonId: LESSON_ID,
       socketId: "socket-abc-123",
+      blockId: "block-123",
       content: {
         taskText: { json: {} },
         language: ProgrammingLanguage.Python,
