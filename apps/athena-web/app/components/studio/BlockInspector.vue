@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BlockType, BlockRequiredAction, type BlockResponse, type UpdateBlockRequest } from '@athena/types'
+import { BlockType, BlockRequiredAction, type BlockResponse, type UpdateBlockRequest, type BlockContent } from '@athena/types'
 
 import StudioInspectorVideo from '~/components/studio/inspector/Video.vue'
 import StudioInspectorImage from '~/components/studio/inspector/Image.vue'
@@ -7,7 +7,7 @@ import StudioInspectorCode from '~/components/studio/inspector/Code.vue'
 import StudioInspectorText from '~/components/studio/inspector/Text.vue'
 
 const props = defineProps<{
-  block: BlockResponse
+  block: BlockResponse & { content: BlockContent }
 }>()
 
 const emit = defineEmits<{

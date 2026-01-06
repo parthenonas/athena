@@ -54,7 +54,7 @@ const { data: blocks, refresh: refetchBlocks } = useAsyncData(`blocks-${activeLe
 }, { default: () => [], watch: [activeLessonId] })
 
 const activeBlock = computed(() =>
-  blocks.value.find(b => b.id === activeBlockId.value)
+  blocks.value.find(b => b.id === activeBlockId.value) as BlockResponse & { content: BlockContent }
 
 )
 
