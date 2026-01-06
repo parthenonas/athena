@@ -48,12 +48,16 @@ const testCode = computed({
   set: val => updateField('testCasesCode', val)
 })
 
+const setupCode = computed({
+  get: () => props.modelValue.inputData || '',
+  set: val => updateField('inputData', val)
+})
+
 const updateField = (key: keyof CodeBlockContent, value: unknown) => {
   emit('update:modelValue', { ...props.modelValue, [key]: value })
 }
 
 const items = computed(() => {
-  // Добавил value: 0, чтобы v-model работал четко с числами
   const tabs = [{
     label: t('blocks.code.tabs.solution'),
     icon: 'i-lucide-code-2',
@@ -65,6 +69,11 @@ const items = computed(() => {
       icon: 'i-lucide-flask-conical',
       value: 1
     })
+    tabs.push({
+      label: t('blocks.code.tabs.setup'),
+      icon: 'i-lucide-settings-2',
+      value: 2
+    })
   }
   return tabs
 })
@@ -74,7 +83,7 @@ const handleRun = () => {
 }
 
 watch(() => props.modelValue.executionMode, (newMode) => {
-  if (newMode !== CodeExecutionMode.UnitTest && activeTab.value === 1) {
+  if (newMode !== CodeExecutionMode.UnitTest && activeTab.value > 0) {
     activeTab.value = 0
   }
 })
@@ -92,7 +101,7 @@ watch(() => props.modelValue.executionMode, (newMode) => {
       <CommonEditor
         v-model="taskText"
         :read-only="readOnly"
-        class="min-h-[80px]"
+        class="min-h-20"
       />
     </div>
 
@@ -147,6 +156,26 @@ watch(() => props.modelValue.executionMode, (newMode) => {
           />
           <CommonCodeEditor
             v-model="testCode"
+            :language="modelValue.language"
+            min-height="200px"
+            @focus="emit('focus')"
+          />
+        </div>
+
+        <div
+          v-if="!readOnly && modelValue.executionMode === CodeExecutionMode.UnitTest"
+          v-show="activeTab === 2"
+          class="space-y-2"
+        >
+          <UAlert
+            icon="i-lucide-info"
+            color="info"
+            variant="subtle"
+            size="xs"
+            :description="$t('blocks.code.setup-hint')"
+          />
+          <CommonCodeEditor
+            v-model="setupCode"
             :language="modelValue.language"
             min-height="200px"
             @focus="emit('focus')"

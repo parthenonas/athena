@@ -10,7 +10,8 @@ import type {
   FilterLessonRequest,
   BlockResponse,
   CreateBlockRequest,
-  UpdateBlockRequest
+  UpdateBlockRequest,
+  BlockDryRunRequest
 } from '@athena/types'
 
 export const useStudio = () => {
@@ -309,6 +310,13 @@ export const useStudio = () => {
     })
   }
 
+  const runBlockCode = async (payload: BlockDryRunRequest) => {
+    return $api('/api/blocks/dry-run', {
+      method: 'POST',
+      body: payload
+    })
+  }
+
   return {
     fetchCourses,
     fetchCourse,
@@ -324,6 +332,7 @@ export const useStudio = () => {
     createBlock,
     updateBlock,
     deleteBlock,
-    reorderBlock
+    reorderBlock,
+    runBlockCode
   }
 }

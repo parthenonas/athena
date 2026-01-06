@@ -44,12 +44,17 @@ const actionOptions = computed(() => [
   { label: t('enums.action.pass'), value: BlockRequiredAction.PASS }
 ])
 
-const updateContent = (key: string, value: unknown) => {
+const updateContent = (keyOrPayload: string | Record<string, unknown>, value?: unknown) => {
+  let mergedContent = { ...props.block.content }
+
+  if (typeof keyOrPayload === 'string') {
+    mergedContent = { ...mergedContent, [keyOrPayload]: value }
+  } else {
+    mergedContent = { ...mergedContent, ...keyOrPayload }
+  }
+
   emit('update', props.block.id, {
-    content: {
-      ...props.block.content,
-      [key]: value
-    }
+    content: mergedContent
   })
 }
 

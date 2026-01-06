@@ -304,6 +304,7 @@ describe("BlockService", () => {
         executionMode: "io_check" as any,
       },
       socketId: "socket-123",
+      blockId: "block-123",
     };
 
     it("should initiate dry run if allowed", async () => {

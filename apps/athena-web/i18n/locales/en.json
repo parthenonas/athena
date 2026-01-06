@@ -13,8 +13,10 @@
       "running": "Running...",
       "tabs": {
         "solution": "Solution",
-        "tests": "Unit Tests"
+        "tests": "Unit Tests",
+        "setup": "Setup Scripts"
       },
+      "setup-hint": "This code will be executed before tests are run (for example, initializing the database or importing libraries).",
       "tests-hint": "Hidden execution code. Use assertions to verify the student's solution.",
       "console": {
         "title": "Console Output",
@@ -22,6 +24,25 @@
         "success": "Tests passed successfully!",
         "error": "Execution error"
       }
+    }
+  },
+  "execution": {
+    "status": {
+      "ac": "Accepted",
+      "wa": "Wrong Answer",
+      "tle": "Time Limit Exceeded",
+      "wtle": "Wall Time Limit Exceeded",
+      "mle": "Memory Limit Exceeded",
+      "ce": "Compilation Error",
+      "rte": "Runtime Error",
+      "syserr": "System Error",
+      "process": "Processing...",
+      "queue": "Queued..."
+    },
+    "labels": {
+      "time": "Time",
+      "memory": "Memory",
+      "exit_code": "Exit Code"
     }
   },
   "common": {

@@ -1,10 +1,9 @@
-import type { SubmissionCompletedEvent } from "@athena/types";
 import { Logger } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 
-import { AthenaEvent } from "../shared/events/types";
+import { AthenaEvent, type SubmissionCompletedEvent } from "../shared/events/types";
 
 /**
  * @class NotificationGateway
@@ -59,12 +58,12 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
    */
   @OnEvent(AthenaEvent.SUBMISSION_COMPLETED)
   handleSubmissionResult(event: SubmissionCompletedEvent) {
-    const { metadata, ...result } = event;
+    const { result } = event;
 
-    if (metadata?.socketId) {
-      this.logger.log(`Sending result to socket: ${metadata.socketId}`);
+    if (result.metadata?.socketId) {
+      this.logger.log(`Sending result to socket: ${result.metadata.socketId}`);
 
-      this.server.to(metadata.socketId).emit("execution_result", result);
+      this.server.to(result.metadata.socketId).emit("execution_result", result);
     }
   }
 }

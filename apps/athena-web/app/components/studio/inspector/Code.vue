@@ -1,15 +1,44 @@
 <script setup lang="ts">
 import { ProgrammingLanguage, CodeExecutionMode, type CodeBlockContent } from '@athena/types'
 
-defineProps<{
+const props = defineProps<{
   content: CodeBlockContent
 }>()
 
 const emit = defineEmits<{
-  (e: 'update', key: keyof CodeBlockContent, value: unknown): void
+  (e: 'update', payload: string | Partial<CodeBlockContent>, value?: unknown): void
 }>()
 
 const { t } = useI18n()
+
+const ioInputCache = ref('')
+const setupScriptCache = ref('')
+
+onMounted(() => {
+  if (props.content.executionMode === CodeExecutionMode.IoCheck) {
+    ioInputCache.value = props.content.inputData || ''
+  } else {
+    setupScriptCache.value = props.content.inputData || ''
+  }
+})
+
+const onExecutionModeChange = (newMode: CodeExecutionMode) => {
+  const currentVal = props.content.inputData || ''
+  if (props.content.executionMode === CodeExecutionMode.IoCheck) {
+    ioInputCache.value = currentVal
+  } else {
+    setupScriptCache.value = currentVal
+  }
+
+  const newVal = newMode === CodeExecutionMode.IoCheck
+    ? ioInputCache.value
+    : setupScriptCache.value
+
+  emit('update', {
+    executionMode: newMode,
+    inputData: newVal
+  })
+}
 
 const languageOptions = [
   { label: 'Python', value: ProgrammingLanguage.Python },
@@ -73,7 +102,7 @@ const executionModeOptions = [
           :items="executionModeOptions"
           value-key="value"
           class="w-full"
-          @update:model-value="val => emit('update', 'executionMode', val)"
+          @update:model-value="(val) => onExecutionModeChange(val as CodeExecutionMode)"
         />
       </div>
 

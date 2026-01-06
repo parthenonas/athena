@@ -17,4 +17,8 @@ export class BlockDryRunDto implements BlockDryRunRequest {
   @IsString()
   @IsNotEmpty()
   socketId!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  blockId!: string;
 }

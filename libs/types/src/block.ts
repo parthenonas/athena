@@ -115,6 +115,7 @@ export interface BlockDryRunRequest {
   lessonId: string;
   content: CodeBlockContent;
   socketId: string;
+  blockId: string;
 }
 
 export interface BlockResponse {

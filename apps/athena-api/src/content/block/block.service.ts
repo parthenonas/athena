@@ -355,6 +355,7 @@ export class BlockService extends BaseService<Block> {
         metadata: {
           socketId: dto.socketId,
           lessonId: dto.lessonId,
+          blockId: dto.blockId,
         },
       });
     } catch (error: unknown) {

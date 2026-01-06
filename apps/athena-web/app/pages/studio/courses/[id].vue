@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { BlockType, CodeExecutionMode } from '@athena/types'
-import type { LessonResponse, UpdateLessonRequest, UpdateBlockRequest, BlockResponse, TextBlockContent, CodeBlockContent, BlockContent } from '@athena/types'
+import type { SubmissionResult, LessonResponse, UpdateLessonRequest, UpdateBlockRequest, BlockResponse, TextBlockContent, CodeBlockContent, BlockContent, BlockDryRunRequest, CodeBlockResponse } from '@athena/types'
 import type { SortableEvent } from 'vue-draggable-plus'
 import { useDebounceFn } from '@vueuse/core'
 
@@ -17,7 +17,8 @@ const {
   deleteBlock,
   reorderBlock,
   updateBlock,
-  updateLesson
+  updateLesson,
+  runBlockCode
 } = useStudio()
 
 const courseId = route.params.id as string
@@ -208,6 +209,81 @@ const onReorderBlocks = async (event: SortableEvent) => {
     await refetchBlocks()
   }
 }
+
+const socketStore = useSocketStore()
+const { socketId } = storeToRefs(socketStore)
+
+const executionStates = ref<Record<string, { isRunning: boolean, output: string }>>({})
+const { parseSubmission } = useSubmissionParser()
+onMounted(() => {
+  socketStore.connect()
+
+  socketStore.on('execution_result', (data) => {
+    const rawResult = data as SubmissionResult
+
+    const completedBlockId = rawResult.metadata?.blockId
+
+    if (completedBlockId && executionStates.value[completedBlockId]) {
+      const { formattedOutput, statusLabel, isError, stats } = parseSubmission(rawResult)
+
+      let finalDisplay = ''
+
+      if (stats && !isError) {
+        finalDisplay += `[${statusLabel} | ${stats}]\n\n`
+      } else if (isError) {
+        finalDisplay += `[${statusLabel}]\n\n`
+      }
+
+      finalDisplay += formattedOutput
+
+      executionStates.value[completedBlockId] = {
+        isRunning: false,
+        output: finalDisplay
+      }
+    }
+  })
+})
+
+onUnmounted(() => {
+  socketStore.off('execution_result')
+})
+
+const onRunCode = async (blockId: string, code: string) => {
+  if (!activeLessonId.value || !socketId.value) {
+    console.error('Cannot run: Missing lessonId or socket connection')
+    return
+  }
+
+  const block = blocks.value.find(b => b.id === blockId)
+  if (!block || block.type !== BlockType.Code) return
+
+  executionStates.value[blockId] = {
+    isRunning: true,
+    output: ''
+  }
+
+  const contentPayload = {
+    ...((block as CodeBlockResponse).content),
+    initialCode: code
+  }
+
+  try {
+    const payload: BlockDryRunRequest = {
+      lessonId: activeLessonId.value,
+      blockId: blockId,
+      socketId: socketId.value,
+      content: contentPayload
+    }
+
+    await runBlockCode(payload)
+  } catch (e) {
+    console.error('Failed to start execution', e)
+    executionStates.value[blockId] = {
+      isRunning: false,
+      output: 'System Error: Failed to send request to server.'
+    }
+  }
+}
 </script>
 
 <template>
@@ -271,10 +347,12 @@ const onReorderBlocks = async (event: SortableEvent) => {
             v-model:blocks="blocks"
             v-model:active-block-id="activeBlockId"
             :loading="isBlocksLoading"
+            :execution-states="executionStates"
             @add="onAddBlock"
             @update="onUpdateBlock"
             @delete="openDeleteBlock"
             @reorder="onReorderBlocks"
+            @run="onRunCode"
           />
         </div>
 
