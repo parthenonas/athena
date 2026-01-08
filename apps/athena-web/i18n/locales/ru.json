@@ -42,7 +42,7 @@
     "labels": {
       "time": "Время",
       "memory": "Память",
-      "exit_code": "Код возврата"
+      "exit-code": "Код возврата"
     }
   },
   "common": {
@@ -66,22 +66,27 @@
     "bold": "Жирный",
     "italic": "Курсив",
     "underline": "Подчеркнутый",
-    "inline_code": "Код в строке",
+    "inline-code": "Код в строке",
     "link": "Ссылка",
-    "code_snippet": "Фрагмент кода",
+    "code-snippet": "Фрагмент кода",
     "h1": "Заголовок 1",
     "h2": "Заголовок 2",
     "h3": "Заголовок 3",
-    "bullet_list": "Маркированный список",
-    "ordered_list": "Нумерованный список",
+    "bullet-list": "Маркированный список",
+    "ordered-list": "Нумерованный список",
     "quote": "Цитата",
-    "code_block": "Блок кода",
+    "code-block": "Блок кода",
     "text": "Текст",
     "paragraph": "Параграф",
     "lists": "Списки",
     "insert": "Вставить",
     "divider": "Разделитель",
-    "placeholder": "Нажмите '/' для команд..."
+    "placeholder": "Нажмите '/' для команд...",
+    "upload-image": "Загрузить изображение",
+    "upload-video": "Загрузить видео",
+    "media": "Медиа",
+    "image": "Изображение",
+    "video": "Видео"
   },
   "components": {
     "common": {
@@ -383,7 +388,7 @@
     "studio": {
       "builder": {
         "add-block": "Добавить блок",
-        "block_preview": "Превью контента...",
+        "block-preview": "Превью контента...",
         "delete-block-title": "Удалить блок?",
         "delete-block-confirm": "Вы уверены? Это действие нельзя отменить.",
         "block-settings": "Настройки блока",

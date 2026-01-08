@@ -142,7 +142,7 @@ watch(props.blocks, newVal => console.log(newVal))
                 />
                 <span class="font-bold text-xs uppercase">{{ block.type }}</span>
               </div>
-              {{ $t('pages.studio.builder.block_preview') }}
+              {{ $t('pages.studio.builder.block-preview') }}
             </div>
           </div>
         </div>

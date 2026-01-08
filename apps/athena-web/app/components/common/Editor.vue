@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { EditorSuggestionMenuItem, EditorToolbarItem } from '@nuxt/ui'
+import type { EditorCustomHandlers, EditorSuggestionMenuItem, EditorToolbarItem } from '@nuxt/ui'
+import { CustomImage, Video } from '~/utils/tiptap/extensions'
 
 const props = defineProps<{
   modelValue?: Record<string, unknown>
@@ -12,6 +13,21 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+
+const customHandlers: EditorCustomHandlers = {
+  // Картинка: просто вставляем пустую ноду, NodeView сам покажет аплоадер
+  image: {
+    canExecute: editor => editor.can().insertContent({ type: 'image' }),
+    execute: editor => editor.chain().focus().insertContent({ type: 'image' }).run(),
+    isActive: editor => editor.isActive('image')
+  },
+  // Видео: аналогично
+  video: {
+    canExecute: editor => editor.can().insertContent({ type: 'video' }),
+    execute: editor => editor.chain().focus().insertContent({ type: 'video' }).run(),
+    isActive: editor => editor.isActive('video')
+  }
+}
 
 const content = computed({
   get: () => {
@@ -46,7 +62,7 @@ const bubbleItems = computed<EditorToolbarItem[][]>(() => [
     kind: 'mark',
     mark: 'code',
     icon: 'i-lucide-code',
-    tooltip: { text: t('editor.inline_code') }
+    tooltip: { text: t('editor.inline-code') }
   }],
   [{
     kind: 'link',
@@ -56,35 +72,7 @@ const bubbleItems = computed<EditorToolbarItem[][]>(() => [
   [{
     kind: 'codeBlock',
     icon: 'i-lucide-file-code',
-    tooltip: { text: t('editor.code_snippet') }
-  }],
-  [{
-    kind: 'heading',
-    level: 2,
-    icon: 'i-lucide-heading-2',
-    label: t('editor.h2')
-  }, {
-    kind: 'heading',
-    level: 3,
-    icon: 'i-lucide-heading-3',
-    label: t('editor.h3')
-  }],
-  [{
-    kind: 'bulletList',
-    icon: 'i-lucide-list',
-    tooltip: { text: t('editor.bullet_list') }
-  }, {
-    kind: 'orderedList',
-    icon: 'i-lucide-list-ordered',
-    tooltip: { text: t('editor.ordered_list') }
-  }, {
-    kind: 'blockquote',
-    icon: 'i-lucide-text-quote',
-    tooltip: { text: t('editor.quote') }
-  }, {
-    kind: 'codeBlock',
-    icon: 'i-lucide-file-code',
-    tooltip: { text: t('editor.code_block') }
+    tooltip: { text: t('editor.code-snippet') }
   }]
 ])
 
@@ -97,14 +85,19 @@ const suggestionItems = computed<EditorSuggestionMenuItem[][]>(() => [
     { kind: 'heading', level: 3, label: t('editor.h3'), icon: 'i-lucide-heading-3' }
   ],
   [
+    { type: 'label', label: t('editor.media') },
+    { kind: 'image', label: t('editor.image'), icon: 'i-lucide-image' },
+    { kind: 'video', label: t('editor.video'), icon: 'i-lucide-video' }
+  ],
+  [
     { type: 'label', label: t('editor.lists') },
-    { kind: 'bulletList', label: t('editor.bullet_list'), icon: 'i-lucide-list' },
-    { kind: 'orderedList', label: t('editor.ordered_list'), icon: 'i-lucide-list-ordered' }
+    { kind: 'bulletList', label: t('editor.bullet-list'), icon: 'i-lucide-list' },
+    { kind: 'orderedList', label: t('editor.ordered-list'), icon: 'i-lucide-list-ordered' }
   ],
   [
     { type: 'label', label: t('editor.insert') },
     { kind: 'blockquote', label: t('editor.quote'), icon: 'i-lucide-text-quote' },
-    { kind: 'codeBlock', label: t('editor.code_block'), icon: 'i-lucide-square-code' },
+    { kind: 'codeBlock', label: t('editor.code-block'), icon: 'i-lucide-square-code' },
     { kind: 'horizontalRule', label: t('editor.divider'), icon: 'i-lucide-separator-horizontal' }
   ]
 ])
@@ -118,6 +111,8 @@ const suggestionItems = computed<EditorSuggestionMenuItem[][]>(() => [
       content-type="json"
       :disabled="readOnly"
       :placeholder="$t('editor.placeholder')"
+      :extensions="[CustomImage, Video]"
+      :handlers="customHandlers"
       class="prose dark:prose-invert max-w-none focus:outline-none min-h-12"
       :ui="{ content: 'p-0!' }"
       @focus="emit('focus')"
