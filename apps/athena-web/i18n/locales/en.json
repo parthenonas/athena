@@ -406,6 +406,7 @@
         "add-lesson": "Add Lesson",
         "properties": "Properties",
         "preview": "Preview",
+        "edit": "Edit",
         "show-inspector": "Show Inspector",
         "hide-inspector": "Hide Inspector",
         "no-blocks": "No content blocks yet. Add one to start.",

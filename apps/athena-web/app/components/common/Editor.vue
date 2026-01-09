@@ -13,34 +13,32 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const EMPTY_DOCUMENT = { type: 'doc', content: [{ type: 'paragraph' }] }
+
+// --- 1. РАЗРЫВ ПЕТЛИ (Fix content wipe) ---
+// Инициализируем локальный стейт ОДИН раз.
+// Мы не слушаем props.modelValue во время редактирования, чтобы не сбивать Tiptap.
+// Компонент пересоздается при смене блока (key=id в родителе), так что данные всегда свежие.
+const localContent = ref(props.modelValue || EMPTY_DOCUMENT)
+
+// Эмитим изменения наверх, но не обновляем localContent из пропсов
+watch(localContent, (val) => {
+  emit('update:modelValue', val)
+  emit('change')
+})
 
 const customHandlers: EditorCustomHandlers = {
-  // Картинка: просто вставляем пустую ноду, NodeView сам покажет аплоадер
   image: {
     canExecute: editor => editor.can().insertContent({ type: 'image' }),
     execute: editor => editor.chain().focus().insertContent({ type: 'image' }).run(),
     isActive: editor => editor.isActive('image')
   },
-  // Видео: аналогично
   video: {
     canExecute: editor => editor.can().insertContent({ type: 'video' }),
     execute: editor => editor.chain().focus().insertContent({ type: 'video' }).run(),
     isActive: editor => editor.isActive('video')
   }
 }
-
-const content = computed({
-  get: () => {
-    if (!props.modelValue || Object.keys(props.modelValue).length === 0) {
-      return { type: 'doc', content: [{ type: 'paragraph' }] }
-    }
-    return props.modelValue
-  },
-  set: (json) => {
-    emit('update:modelValue', json)
-    emit('change')
-  }
-})
 
 const bubbleItems = computed<EditorToolbarItem[][]>(() => [
   [{
@@ -101,16 +99,43 @@ const suggestionItems = computed<EditorSuggestionMenuItem[][]>(() => [
     { kind: 'horizontalRule', label: t('editor.divider'), icon: 'i-lucide-separator-horizontal' }
   ]
 ])
+
+// --- 2. УПРАВЛЕНИЕ READ-ONLY (Manual Sync) ---
+const editorRef = ref()
+
+const syncEditableState = () => {
+  const editor = editorRef.value?.editor
+  if (!editor) return
+
+  const shouldBeEditable = !props.readOnly
+  if (editor.isEditable !== shouldBeEditable) {
+    editor.setEditable(shouldBeEditable)
+  }
+}
+
+// Следим за пропом
+watch(() => props.readOnly, syncEditableState)
+
+// Синхронизируем при появлении редактора (важно для инита)
+watch(() => editorRef.value?.editor, (val) => {
+  if (val) {
+    // nextTick чтобы дать Tiptap продышаться
+    nextTick(syncEditableState)
+  }
+})
 </script>
 
 <template>
   <div class="relative w-full group">
     <UEditor
+      ref="editorRef"
       v-slot="{ editor }"
-      v-model="content"
+      v-model="localContent"
       content-type="json"
-      :disabled="readOnly"
-      :placeholder="$t('editor.placeholder')"
+      :placeholder="{
+        showOnlyWhenEditable: true,
+        placeholder: $t('editor.placeholder')
+      }"
       :extensions="[CustomImage, Video]"
       :handlers="customHandlers"
       class="prose dark:prose-invert max-w-none focus:outline-none min-h-12"
@@ -118,16 +143,18 @@ const suggestionItems = computed<EditorSuggestionMenuItem[][]>(() => [
       @focus="emit('focus')"
       @blur="emit('blur')"
     >
-      <UEditorToolbar
-        :editor="editor"
-        :items="bubbleItems"
-        layout="bubble"
-      />
+      <template v-if="!readOnly">
+        <UEditorToolbar
+          :editor="editor"
+          :items="bubbleItems"
+          layout="bubble"
+        />
 
-      <UEditorSuggestionMenu
-        :editor="editor"
-        :items="suggestionItems"
-      />
+        <UEditorSuggestionMenu
+          :editor="editor"
+          :items="suggestionItems"
+        />
+      </template>
     </UEditor>
   </div>
 </template>

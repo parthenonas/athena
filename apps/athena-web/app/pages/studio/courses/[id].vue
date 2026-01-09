@@ -60,6 +60,18 @@ const activeBlock = computed(() =>
 
 const isInspectorOpen = ref(true)
 
+// --- Preview Mode Logic ---
+const isPreviewMode = ref(false)
+
+const togglePreview = () => {
+  isPreviewMode.value = !isPreviewMode.value
+  // При входе в превью сбрасываем выделение блока, чтобы не было рамок
+  if (isPreviewMode.value) {
+    activeBlockId.value = null
+  }
+}
+// --------------------------
+
 const isLessonModalOpen = ref(false)
 const selectedLesson = ref<LessonResponse | null>(null)
 
@@ -119,9 +131,6 @@ const onConfirmDeleteLesson = async () => {
 const onReorderLessons = async (event: SortableEvent) => {
   const { newIndex, oldIndex } = event
   if (newIndex === oldIndex) return
-
-  // TODO: Backend sync implementation pending
-  console.log('Reorder lessons:', { newIndex, oldIndex })
 }
 
 const onAddBlock = async (type: BlockType) => {
@@ -225,17 +234,13 @@ onMounted(() => {
 
     if (completedBlockId && executionStates.value[completedBlockId]) {
       const { formattedOutput, statusLabel, isError, stats } = parseSubmission(rawResult)
-
       let finalDisplay = ''
-
       if (stats && !isError) {
         finalDisplay += `[${statusLabel} | ${stats}]\n\n`
       } else if (isError) {
         finalDisplay += `[${statusLabel}]\n\n`
       }
-
       finalDisplay += formattedOutput
-
       executionStates.value[completedBlockId] = {
         isRunning: false,
         output: finalDisplay
@@ -249,10 +254,7 @@ onUnmounted(() => {
 })
 
 const onRunCode = async (blockId: string, code: string) => {
-  if (!activeLessonId.value || !socketId.value) {
-    console.error('Cannot run: Missing lessonId or socket connection')
-    return
-  }
+  if (!activeLessonId.value || !socketId.value) return
 
   const block = blocks.value.find(b => b.id === blockId)
   if (!block || block.type !== BlockType.Code) return
@@ -289,6 +291,7 @@ const onRunCode = async (blockId: string, code: string) => {
 <template>
   <UDashboardGroup>
     <StudioStructureSidebar
+      v-show="!isPreviewMode"
       v-model:active-lesson-id="activeLessonId"
       :lessons="lessons"
       @add="openAddLesson"
@@ -305,30 +308,34 @@ const onRunCode = async (blockId: string, code: string) => {
           <template #right>
             <div class="flex items-center gap-2">
               <UButton
-                :label="$t('pages.studio.builder.preview')"
-                icon="i-lucide-eye"
-                variant="outline"
-                color="neutral"
+                :label="isPreviewMode ? $t('pages.studio.builder.edit') : $t('pages.studio.builder.preview')"
+                :icon="isPreviewMode ? 'i-lucide-pencil' : 'i-lucide-eye'"
+                :variant="isPreviewMode ? 'solid' : 'outline'"
+                :color="isPreviewMode ? 'primary' : 'neutral'"
                 size="sm"
+                @click="togglePreview"
               />
-              <UButton
-                :label="$t('common.save')"
-                icon="i-lucide-save"
-                color="primary"
-                size="sm"
-              />
-              <USeparator
-                orientation="vertical"
-                class="h-4"
-              />
-              <UTooltip :text="isInspectorOpen ? $t('pages.studio.builder.hide-inspector') : $t('pages.studio.builder.show-inspector')">
+
+              <template v-if="!isPreviewMode">
                 <UButton
-                  :icon="isInspectorOpen ? 'i-lucide-panel-right-close' : 'i-lucide-panel-right-open'"
-                  variant="ghost"
-                  color="neutral"
-                  @click="isInspectorOpen = !isInspectorOpen"
+                  :label="$t('common.save')"
+                  icon="i-lucide-save"
+                  color="primary"
+                  size="sm"
                 />
-              </UTooltip>
+                <USeparator
+                  orientation="vertical"
+                  class="h-4"
+                />
+                <UTooltip :text="isInspectorOpen ? $t('pages.studio.builder.hide-inspector') : $t('pages.studio.builder.show-inspector')">
+                  <UButton
+                    :icon="isInspectorOpen ? 'i-lucide-panel-right-close' : 'i-lucide-panel-right-open'"
+                    variant="ghost"
+                    color="neutral"
+                    @click="isInspectorOpen = !isInspectorOpen"
+                  />
+                </UTooltip>
+              </template>
             </div>
           </template>
         </UDashboardNavbar>
@@ -342,12 +349,14 @@ const onRunCode = async (blockId: string, code: string) => {
         <div
           v-if="activeLesson"
           class="h-full flex flex-col"
+          :class="{ 'bg-gray-50 dark:bg-gray-950': isPreviewMode }"
         >
           <StudioCanvas
             v-model:blocks="blocks"
             v-model:active-block-id="activeBlockId"
             :loading="isBlocksLoading"
             :execution-states="executionStates"
+            :read-only="isPreviewMode"
             @add="onAddBlock"
             @update="onUpdateBlock"
             @delete="openDeleteBlock"
@@ -370,7 +379,7 @@ const onRunCode = async (blockId: string, code: string) => {
     </UDashboardPanel>
 
     <UDashboardPanel
-      v-if="isInspectorOpen"
+      v-if="isInspectorOpen && !isPreviewMode"
       resizable
       :min-size="20"
       :default-size="25"
