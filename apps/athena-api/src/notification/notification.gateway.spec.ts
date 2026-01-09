@@ -1,8 +1,9 @@
-import { SubmissionCompletedEvent, ExecutionStatus } from "@athena/types";
+import { ExecutionStatus } from "@athena/types";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Server, Socket } from "socket.io";
 
 import { NotificationGateway } from "./notification.gateway";
+import { SubmissionCompletedEvent } from "../shared/events/types";
 
 describe("NotificationGateway", () => {
   let gateway: NotificationGateway;
@@ -57,14 +58,16 @@ describe("NotificationGateway", () => {
     it('should emit "execution_result" to the specific socket if socketId is present', () => {
       const socketId = "client-xyz-123";
       const event: SubmissionCompletedEvent = {
-        submissionId: "sub-1",
-        status: ExecutionStatus.Accepted,
-        stdout: "Hello World",
-        metadata: {
-          context: "STUDIO",
-          socketId: socketId,
+        result: {
+          submissionId: "sub-1",
+          status: ExecutionStatus.Accepted,
+          stdout: "Hello World",
+          metadata: {
+            context: "STUDIO",
+            socketId: socketId,
+          },
         },
-      } as any;
+      };
 
       gateway.handleSubmissionResult(event);
 
@@ -76,6 +79,10 @@ describe("NotificationGateway", () => {
         submissionId: "sub-1",
         status: ExecutionStatus.Accepted,
         stdout: "Hello World",
+        metadata: {
+          context: "STUDIO",
+          socketId: socketId,
+        },
       };
 
       expect(mockEmitter.emit).toHaveBeenCalledWith("execution_result", expectedPayload);
@@ -83,12 +90,14 @@ describe("NotificationGateway", () => {
 
     it("should NOT emit anything if socketId is missing", () => {
       const event: SubmissionCompletedEvent = {
-        submissionId: "sub-2",
-        status: ExecutionStatus.Accepted,
-        metadata: {
-          context: "LEARN",
+        result: {
+          submissionId: "sub-2",
+          status: ExecutionStatus.Accepted,
+          metadata: {
+            context: "LEARN",
+          },
         },
-      } as any;
+      };
 
       gateway.handleSubmissionResult(event);
 

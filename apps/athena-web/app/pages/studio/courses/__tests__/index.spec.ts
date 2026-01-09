@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
-import CoursesPage from '../courses.vue'
+import CoursesPage from '../index.vue'
 import { nextTick, defineComponent } from 'vue'
 
 const { fetchCoursesMock, deleteCourseMock, refreshMock, mockPush } = vi.hoisted(() => ({

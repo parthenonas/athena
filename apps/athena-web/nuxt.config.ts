@@ -24,7 +24,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiUrl: import.meta.env.NUXT_APP_API_URL
+      apiUrl: import.meta.env.NUXT_APP_API_URL,
+      wsUrl: import.meta.env.NUXT_APP_WS_URL
     }
   },
   build: {
@@ -40,6 +41,21 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: '2025-01-15',
+  vite: {
+    optimizeDeps: {
+      include: [
+        'prosemirror-state',
+        'prosemirror-transform',
+        'prosemirror-model',
+        'prosemirror-view',
+        'prosemirror-gapcursor',
+        'prosemirror-commands',
+        'prosemirror-schema-list',
+        'prosemirror-keymap',
+        'prosemirror-history'
+      ]
+    }
+  },
 
   eslint: {
     config: {

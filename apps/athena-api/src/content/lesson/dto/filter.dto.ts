@@ -1,3 +1,4 @@
+import { FilterLessonRequest } from "@athena/types";
 import { Transform } from "class-transformer";
 import { IsEnum, IsInt, IsOptional, IsString, IsUUID, Min } from "class-validator";
 
@@ -5,7 +6,7 @@ import { IsEnum, IsInt, IsOptional, IsString, IsUUID, Min } from "class-validato
  * @class FilterLessonDto
  * Query parameters for listing and filtering lessons.
  */
-export class FilterLessonDto {
+export class FilterLessonDto implements FilterLessonRequest {
   /**
    * Filter lessons by specific Course ID.
    * This is the most common filter, as lessons are rarely fetched globally.

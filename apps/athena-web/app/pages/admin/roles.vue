@@ -65,7 +65,6 @@ const openDelete = (role: RoleResponse) => {
 }
 
 watch(() => route.query.roleId, (newId) => {
-  console.log(newId)
   if (newId && typeof newId === 'string') {
     selectedRoleId.value = newId
     isSlideoverOpen.value = true

@@ -35,8 +35,7 @@ export class SubmissionResultProcessor extends WorkerHost {
 
     const meta = result.metadata;
 
-    this.logger.log(`Received result for ${result.submissionId}. Routing to [${meta?.context || "UNKNOWN"}]`);
-
+    this.logger.log(`Received result for ${result.submissionId}. Routing to [${meta?.socketId || "UNKNOWN"}]`);
     const event: SubmissionCompletedEvent = { result };
     await this.eventEmitter.emitAsync(AthenaEvent.SUBMISSION_COMPLETED, event);
 

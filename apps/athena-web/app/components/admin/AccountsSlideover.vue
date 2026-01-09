@@ -28,8 +28,6 @@ const state = reactive<CreateAccountRequest | UpdateAccountRequest>({
   roleId: undefined
 })
 
-watch(state, val => console.log(val))
-
 const schema = computed(() => {
   const baseSchema = z.object({
     login: z.string()

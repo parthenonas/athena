@@ -2,7 +2,7 @@ import {
   CodeBlockContent,
   ImageBlockContent,
   ProgrammingLanguage,
-  QuizContent,
+  QuizBlockContent,
   QuizOption,
   QuizQuestion,
   QuizQuestionType,
@@ -11,7 +11,7 @@ import {
   TextBlockContent,
   VideoBlockContent,
   CodeExecutionMode,
-  SurveyContent,
+  SurveyBlockContent,
   SurveyOption,
 } from "@athena/types";
 import { Type } from "class-transformer";
@@ -22,6 +22,7 @@ import {
   IsInt,
   IsNotEmpty,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   IsUrl,
@@ -148,10 +149,16 @@ export class CodeBlockContentDto implements CodeBlockContent {
   language!: ProgrammingLanguage;
 
   /**
+   * The task text.
+   */
+  @IsObject()
+  taskText: TextBlockContentDto;
+
+  /**
    * The boilerplate code visible to the student when they start.
    */
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   initialCode!: string;
 
   /**
@@ -168,8 +175,8 @@ export class CodeBlockContentDto implements CodeBlockContent {
    * Required ONLY if executionMode is UnitTest.
    */
   @ValidateIf(o => o.executionMode === CodeExecutionMode.UnitTest)
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   testCasesCode?: string;
 
   /**
@@ -274,7 +281,7 @@ export class QuizQuestionDto implements QuizQuestion {
  * @class QuizContentDto
  * @description Top-level payload for a Quiz Block. Can contain multiple questions.
  */
-export class QuizContentDto implements QuizContent {
+export class QuizContentDto implements QuizBlockContent {
   /**
    * List of questions in this quiz block.
    */
@@ -342,7 +349,7 @@ export class SurveyQuestionDto implements SurveyQuestion {
  * @class SurveyContentDto
  * @description Top-level payload for a Survey Block.
  */
-export class SurveyContentDto implements SurveyContent {
+export class SurveyContentDto implements SurveyBlockContent {
   @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => SurveyQuestionDto)

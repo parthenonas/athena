@@ -38,6 +38,7 @@ describe("SubmissionQueueService", () => {
       const payload: SubmissionPayloadDto = {
         submissionId: submissionId,
         content: {
+          taskText: { json: {} },
           initialCode: 'print("hello")',
           language: ProgrammingLanguage.Python,
           executionMode: CodeExecutionMode.IoCheck,

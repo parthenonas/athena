@@ -247,8 +247,6 @@ export class SandboxService implements OnModuleInit {
     const stderr = await this.readFileSafely(path.join(boxContext.boxDir, this.STDERR_FILE));
     const metadata = await this.parseMetadata(this.getMetadataPath(boxContext.boxId));
 
-    console.log("METADATA", metadata);
-
     if (Object.keys(metadata).length === 0 || metadata["status"] === "XX") {
       return {
         submissionId: jobData.submissionId,

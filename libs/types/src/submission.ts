@@ -30,8 +30,6 @@ export interface SubmissionResult {
   metadata?: SubmissionMetadata;
 }
 
-export type SubmissionCompletedEvent = SubmissionResult;
-
 export interface SubmissionPayload {
   submissionId: string;
   content: CodeBlockContent;

@@ -1,4 +1,4 @@
-import { BlockRequiredAction, BlockType, Policy } from "@athena/types";
+import { BlockContent, BlockRequiredAction, BlockType, Policy } from "@athena/types";
 import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { plainToInstance } from "class-transformer";
@@ -294,7 +294,7 @@ export class BlockService extends BaseService<Block> {
   /**
    * Internal Helper: Polymorphic Content Validation.
    */
-  private async validateBlockContent(type: BlockType, content: Record<string, unknown>): Promise<void> {
+  private async validateBlockContent(type: BlockType, content: BlockContent): Promise<void> {
     let dtoInstance: object;
 
     switch (type) {
@@ -355,6 +355,7 @@ export class BlockService extends BaseService<Block> {
         metadata: {
           socketId: dto.socketId,
           lessonId: dto.lessonId,
+          blockId: dto.blockId,
         },
       });
     } catch (error: unknown) {

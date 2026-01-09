@@ -7,3 +7,4 @@ export * from "./block";
 export * from "./submission";
 export * from "./media";
 export * from "./course";
+export * from "./lesson";

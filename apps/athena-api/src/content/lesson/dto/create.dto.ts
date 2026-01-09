@@ -1,10 +1,11 @@
+import { CreateLessonRequest } from "@athena/types";
 import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Min, MinLength } from "class-validator";
 
 /**
  * @class CreateLessonDto
  * Data transfer object for creating a new Lesson.
  */
-export class CreateLessonDto {
+export class CreateLessonDto implements CreateLessonRequest {
   /**
    * The UUID of the parent Course.
    * Required to associate the lesson with a specific course.
