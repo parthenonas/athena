@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { IdentityModule } from "src/identity";
 
 import { CohortService } from "./cohort.service";
+import { IdentityModule } from "../../identity";
 import { Cohort } from "./entities/cohort.entity";
 
 @Module({
