@@ -74,4 +74,13 @@ export class Cohort {
 
   @UpdateDateColumn({ name: "updated_at" })
   readonly updatedAt!: Date;
+
+  /**
+   * Virtual property for AbilityService checks.
+   * Returns the Account ID of the assigned instructor.
+   * NOTE: 'instructor' relation must be loaded!
+   */
+  get ownerId(): string {
+    return this.instructor?.ownerId ?? "";
+  }
 }

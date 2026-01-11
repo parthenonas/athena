@@ -16,7 +16,7 @@ export class CreateEnrollmentDto implements CreateEnrollmentRequest {
    * Student Account UUID.
    */
   @IsUUID()
-  accountId!: string;
+  ownerId!: string;
 
   /**
    * Initial status (default: Active).

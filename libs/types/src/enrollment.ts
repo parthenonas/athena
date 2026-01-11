@@ -11,7 +11,7 @@ export enum EnrollmentStatus {
  */
 export interface CreateEnrollmentRequest {
   cohortId: string;
-  accountId: string;
+  ownerId: string;
   status?: EnrollmentStatus;
 }
 
@@ -28,7 +28,7 @@ export interface UpdateEnrollmentRequest {
 export interface EnrollmentResponse {
   id: string;
   cohortId: string;
-  accountId: string;
+  ownerId: string;
   status: EnrollmentStatus;
   enrolledAt: Date;
 }
@@ -38,7 +38,7 @@ export interface EnrollmentResponse {
  */
 export interface FilterEnrollmentRequest {
   cohortId?: string;
-  accountId?: string;
+  ownerId?: string;
   status?: EnrollmentStatus;
   page: number;
   limit: number;

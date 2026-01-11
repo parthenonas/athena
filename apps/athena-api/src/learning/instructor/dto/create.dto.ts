@@ -11,7 +11,7 @@ export class CreateInstructorDto implements CreateInstructorRequest {
    * System Account UUID.
    */
   @IsUUID()
-  accountId!: string;
+  ownerId!: string;
 
   /**
    * Biography or short description.

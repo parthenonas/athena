@@ -1,4 +1,4 @@
-import { EnrollmentStatus } from "@athena/types";
+import { EnrollmentStatus, Ownable } from "@athena/types";
 import {
   Column,
   CreateDateColumn,
@@ -18,9 +18,9 @@ import { Cohort } from "../../cohort/entities/cohort.entity";
  * Tracks the status of the student within the group.
  */
 @Entity({ schema: "learning", name: "enrollments" })
-@Unique("enrollments__cohort_account__uk", ["cohortId", "accountId"])
-@Index("enrollments__account_id__idx", ["accountId"])
-export class Enrollment {
+@Unique("enrollments__cohort_owner__uk", ["cohortId", "ownerId"])
+@Index("enrollments__owner_id__idx", ["ownerId"])
+export class Enrollment implements Ownable {
   @PrimaryGeneratedColumn("uuid", { primaryKeyConstraintName: "enrollments__id__pk" })
   id!: string;
 
@@ -38,10 +38,11 @@ export class Enrollment {
   cohort!: Cohort;
 
   /**
-   * Logical link to the Identity context (Student Account ID).
+   * Student Account ID.
+   * Implements Ownable.ownerId.
    */
-  @Column({ name: "account_id", type: "uuid" })
-  accountId!: string;
+  @Column({ name: "owner_id", type: "uuid" })
+  ownerId!: string;
 
   /**
    * Current status of the enrollment (Active, Expelled, etc.).

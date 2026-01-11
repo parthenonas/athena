@@ -16,7 +16,7 @@ export class ReadEnrollmentDto implements EnrollmentResponse {
 
   /** Student Account UUID. */
   @Expose()
-  accountId!: string;
+  ownerId!: string;
 
   /** Current status. */
   @Expose()

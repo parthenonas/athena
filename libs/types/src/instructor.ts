@@ -4,7 +4,7 @@ import { SortOrder } from "./common";
  * Payload for creating a new Instructor profile.
  */
 export interface CreateInstructorRequest {
-  accountId: string;
+  ownerId: string;
   bio?: string | null;
   title?: string | null;
 }
@@ -23,7 +23,7 @@ export interface UpdateInstructorRequest {
  */
 export interface InstructorResponse {
   id: string;
-  accountId: string;
+  ownerId: string;
   bio: string | null;
   title: string | null;
   createdAt: Date;
@@ -34,7 +34,7 @@ export interface InstructorResponse {
  * Query parameters for filtering instructors.
  */
 export interface FilterInstructorRequest {
-  accountId?: string;
+  ownerId?: string;
   search?: string;
   page: number;
   limit: number;

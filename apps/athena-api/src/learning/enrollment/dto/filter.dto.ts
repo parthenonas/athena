@@ -16,7 +16,7 @@ export class FilterEnrollmentDto implements FilterEnrollmentRequest {
   /** Filter by specific student. */
   @IsOptional()
   @IsUUID()
-  accountId?: string;
+  ownerId?: string;
 
   /** Filter by status. */
   @IsOptional()

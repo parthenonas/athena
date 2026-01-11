@@ -10,7 +10,7 @@ export class FilterInstructorDto implements FilterInstructorRequest {
   /** Find specific instructor by account ID. */
   @IsOptional()
   @IsUUID()
-  accountId?: string;
+  ownerId?: string;
 
   /** Search by title or bio (ILIKE). */
   @IsOptional()

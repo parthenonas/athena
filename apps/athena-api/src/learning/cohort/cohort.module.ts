@@ -1,11 +1,13 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { IdentityModule } from "src/identity";
 
+import { CohortService } from "./cohort.service";
 import { Cohort } from "./entities/cohort.entity";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Cohort])],
-  providers: [],
-  exports: [],
+  imports: [TypeOrmModule.forFeature([Cohort]), IdentityModule],
+  providers: [CohortService],
+  exports: [CohortService],
 })
 export class CohortModule {}

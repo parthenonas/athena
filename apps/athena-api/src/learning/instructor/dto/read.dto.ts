@@ -12,7 +12,7 @@ export class ReadInstructorDto implements InstructorResponse {
 
   /** Linked Account UUID. */
   @Expose()
-  accountId!: string;
+  ownerId!: string;
 
   /** Biography. */
   @Expose()

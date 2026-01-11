@@ -1,3 +1,4 @@
+import { Ownable } from "@athena/types";
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 
 import { Cohort } from "../../cohort/entities/cohort.entity";
@@ -8,17 +9,17 @@ import { Cohort } from "../../cohort/entities/cohort.entity";
  * Stores academic information and biography.
  */
 @Entity({ schema: "learning", name: "instructors" })
-@Unique("instructors__account_id__uk", ["accountId"])
-export class Instructor {
+@Unique("instructors__owner_id__uk", ["ownerId"])
+export class Instructor implements Ownable {
   @PrimaryGeneratedColumn("uuid", { primaryKeyConstraintName: "instructors__id__pk" })
   id!: string;
 
   /**
-   * Logical link to the Identity context (Account ID).
-   * One account can have only one instructor profile.
+   * Reference to the Account ID (Identity context).
+   * Renamed from accountId to ownerId to satisfy Ownable interface.
    */
-  @Column({ name: "account_id", type: "uuid" })
-  accountId!: string;
+  @Column({ name: "owner_id", type: "uuid" })
+  ownerId!: string;
 
   /**
    * Instructor's biography or introduction.
