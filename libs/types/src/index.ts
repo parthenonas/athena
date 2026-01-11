@@ -10,3 +10,5 @@ export * from "./course";
 export * from "./lesson";
 export * from "./enrollment";
 export * from "./schedule";
+export * from "./cohort";
+export * from "./instructor";
