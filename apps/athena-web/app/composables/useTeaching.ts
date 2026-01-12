@@ -43,7 +43,7 @@ export const useTeaching = () => {
 
       toast.add({
         title: t('common.success'),
-        description: t('toasts.instructors.created', 'Instructor created successfully'),
+        description: t('toasts.instructors.created'),
         color: 'success',
         icon: 'i-lucide-check-circle'
       })
@@ -52,7 +52,7 @@ export const useTeaching = () => {
       console.error(error)
       toast.add({
         title: t('common.error'),
-        description: t('toasts.instructors.create-error', 'Failed to create instructor'),
+        description: t('toasts.instructors.create-error'),
         color: 'error',
         icon: 'i-lucide-alert-circle'
       })
@@ -69,7 +69,7 @@ export const useTeaching = () => {
 
       toast.add({
         title: t('common.success'),
-        description: t('toasts.instructors.updated', 'Instructor updated'),
+        description: t('toasts.instructors.updated'),
         color: 'success',
         icon: 'i-lucide-check-circle'
       })
@@ -78,7 +78,7 @@ export const useTeaching = () => {
       console.error(error)
       toast.add({
         title: t('common.error'),
-        description: t('toasts.instructors.update-error', 'Failed to update instructor'),
+        description: t('toasts.instructors.update-error'),
         color: 'error',
         icon: 'i-lucide-alert-circle'
       })
@@ -94,7 +94,7 @@ export const useTeaching = () => {
 
       toast.add({
         title: t('common.success'),
-        description: t('toasts.instructors.deleted', 'Instructor deleted'),
+        description: t('toasts.instructors.deleted'),
         color: 'success',
         icon: 'i-lucide-trash-2'
       })
@@ -102,7 +102,7 @@ export const useTeaching = () => {
       console.error(error)
       toast.add({
         title: t('common.error'),
-        description: t('toasts.instructors.delete-error', 'Failed to delete instructor'),
+        description: t('toasts.instructors.delete-error'),
         color: 'error',
         icon: 'i-lucide-alert-circle'
       })
@@ -126,7 +126,7 @@ export const useTeaching = () => {
   }
 
   const fetchCohort = (id: string) => {
-    return useApi<CohortResponse>(`/api/cohorts/${id}`, {
+    return $api<CohortResponse>(`/api/cohorts/${id}`, {
       method: 'GET'
     })
   }
@@ -140,7 +140,7 @@ export const useTeaching = () => {
 
       toast.add({
         title: t('common.success'),
-        description: t('toasts.cohorts.created', 'Cohort created successfully'),
+        description: t('toasts.cohorts.created'),
         color: 'success',
         icon: 'i-lucide-check-circle'
       })
@@ -149,7 +149,7 @@ export const useTeaching = () => {
       console.error(error)
       toast.add({
         title: t('common.error'),
-        description: t('toasts.cohorts.create-error', 'Failed to create cohort'),
+        description: t('toasts.cohorts.create-error'),
         color: 'error',
         icon: 'i-lucide-alert-circle'
       })
@@ -166,7 +166,7 @@ export const useTeaching = () => {
 
       toast.add({
         title: t('common.success'),
-        description: t('toasts.cohorts.updated', 'Cohort updated'),
+        description: t('toasts.cohorts.updated'),
         color: 'success',
         icon: 'i-lucide-check-circle'
       })
@@ -175,7 +175,7 @@ export const useTeaching = () => {
       console.error(error)
       toast.add({
         title: t('common.error'),
-        description: t('toasts.cohorts.update-error', 'Failed to update cohort'),
+        description: t('toasts.cohorts.update-error'),
         color: 'error',
         icon: 'i-lucide-alert-circle'
       })
@@ -191,7 +191,7 @@ export const useTeaching = () => {
 
       toast.add({
         title: t('common.success'),
-        description: t('toasts.cohorts.deleted', 'Cohort deleted'),
+        description: t('toasts.cohorts.deleted'),
         color: 'success',
         icon: 'i-lucide-trash-2'
       })
@@ -199,7 +199,7 @@ export const useTeaching = () => {
       console.error(error)
       toast.add({
         title: t('common.error'),
-        description: t('toasts.cohorts.delete-error', 'Failed to delete cohort'),
+        description: t('toasts.cohorts.delete-error'),
         color: 'error',
         icon: 'i-lucide-alert-circle'
       })

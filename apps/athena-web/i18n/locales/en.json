@@ -463,6 +463,24 @@
       }
     },
     "teaching": {
+      "cohorts": {
+        "title": "Cohorts",
+        "subtitle": "Manage student groups and academic periods",
+        "create-title": "New Cohort",
+        "edit-title": "Edit Cohort",
+        "name-label": "Cohort Name",
+        "instructor-label": "Primary Instructor",
+        "start-date-label": "Start Date",
+        "end-date-label": "End Date",
+        "create": "Create Cohort",
+        "delete-title": "Delete Cohort?",
+        "delete-confirm": "Are you sure? This will remove the cohort and all associated enrollments.",
+        "columns": {
+          "name": "Name",
+          "instructor": "Instructor",
+          "dates": "Duration"
+        }
+      },
       "instructors": {
         "title": "Instructors",
         "subtitle": "Manage teaching staff profiles",
@@ -595,6 +613,14 @@
       "create-error": "Failed to create instructor",
       "update-error": "Failed to update instructor",
       "delete-error": "Failed to delete instructor"
+    },
+    "cohorts": {
+      "created": "Cohort created",
+      "updated": "Cohort updated",
+      "deleted": "Cohort deleted",
+      "create-error": "Failed to create cohort",
+      "update-error": "Failed to update cohort",
+      "delete-error": "Failed to delete cohort"
     }
   }
 }

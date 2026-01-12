@@ -67,6 +67,7 @@ const accounts = computed<SelectMenuItem[]>(() => {
     label: account.login
   }))
 })
+
 watch(isOpen, async (val) => {
   if (!val) return
 
