@@ -240,35 +240,53 @@ describe("CohortService", () => {
   });
 
   describe("update", () => {
-    it("should update a cohort", async () => {
+    it("should update a cohort when access allowed", async () => {
       repo.findOne.mockResolvedValue(mockCohort);
       repo.save.mockResolvedValue({ ...mockCohort, name: updateDto.name! } as any);
 
-      const result = await service.update("cohort-1", updateDto);
+      const result = await service.update("cohort-1", updateDto, USER_ID, APPLIED_OWN_ONLY);
 
+      expect(identityService.checkAbility).toHaveBeenCalledWith(Policy.OWN_ONLY, USER_ID, mockCohort);
       expect(repo.save).toHaveBeenCalled();
       expect(result.name).toBe(updateDto.name);
     });
 
+    it("should throw ForbiddenException if policy denied", async () => {
+      repo.findOne.mockResolvedValue(mockCohort);
+      identityService.checkAbility.mockReturnValue(false);
+
+      await expect(service.update("cohort-1", updateDto, OTHER_ID, APPLIED_OWN_ONLY)).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+    });
+
     it("should throw NotFoundException if cohort does not exist", async () => {
       repo.findOne.mockResolvedValue(null);
-      await expect(service.update("nope", updateDto)).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.update("nope", updateDto, USER_ID, APPLIED_NONE)).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 
   describe("delete", () => {
-    it("should delete cohort", async () => {
+    it("should delete cohort when access allowed", async () => {
       repo.findOne.mockResolvedValue(mockCohort);
       repo.remove.mockResolvedValue(mockCohort);
 
-      await service.delete("cohort-1");
+      await service.delete("cohort-1", USER_ID, APPLIED_OWN_ONLY);
 
+      expect(identityService.checkAbility).toHaveBeenCalledWith(Policy.OWN_ONLY, USER_ID, mockCohort);
       expect(repo.remove).toHaveBeenCalledWith(mockCohort);
+    });
+
+    it("should throw ForbiddenException if policy denied", async () => {
+      repo.findOne.mockResolvedValue(mockCohort);
+      identityService.checkAbility.mockReturnValue(false);
+
+      await expect(service.delete("cohort-1", OTHER_ID, APPLIED_OWN_ONLY)).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it("should throw NotFoundException if not found", async () => {
       repo.findOne.mockResolvedValue(null);
-      await expect(service.delete("nope")).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.delete("nope", USER_ID, APPLIED_NONE)).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 });

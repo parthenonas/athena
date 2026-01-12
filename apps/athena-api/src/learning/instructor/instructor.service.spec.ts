@@ -1,6 +1,6 @@
 import { PostgresErrorCode } from "@athena/common";
 import { Policy } from "@athena/types";
-import { ConflictException, ForbiddenException } from "@nestjs/common";
+import { ConflictException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { QueryFailedError, Repository } from "typeorm";
@@ -23,8 +23,10 @@ describe("InstructorService", () => {
   let identityService: typeof mockIdentityService;
 
   const USER_ID = "user-1";
+  const OTHER_ID = "user-99";
   const INSTRUCTOR_ID = "inst-1";
   const APPLIED_OWN_ONLY = [Policy.OWN_ONLY];
+  const APPLIED_NONE: Policy[] = [];
 
   const mockInstructor: Instructor = {
     id: INSTRUCTOR_ID,
@@ -129,9 +131,9 @@ describe("InstructorService", () => {
     });
 
     it("should throw ConflictException if duplicate", async () => {
-      const error: any = new QueryFailedError("dup", [], new Error());
-      error.code = PostgresErrorCode.UNIQUE_VIOLATION;
-      error.constraint = "instructors__owner_id__uk";
+      const error = new QueryFailedError("dup", [], new Error());
+      (error as any).code = PostgresErrorCode.UNIQUE_VIOLATION;
+      (error as any).constraint = "instructors__owner_id__uk";
 
       repo.save.mockRejectedValue(error);
 
@@ -140,12 +142,55 @@ describe("InstructorService", () => {
   });
 
   describe("update", () => {
-    it("should update bio", async () => {
+    it("should update bio when allowed", async () => {
       repo.findOne.mockResolvedValue(mockInstructor);
       repo.save.mockResolvedValue({ ...mockInstructor, bio: "New" });
 
-      const res = await service.update(INSTRUCTOR_ID, updateDto);
+      const res = await service.update(INSTRUCTOR_ID, updateDto, USER_ID, APPLIED_OWN_ONLY);
+
+      expect(identityService.checkAbility).toHaveBeenCalledWith(Policy.OWN_ONLY, USER_ID, mockInstructor);
+      expect(repo.save).toHaveBeenCalled();
       expect(res.bio).toBe("New");
+    });
+
+    it("should throw ForbiddenException if policy denied", async () => {
+      repo.findOne.mockResolvedValue(mockInstructor);
+      identityService.checkAbility.mockReturnValue(false);
+
+      await expect(service.update(INSTRUCTOR_ID, updateDto, OTHER_ID, APPLIED_OWN_ONLY)).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+    });
+
+    it("should throw NotFoundException", async () => {
+      repo.findOne.mockResolvedValue(null);
+      await expect(service.update("nope", updateDto, USER_ID, APPLIED_NONE)).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe("delete", () => {
+    it("should delete profile when allowed", async () => {
+      repo.findOne.mockResolvedValue(mockInstructor);
+      repo.remove.mockResolvedValue(mockInstructor);
+
+      await service.delete(INSTRUCTOR_ID, USER_ID, APPLIED_OWN_ONLY);
+
+      expect(identityService.checkAbility).toHaveBeenCalledWith(Policy.OWN_ONLY, USER_ID, mockInstructor);
+      expect(repo.remove).toHaveBeenCalled();
+    });
+
+    it("should throw ForbiddenException if policy denied", async () => {
+      repo.findOne.mockResolvedValue(mockInstructor);
+      identityService.checkAbility.mockReturnValue(false);
+
+      await expect(service.delete(INSTRUCTOR_ID, OTHER_ID, APPLIED_OWN_ONLY)).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+    });
+
+    it("should throw NotFoundException", async () => {
+      repo.findOne.mockResolvedValue(null);
+      await expect(service.delete("nope", USER_ID, APPLIED_NONE)).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 

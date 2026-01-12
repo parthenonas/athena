@@ -1,5 +1,5 @@
 import { EnrollmentStatus, Policy } from "@athena/types";
-import { ForbiddenException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
@@ -21,10 +21,12 @@ describe("EnrollmentService", () => {
   let identityService: typeof mockIdentityService;
 
   const USER_ID = "user-1";
+  const OTHER_ID = "user-99";
   const COHORT_ID = "cohort-1";
   const ENROLLMENT_ID = "enrollment-1";
 
   const APPLIED_OWN_ONLY = [Policy.OWN_ONLY];
+  const APPLIED_NONE: Policy[] = [];
 
   const mockEnrollment: Enrollment = {
     id: ENROLLMENT_ID,
@@ -86,6 +88,7 @@ describe("EnrollmentService", () => {
 
     jest.clearAllMocks();
     identityService.checkAbility.mockReturnValue(true);
+    identityService.applyPoliciesToQuery.mockImplementation(qb => qb);
   });
 
   describe("findAll", () => {
@@ -106,6 +109,13 @@ describe("EnrollmentService", () => {
       );
       expect(result.data[0].ownerId).toBe(USER_ID);
     });
+
+    it("should throw BadRequestException on DB error", async () => {
+      qbMock.getManyAndCount.mockRejectedValue(new Error("DB error"));
+      await expect(
+        service.findAll({ page: 1, limit: 10, sortBy: "enrolledAt", sortOrder: "DESC" }, USER_ID),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
   });
 
   describe("findOne", () => {
@@ -115,12 +125,18 @@ describe("EnrollmentService", () => {
       expect(result.id).toBe(ENROLLMENT_ID);
     });
 
-    it("should throw ForbiddenException", async () => {
+    it("should throw ForbiddenException if policy denied", async () => {
       repo.findOne.mockResolvedValue(mockEnrollment);
-      identityService.checkAbility.mockReturnValue(false);
-      await expect(service.findOne(ENROLLMENT_ID, "other", APPLIED_OWN_ONLY)).rejects.toBeInstanceOf(
+      identityService.checkAbility.mockReturnValue(false); // Deny
+
+      await expect(service.findOne(ENROLLMENT_ID, OTHER_ID, APPLIED_OWN_ONLY)).rejects.toBeInstanceOf(
         ForbiddenException,
       );
+    });
+
+    it("should throw NotFoundException", async () => {
+      repo.findOne.mockResolvedValue(null);
+      await expect(service.findOne("nope", USER_ID)).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 
@@ -137,15 +153,63 @@ describe("EnrollmentService", () => {
         }),
       );
     });
+
+    it("should throw BadRequestException on error", async () => {
+      repo.save.mockRejectedValue(new Error("Fail"));
+      await expect(service.create(createDto)).rejects.toBeInstanceOf(BadRequestException);
+    });
   });
 
   describe("update", () => {
-    it("should update status", async () => {
+    it("should update status when access allowed", async () => {
       repo.findOne.mockResolvedValue(mockEnrollment);
       repo.save.mockResolvedValue({ ...mockEnrollment, status: EnrollmentStatus.Expelled });
 
-      const res = await service.update(ENROLLMENT_ID, updateDto);
+      const res = await service.update(ENROLLMENT_ID, updateDto, USER_ID, APPLIED_OWN_ONLY);
+
+      expect(identityService.checkAbility).toHaveBeenCalledWith(Policy.OWN_ONLY, USER_ID, mockEnrollment);
+      expect(repo.save).toHaveBeenCalled();
       expect(res.status).toBe(EnrollmentStatus.Expelled);
+    });
+
+    it("should throw ForbiddenException if access denied", async () => {
+      repo.findOne.mockResolvedValue(mockEnrollment);
+      identityService.checkAbility.mockReturnValue(false);
+
+      await expect(service.update(ENROLLMENT_ID, updateDto, OTHER_ID, APPLIED_OWN_ONLY)).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+    });
+
+    it("should throw NotFoundException", async () => {
+      repo.findOne.mockResolvedValue(null);
+      await expect(service.update("nope", updateDto, USER_ID, APPLIED_NONE)).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe("delete", () => {
+    it("should delete enrollment when access allowed", async () => {
+      repo.findOne.mockResolvedValue(mockEnrollment);
+      repo.remove.mockResolvedValue(mockEnrollment);
+
+      await service.delete(ENROLLMENT_ID, USER_ID, APPLIED_OWN_ONLY);
+
+      expect(identityService.checkAbility).toHaveBeenCalledWith(Policy.OWN_ONLY, USER_ID, mockEnrollment);
+      expect(repo.remove).toHaveBeenCalled();
+    });
+
+    it("should throw ForbiddenException if access denied", async () => {
+      repo.findOne.mockResolvedValue(mockEnrollment);
+      identityService.checkAbility.mockReturnValue(false);
+
+      await expect(service.delete(ENROLLMENT_ID, OTHER_ID, APPLIED_OWN_ONLY)).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+    });
+
+    it("should throw NotFoundException", async () => {
+      repo.findOne.mockResolvedValue(null);
+      await expect(service.delete("nope", USER_ID, APPLIED_NONE)).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 });

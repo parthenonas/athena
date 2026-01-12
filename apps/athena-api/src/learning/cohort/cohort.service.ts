@@ -119,7 +119,6 @@ export class CohortService extends BaseService<Cohort> {
       return this.toDto(saved, ReadCohortDto);
     } catch (error: unknown) {
       this.logger.error(`create() | ${(error as Error).message}`, (error as Error).stack);
-      // Если добавим уникальность по имени, тут пригодится хендлер
       throw new BadRequestException("Failed to create cohort");
     }
   }
@@ -127,12 +126,23 @@ export class CohortService extends BaseService<Cohort> {
   /**
    * Updates a cohort.
    */
-  async update(id: string, dto: UpdateCohortDto): Promise<ReadCohortDto> {
+  async update(
+    id: string,
+    dto: UpdateCohortDto,
+    ownerId: string,
+    appliedPolicies: Policy[] = [],
+  ): Promise<ReadCohortDto> {
     this.logger.log(`update() | id=${id}`);
 
     try {
       const cohort = await this.repo.findOne({ where: { id } });
       if (!cohort) throw new NotFoundException("Cohort not found");
+
+      for (const policy of appliedPolicies) {
+        if (!this.identityService.checkAbility(policy, ownerId, cohort)) {
+          throw new ForbiddenException("You are not allowed to update this cohort");
+        }
+      }
 
       if (dto.name !== undefined) cohort.name = dto.name;
       if (dto.instructorId !== undefined) cohort.instructorId = dto.instructorId;
@@ -143,7 +153,7 @@ export class CohortService extends BaseService<Cohort> {
       return this.toDto(updated, ReadCohortDto);
     } catch (error: unknown) {
       this.logger.error(`update() | ${(error as Error).message}`, (error as Error).stack);
-      if (error instanceof NotFoundException) throw error;
+      if (error instanceof NotFoundException || error instanceof ForbiddenException) throw error;
       throw new BadRequestException("Failed to update cohort");
     }
   }
@@ -151,16 +161,23 @@ export class CohortService extends BaseService<Cohort> {
   /**
    * Deletes a cohort.
    */
-  async delete(id: string): Promise<void> {
+  async delete(id: string, ownerId: string, appliedPolicies: Policy[] = []): Promise<void> {
     this.logger.log(`delete() | id=${id}`);
 
     const cohort = await this.repo.findOne({ where: { id } });
     if (!cohort) throw new NotFoundException("Cohort not found");
 
+    for (const policy of appliedPolicies) {
+      if (!this.identityService.checkAbility(policy, ownerId, cohort)) {
+        throw new ForbiddenException("You are not allowed to delete this cohort");
+      }
+    }
+
     try {
       await this.repo.remove(cohort);
       this.logger.log(`delete() | Cohort deleted | id=${id}`);
     } catch (err: unknown) {
+      if (err instanceof NotFoundException || err instanceof ForbiddenException) throw err;
       this.logger.error(`delete() | ${(err as Error).message}`, (err as Error).stack);
       throw new BadRequestException("Failed to delete cohort");
     }

@@ -122,17 +122,28 @@ export class EnrollmentService extends BaseService<Enrollment> {
   /**
    * Updates an enrollment (e.g., changing status).
    */
-  async update(id: string, dto: UpdateEnrollmentDto): Promise<ReadEnrollmentDto> {
+  async update(
+    id: string,
+    dto: UpdateEnrollmentDto,
+    ownerId: string,
+    appliedPolicies: Policy[] = [],
+  ): Promise<ReadEnrollmentDto> {
     try {
       const enrollment = await this.repo.findOne({ where: { id } });
       if (!enrollment) throw new NotFoundException("Enrollment not found");
+
+      for (const policy of appliedPolicies) {
+        if (!this.identityService.checkAbility(policy, ownerId, enrollment)) {
+          throw new ForbiddenException("You are not allowed to update this enrollment");
+        }
+      }
 
       if (dto.status) enrollment.status = dto.status;
 
       const updated = await this.repo.save(enrollment);
       return this.toDto(updated, ReadEnrollmentDto);
     } catch (error) {
-      if (error instanceof NotFoundException) throw error;
+      if (error instanceof NotFoundException || error instanceof ForbiddenException) throw error;
       throw new BadRequestException("Failed to update enrollment");
     }
   }
@@ -140,13 +151,20 @@ export class EnrollmentService extends BaseService<Enrollment> {
   /**
    * Deletes an enrollment.
    */
-  async delete(id: string): Promise<void> {
+  async delete(id: string, ownerId: string, appliedPolicies: Policy[] = []): Promise<void> {
     const enrollment = await this.repo.findOne({ where: { id } });
     if (!enrollment) throw new NotFoundException("Enrollment not found");
 
+    for (const policy of appliedPolicies) {
+      if (!this.identityService.checkAbility(policy, ownerId, enrollment)) {
+        throw new ForbiddenException("You are not allowed to delete this enrollment");
+      }
+    }
+
     try {
       await this.repo.remove(enrollment);
-    } catch {
+    } catch (err: unknown) {
+      this.logger.error(`delete() | ${(err as Error).message}`, (err as Error).stack);
       throw new BadRequestException("Failed to delete enrollment");
     }
   }

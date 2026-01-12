@@ -20,17 +20,6 @@ import { BaseService } from "../../base/base.service";
 import { IdentityService } from "../../identity";
 import { isPostgresQueryError } from "../../shared/helpers/errors";
 
-/**
- * @class ScheduleService
- * @description
- * Business logic for managing the Lesson Schedule.
- *
- * Responsibilities:
- * - Linking Lessons to Cohorts with time windows.
- * - Managing overrides (manual open, config overrides).
- * - Enforcing uniqueness (One lesson per cohort).
- * - Access control: Inherits permissions from the Cohort's Instructor.
- */
 @Injectable()
 export class ScheduleService extends BaseService<Schedule> {
   private readonly logger = new Logger(ScheduleService.name);
@@ -43,10 +32,6 @@ export class ScheduleService extends BaseService<Schedule> {
     super();
   }
 
-  /**
-   * Returns paginated schedule entries.
-   * Joins Cohort and Instructor to allow filtering by owner permissions.
-   */
   async findAll(
     filters: FilterScheduleDto,
     userId: string,
@@ -58,7 +43,6 @@ export class ScheduleService extends BaseService<Schedule> {
     try {
       const qb = this.repo.createQueryBuilder("s");
 
-      // Join cohort and instructor to verify ownership (OWN_ONLY policy)
       qb.leftJoinAndSelect("s.cohort", "c");
       qb.leftJoinAndSelect("c.instructor", "i");
 
@@ -86,10 +70,6 @@ export class ScheduleService extends BaseService<Schedule> {
     }
   }
 
-  /**
-   * Returns a single schedule entry.
-   * Validates access based on the associated Cohort.
-   */
   async findOne(id: string, userId: string, appliedPolicies: Policy[] = []): Promise<ReadScheduleDto> {
     try {
       const schedule = await this.repo.findOne({
@@ -102,7 +82,6 @@ export class ScheduleService extends BaseService<Schedule> {
       }
 
       for (const policy of appliedPolicies) {
-        // Schedule belongs to a Cohort, so we check permissions on the Cohort
         if (!this.identityService.checkAbility(policy, userId, schedule.cohort)) {
           throw new ForbiddenException("Access denied");
         }
@@ -115,10 +94,6 @@ export class ScheduleService extends BaseService<Schedule> {
     }
   }
 
-  /**
-   * Creates a new schedule entry.
-   * Ensures a lesson is not added twice to the same cohort.
-   */
   async create(dto: CreateScheduleDto): Promise<ReadScheduleDto> {
     try {
       const entity = this.repo.create({
@@ -141,13 +116,25 @@ export class ScheduleService extends BaseService<Schedule> {
     }
   }
 
-  /**
-   * Updates schedule details (dates, overrides).
-   */
-  async update(id: string, dto: UpdateScheduleDto): Promise<ReadScheduleDto> {
+  async update(
+    id: string,
+    dto: UpdateScheduleDto,
+    userId: string,
+    appliedPolicies: Policy[] = [],
+  ): Promise<ReadScheduleDto> {
     try {
-      const schedule = await this.repo.findOne({ where: { id } });
+      const schedule = await this.repo.findOne({
+        where: { id },
+        relations: ["cohort", "cohort.instructor"],
+      });
+
       if (!schedule) throw new NotFoundException("Schedule not found");
+
+      for (const policy of appliedPolicies) {
+        if (!this.identityService.checkAbility(policy, userId, schedule.cohort)) {
+          throw new ForbiddenException("You are not allowed to update this schedule");
+        }
+      }
 
       if (dto.startAt !== undefined) schedule.startAt = dto.startAt;
       if (dto.endAt !== undefined) schedule.endAt = dto.endAt;
@@ -157,17 +144,24 @@ export class ScheduleService extends BaseService<Schedule> {
       const updated = await this.repo.save(schedule);
       return this.toDto(updated, ReadScheduleDto);
     } catch (error) {
-      if (error instanceof NotFoundException) throw error;
+      if (error instanceof NotFoundException || error instanceof ForbiddenException) throw error;
       throw new BadRequestException("Failed to update schedule");
     }
   }
 
-  /**
-   * Deletes a schedule entry.
-   */
-  async delete(id: string): Promise<void> {
-    const schedule = await this.repo.findOne({ where: { id } });
+  async delete(id: string, userId: string, appliedPolicies: Policy[] = []): Promise<void> {
+    const schedule = await this.repo.findOne({
+      where: { id },
+      relations: ["cohort", "cohort.instructor"],
+    });
+
     if (!schedule) throw new NotFoundException("Schedule not found");
+
+    for (const policy of appliedPolicies) {
+      if (!this.identityService.checkAbility(policy, userId, schedule.cohort)) {
+        throw new ForbiddenException("You are not allowed to delete this schedule");
+      }
+    }
 
     try {
       await this.repo.remove(schedule);
@@ -176,9 +170,6 @@ export class ScheduleService extends BaseService<Schedule> {
     }
   }
 
-  /**
-   * Maps uniqueness violations to ConflictException.
-   */
   private handleScheduleConstraintError(error: QueryFailedError): never {
     if (isPostgresQueryError(error)) {
       const { code, constraint } = error;

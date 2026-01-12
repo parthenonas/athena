@@ -1,6 +1,6 @@
 import { PostgresErrorCode } from "@athena/common";
 import { Policy } from "@athena/types";
-import { ConflictException, ForbiddenException } from "@nestjs/common";
+import { ConflictException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { QueryFailedError, Repository } from "typeorm";
@@ -22,13 +22,14 @@ describe("ScheduleService", () => {
   let identityService: typeof mockIdentityService;
 
   const USER_ID = "user-1";
+  const OTHER_ID = "user-99";
   const COHORT_ID = "cohort-1";
   const SCHEDULE_ID = "schedule-1";
   const LESSON_ID = "lesson-1";
 
   const APPLIED_OWN_ONLY = [Policy.OWN_ONLY];
+  const APPLIED_NONE: Policy[] = [];
 
-  // Mocking relation structure for permissions
   const mockSchedule: Schedule = {
     id: SCHEDULE_ID,
     cohortId: COHORT_ID,
@@ -41,7 +42,7 @@ describe("ScheduleService", () => {
     updatedAt: new Date(),
     cohort: {
       id: COHORT_ID,
-      ownerId: USER_ID, // Virtual getter in entity
+      ownerId: USER_ID,
       instructor: { ownerId: USER_ID } as any,
     } as any,
   };
@@ -102,32 +103,24 @@ describe("ScheduleService", () => {
   });
 
   describe("findAll", () => {
-    it("should return schedules and join related entities for policy check", async () => {
+    it("should return schedules and join entities", async () => {
       qbMock.getManyAndCount.mockResolvedValue([[mockSchedule], 1]);
 
-      const result = await service.findAll(
-        { page: 1, limit: 10, sortBy: "startAt", sortOrder: "DESC" },
-        USER_ID,
-        APPLIED_OWN_ONLY,
-      );
+      await service.findAll({ page: 1, limit: 10, sortBy: "startAt", sortOrder: "DESC" }, USER_ID, APPLIED_OWN_ONLY);
 
-      // Verify joins for permission logic
       expect(qbMock.leftJoinAndSelect).toHaveBeenCalledWith("s.cohort", "c");
       expect(qbMock.leftJoinAndSelect).toHaveBeenCalledWith("c.instructor", "i");
-
       expect(identityService.applyPoliciesToQuery).toHaveBeenCalledWith(
         expect.anything(),
         USER_ID,
         APPLIED_OWN_ONLY,
-        "i", // Must apply to instructor alias
+        "i",
       );
-
-      expect(result.meta.total).toBe(1);
     });
   });
 
   describe("findOne", () => {
-    it("should return schedule and check policies via cohort", async () => {
+    it("should return schedule and check policies", async () => {
       repo.findOne.mockResolvedValue(mockSchedule);
 
       const result = await service.findOne(SCHEDULE_ID, USER_ID, APPLIED_OWN_ONLY);
@@ -136,21 +129,15 @@ describe("ScheduleService", () => {
         where: { id: SCHEDULE_ID },
         relations: ["cohort", "cohort.instructor"],
       });
-
-      expect(identityService.checkAbility).toHaveBeenCalledWith(
-        Policy.OWN_ONLY,
-        USER_ID,
-        mockSchedule.cohort, // Checking cohort ownership
-      );
-
+      expect(identityService.checkAbility).toHaveBeenCalledWith(Policy.OWN_ONLY, USER_ID, mockSchedule.cohort);
       expect(result.id).toBe(SCHEDULE_ID);
     });
 
-    it("should throw ForbiddenException if policy check fails", async () => {
+    it("should throw ForbiddenException if denied", async () => {
       repo.findOne.mockResolvedValue(mockSchedule);
       identityService.checkAbility.mockReturnValue(false);
 
-      await expect(service.findOne(SCHEDULE_ID, "other", APPLIED_OWN_ONLY)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(service.findOne(SCHEDULE_ID, OTHER_ID, APPLIED_OWN_ONLY)).rejects.toBeInstanceOf(ForbiddenException);
     });
   });
 
@@ -160,38 +147,61 @@ describe("ScheduleService", () => {
       repo.save.mockResolvedValue(mockSchedule);
 
       await service.create(createDto);
-
       expect(repo.save).toHaveBeenCalled();
     });
 
-    it("should throw ConflictException on duplicate schedule", async () => {
+    it("should throw ConflictException on duplicate", async () => {
       const error = new QueryFailedError("dup", [], new Error());
       (error as any).code = PostgresErrorCode.UNIQUE_VIOLATION;
       (error as any).constraint = "schedules__cohort_lesson__uk";
 
       repo.save.mockRejectedValue(error);
-
       await expect(service.create(createDto)).rejects.toBeInstanceOf(ConflictException);
     });
   });
 
   describe("update", () => {
-    it("should update schedule", async () => {
+    it("should update schedule if allowed", async () => {
       repo.findOne.mockResolvedValue(mockSchedule);
       repo.save.mockResolvedValue({ ...mockSchedule, isOpenManually: true });
 
-      const res = await service.update(SCHEDULE_ID, updateDto);
+      const res = await service.update(SCHEDULE_ID, updateDto, USER_ID, APPLIED_OWN_ONLY);
+
+      expect(identityService.checkAbility).toHaveBeenCalledWith(Policy.OWN_ONLY, USER_ID, mockSchedule.cohort);
       expect(res.isOpenManually).toBe(true);
+    });
+
+    it("should throw ForbiddenException if policy denied", async () => {
+      repo.findOne.mockResolvedValue(mockSchedule);
+      identityService.checkAbility.mockReturnValue(false);
+
+      await expect(service.update(SCHEDULE_ID, updateDto, OTHER_ID, APPLIED_OWN_ONLY)).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+    });
+
+    it("should throw NotFoundException if not found", async () => {
+      repo.findOne.mockResolvedValue(null);
+      await expect(service.update("nope", updateDto, USER_ID, APPLIED_NONE)).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 
   describe("delete", () => {
-    it("should delete schedule", async () => {
+    it("should delete schedule if allowed", async () => {
       repo.findOne.mockResolvedValue(mockSchedule);
       repo.remove.mockResolvedValue(mockSchedule);
 
-      await service.delete(SCHEDULE_ID);
+      await service.delete(SCHEDULE_ID, USER_ID, APPLIED_OWN_ONLY);
+
+      expect(identityService.checkAbility).toHaveBeenCalledWith(Policy.OWN_ONLY, USER_ID, mockSchedule.cohort);
       expect(repo.remove).toHaveBeenCalled();
+    });
+
+    it("should throw ForbiddenException if policy denied", async () => {
+      repo.findOne.mockResolvedValue(mockSchedule);
+      identityService.checkAbility.mockReturnValue(false);
+
+      await expect(service.delete(SCHEDULE_ID, OTHER_ID, APPLIED_OWN_ONLY)).rejects.toBeInstanceOf(ForbiddenException);
     });
   });
 });

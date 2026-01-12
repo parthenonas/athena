@@ -141,10 +141,21 @@ export class InstructorService extends BaseService<Instructor> {
   /**
    * Updates an instructor profile.
    */
-  async update(id: string, dto: UpdateInstructorDto): Promise<ReadInstructorDto> {
+  async update(
+    id: string,
+    dto: UpdateInstructorDto,
+    ownerId: string,
+    appliedPolicies: Policy[] = [],
+  ): Promise<ReadInstructorDto> {
     try {
       const instructor = await this.repo.findOne({ where: { id } });
       if (!instructor) throw new NotFoundException("Instructor profile not found");
+
+      for (const policy of appliedPolicies) {
+        if (!this.identityService.checkAbility(policy, ownerId, instructor)) {
+          throw new ForbiddenException("You are not allowed to update this instructor");
+        }
+      }
 
       if (dto.bio !== undefined) instructor.bio = dto.bio;
       if (dto.title !== undefined) instructor.title = dto.title;
@@ -152,7 +163,7 @@ export class InstructorService extends BaseService<Instructor> {
       const updated = await this.repo.save(instructor);
       return this.toDto(updated, ReadInstructorDto);
     } catch (error) {
-      if (error instanceof NotFoundException) throw error;
+      if (error instanceof NotFoundException || error instanceof ForbiddenException) throw error;
       if (error instanceof QueryFailedError) {
         this.handleInstructorConstraintError(error);
       }
@@ -165,13 +176,20 @@ export class InstructorService extends BaseService<Instructor> {
   /**
    * Deletes an instructor profile.
    */
-  async delete(id: string): Promise<void> {
+  async delete(id: string, ownerId: string, appliedPolicies: Policy[] = []): Promise<void> {
     const instructor = await this.repo.findOne({ where: { id } });
     if (!instructor) throw new NotFoundException("Instructor profile not found");
 
+    for (const policy of appliedPolicies) {
+      if (!this.identityService.checkAbility(policy, ownerId, instructor)) {
+        throw new ForbiddenException("You are not allowed to delete this instructor");
+      }
+    }
+
     try {
       await this.repo.remove(instructor);
-    } catch {
+    } catch (err: unknown) {
+      this.logger.error(`delete() | ${(err as Error).message}`, (err as Error).stack);
       throw new BadRequestException("Failed to delete instructor");
     }
   }
