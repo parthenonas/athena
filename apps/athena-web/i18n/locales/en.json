@@ -184,7 +184,7 @@
         "title": "NEXT GENERATION LEARNING MANAGEMENT SYSTEM",
         "subtitle": "Focused learning. Practical application. Built for engineering excellence. A platform designed for those who build, not just observe.",
         "start-btn": "START LEARNING",
-        "docs-btn": "DOCUMENTATION"
+        "docs-btn": "READ MANUAL"
       }
     },
     "settings": {
@@ -221,8 +221,11 @@
     },
     "dashboard": {
       "learn": "Learning",
+      "teaching": "Teaching",
       "studio": "Studio",
       "admin": "Admin Zone",
+      "cohorts": "Cohorts",
+      "instructors": "Instructors",
       "dashboard": "Dashboard",
       "my-learning": "My Learning",
       "schedule": "Schedule",
@@ -458,6 +461,25 @@
           }
         }
       }
+    },
+    "teaching": {
+      "instructors": {
+        "title": "Instructors",
+        "subtitle": "Manage teaching staff profiles",
+        "create": "Create Instructor",
+        "create-title": "New Instructor",
+        "edit-title": "Edit Instructor",
+        "user-label": "User Account",
+        "title-label": "Professional Title",
+        "bio-label": "Biography",
+        "delete-title": "Delete Instructor?",
+        "delete-confirm": "This will permanently remove the instructor profile. The user account will remain.",
+        "columns": {
+          "user": "User",
+          "title": "Title", 
+          "created-at": "Created At"
+        }
+      }
     }
   },
   "permissions": {
@@ -565,6 +587,14 @@
       "create-error": "Failed to create lesson",
       "update-error": "Failed to update lesson",
       "delete-error": "Failed to delete lesson"
+    },
+    "instructors": {
+      "created": "Instructor profile created",
+      "updated": "Instructor profile updated",
+      "deleted": "Instructor profile deleted",
+      "create-error": "Failed to create instructor",
+      "update-error": "Failed to update instructor",
+      "delete-error": "Failed to delete instructor"
     }
   }
 }

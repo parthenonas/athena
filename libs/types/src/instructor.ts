@@ -6,7 +6,7 @@ import { SortOrder } from "./common";
 export interface CreateInstructorRequest {
   ownerId: string;
   bio?: string | null;
-  title?: string | null;
+  title?: string;
 }
 
 /**
@@ -15,7 +15,7 @@ export interface CreateInstructorRequest {
  */
 export interface UpdateInstructorRequest {
   bio?: string | null;
-  title?: string | null;
+  title?: string;
 }
 
 /**
@@ -25,7 +25,7 @@ export interface InstructorResponse {
   id: string;
   ownerId: string;
   bio: string | null;
-  title: string | null;
+  title: string;
   createdAt: Date;
   updatedAt: Date;
 }
