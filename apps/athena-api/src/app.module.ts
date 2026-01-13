@@ -7,6 +7,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { AppService } from "./app.service";
 import { ContentModule } from "./content";
 import { IdentityModule } from "./identity";
+import { LearningModule } from "./learning";
 import { MediaModule } from "./media";
 import { NotificationModule } from "./notification";
 import { SubmissionQueueModule } from "./submission-queue";
@@ -44,6 +45,7 @@ import { SubmissionQueueModule } from "./submission-queue";
     SubmissionQueueModule,
     NotificationModule,
     MediaModule,
+    LearningModule,
   ],
   providers: [AppService],
 })

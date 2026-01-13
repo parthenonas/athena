@@ -39,6 +39,16 @@ export enum Permission {
   SCHEDULE_UPDATE = "schedule.update",
   SCHEDULE_DELETE = "schedule.delete",
 
+  INSTRUCTORS_CREATE = "instructors.create",
+  INSTRUCTORS_READ = "instructors.read",
+  INSTRUCTORS_UPDATE = "instructors.update",
+  INSTRUCTORS_DELETE = "instructors.delete",
+
+  COHORTS_CREATE = "cohorts.create",
+  COHORTS_READ = "cohorts.read",
+  COHORTS_UPDATE = "cohorts.update",
+  COHORTS_DELETE = "cohorts.delete",
+
   FILES_READ = "files.read",
   FILES_CREATE = "files.create",
   FILES_DELETE = "files.delete",

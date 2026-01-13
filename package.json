@@ -39,7 +39,8 @@
     "typecheck:libs": "npm --workspaces --if-present --workspace libs run typecheck",
     "migration:generate": "npm --workspace apps/athena-api run migration:generate",
     "migration:run": "npm --workspace apps/athena-api run migration:run",
-    "migration:revert": "npm --workspace apps/athena-api run migration:revert"
+    "migration:revert": "npm --workspace apps/athena-api run migration:revert",
+    "migration:create": "npm --workspace apps/athena-api run migration:create"
   },
   "devDependencies": {
     "@testcontainers/postgresql": "^11.8.1",
