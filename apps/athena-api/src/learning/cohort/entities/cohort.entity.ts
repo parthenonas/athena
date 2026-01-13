@@ -18,7 +18,7 @@ import { Schedule } from "../../schedule/entities/schedule.entity";
  * Represents a group of students studying together (e.g., "CS-2024-A").
  * A cohort has a designated instructor and a specific timeline.
  */
-@Entity({ schema: "learning", name: "cohorts" })
+@Entity({ name: "cohorts" })
 export class Cohort {
   @PrimaryGeneratedColumn("uuid", { primaryKeyConstraintName: "cohorts__id__pk" })
   id!: string;

@@ -8,7 +8,7 @@ import { Cohort } from "../../cohort/entities/cohort.entity";
  * Represents a teacher profile linked to a system account.
  * Stores academic information and biography.
  */
-@Entity({ schema: "learning", name: "instructors" })
+@Entity({ name: "instructors" })
 @Unique("instructors__owner_id__uk", ["ownerId"])
 export class Instructor implements Ownable {
   @PrimaryGeneratedColumn("uuid", { primaryKeyConstraintName: "instructors__id__pk" })

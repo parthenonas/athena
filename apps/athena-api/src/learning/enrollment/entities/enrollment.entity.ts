@@ -17,7 +17,7 @@ import { Cohort } from "../../cohort/entities/cohort.entity";
  * Represents the link between a student (Account) and a Cohort.
  * Tracks the status of the student within the group.
  */
-@Entity({ schema: "learning", name: "enrollments" })
+@Entity({ name: "enrollments" })
 @Unique("enrollments__cohort_owner__uk", ["cohortId", "ownerId"])
 @Index("enrollments__owner_id__idx", ["ownerId"])
 export class Enrollment implements Ownable {

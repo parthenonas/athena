@@ -17,7 +17,7 @@ import { Cohort } from "../../cohort/entities/cohort.entity";
  * Connects a specific Lesson (from Content context) to a Cohort (from Learning context).
  * Defines availability windows and custom logic overrides.
  */
-@Entity({ schema: "learning", name: "schedules" })
+@Entity({ name: "schedules" })
 @Unique("schedules__cohort_lesson__uk", ["cohortId", "lessonId"])
 export class Schedule {
   @PrimaryGeneratedColumn("uuid", { primaryKeyConstraintName: "schedules__id__pk" })
