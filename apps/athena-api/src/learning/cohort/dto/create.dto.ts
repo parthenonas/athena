@@ -1,6 +1,6 @@
 import { CreateCohortRequest } from "@athena/types";
 import { Type } from "class-transformer";
-import { IsDate, IsOptional, IsString, IsUUID, MinLength } from "class-validator";
+import { IsDate, IsNotEmpty, IsOptional, IsString, IsUUID, MinLength } from "class-validator";
 
 /**
  * @class CreateCohortDto
@@ -17,7 +17,7 @@ export class CreateCohortDto implements CreateCohortRequest {
   /**
    * UUID of the assigned Instructor.
    */
-  @IsOptional()
+  @IsNotEmpty()
   @IsUUID()
   instructorId?: string | null;
 

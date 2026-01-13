@@ -1,4 +1,4 @@
-import { Permission, BlockType } from "@athena/types";
+import { Permission, BlockType, EnrollmentStatus } from "@athena/types";
 import { INestApplication } from "@nestjs/common";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import request from "supertest";
@@ -8,11 +8,19 @@ import { Block } from "../../src/content/block/entities/block.entity";
 import { Course } from "../../src/content/course/entities/course.entity";
 import { Lesson } from "../../src/content/lesson/entities/lesson.entity";
 import { IdentityService } from "../../src/identity";
+import { Cohort } from "../../src/learning/cohort/entities/cohort.entity";
+import { Enrollment } from "../../src/learning/enrollment/entities/enrollment.entity";
+import { Instructor } from "../../src/learning/instructor/entities/instructor.entity";
+import { Schedule } from "../../src/learning/schedule/entities/schedule.entity";
 
 export class TestFixtures {
   private readonly lessonRepo: Repository<Lesson>;
   private readonly courseRepo: Repository<Course>;
   private readonly blockRepo: Repository<Block>;
+  private readonly instructorRepo: Repository<Instructor>;
+  private readonly cohortRepo: Repository<Cohort>;
+  private readonly enrollmentRepo: Repository<Enrollment>;
+  private readonly scheduleRepo: Repository<Schedule>;
 
   constructor(
     private readonly app: INestApplication,
@@ -22,6 +30,10 @@ export class TestFixtures {
     this.lessonRepo = this.app.get(getRepositoryToken(Lesson));
     this.courseRepo = this.app.get(getRepositoryToken(Course));
     this.blockRepo = this.app.get(getRepositoryToken(Block));
+    this.instructorRepo = this.app.get(getRepositoryToken(Instructor));
+    this.cohortRepo = this.app.get(getRepositoryToken(Cohort));
+    this.enrollmentRepo = this.app.get(getRepositoryToken(Enrollment));
+    this.scheduleRepo = this.app.get(getRepositoryToken(Schedule));
   }
 
   async resetDatabase() {
@@ -117,5 +129,45 @@ export class TestFixtures {
 
     const entity = this.blockRepo.create({ ...defaultData, ...args });
     return this.blockRepo.save(entity);
+  }
+
+  async createInstructor(args: Partial<Instructor> = {}): Promise<Instructor> {
+    const defaultData = {
+      ownerId: "user-1",
+      bio: "Default Bio",
+      title: "Default Title",
+    };
+
+    const entity = this.instructorRepo.create({ ...defaultData, ...args });
+    return this.instructorRepo.save(entity);
+  }
+
+  async createCohort(args: Partial<Cohort> = {}): Promise<Cohort> {
+    const defaultData = {
+      name: "Default Cohort",
+      startDate: new Date(),
+    };
+
+    const entity = this.cohortRepo.create({ ...defaultData, ...args });
+    return this.cohortRepo.save(entity);
+  }
+
+  async createEnrollment(args: Partial<Enrollment> = {}): Promise<Enrollment> {
+    const defaultData = {
+      status: EnrollmentStatus.Active,
+    };
+
+    const entity = this.enrollmentRepo.create({ ...defaultData, ...args });
+    return this.enrollmentRepo.save(entity);
+  }
+
+  async createSchedule(args: Partial<Schedule> = {}): Promise<Schedule> {
+    const defaultData = {
+      startAt: new Date(),
+      isOpenManually: false,
+    };
+
+    const entity = this.scheduleRepo.create({ ...defaultData, ...args });
+    return this.scheduleRepo.save(entity);
   }
 }

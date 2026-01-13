@@ -135,7 +135,7 @@ export class CohortService extends BaseService<Cohort> {
     this.logger.log(`update() | id=${id}`);
 
     try {
-      const cohort = await this.repo.findOne({ where: { id } });
+      const cohort = await this.repo.findOne({ where: { id }, relations: ["instructor"] });
       if (!cohort) throw new NotFoundException("Cohort not found");
 
       for (const policy of appliedPolicies) {
@@ -164,7 +164,7 @@ export class CohortService extends BaseService<Cohort> {
   async delete(id: string, ownerId: string, appliedPolicies: Policy[] = []): Promise<void> {
     this.logger.log(`delete() | id=${id}`);
 
-    const cohort = await this.repo.findOne({ where: { id } });
+    const cohort = await this.repo.findOne({ where: { id }, relations: ["instructor"] });
     if (!cohort) throw new NotFoundException("Cohort not found");
 
     for (const policy of appliedPolicies) {
