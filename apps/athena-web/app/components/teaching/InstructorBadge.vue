@@ -31,7 +31,7 @@ const { data: instructor, status } = await useAsyncData(
   <UButton
     v-else
     variant="link"
-    :to="{ path: '/teaching/instructors', query: { accountId: instructor.id } }"
+    :to="{ path: '/teaching/instructors', query: { instructorId: instructor.id } }"
     :padded="false"
   >
     {{ instructor.title }}

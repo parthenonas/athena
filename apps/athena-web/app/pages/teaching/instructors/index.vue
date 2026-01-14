@@ -69,6 +69,27 @@ const openDelete = (item: InstructorResponse) => {
   isDeleteOpen.value = true
 }
 
+const route = useRoute()
+const router = useRouter()
+
+watch(() => route.query.instructorId, (newId) => {
+  if (newId && typeof newId === 'string') {
+    selectedInstructorId.value = newId
+    isSlideoverOpen.value = true
+  } else {
+    isSlideoverOpen.value = false
+    selectedInstructorId.value = null
+  }
+}, { immediate: true })
+
+watch(isSlideoverOpen, (isOpen) => {
+  if (!isOpen && route.query.instructorId) {
+    const query = { ...route.query }
+    delete query.accountId
+    router.replace({ query })
+  }
+})
+
 const onConfirmDelete = async () => {
   if (!itemToDelete.value) return
   deleteLoading.value = true
