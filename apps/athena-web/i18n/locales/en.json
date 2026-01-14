@@ -479,6 +479,17 @@
           "name": "Name",
           "instructor": "Instructor",
           "dates": "Duration"
+        },
+        "tabs": {
+          "overview": "Overview",
+          "students": "Students",
+          "schedule": "Schedule"
+        },
+        "overview": {
+          "instructor": "Instructor",
+          "period": "Duration",
+          "course": "Base Course",
+          "students-count": "Students Enrolled"
         }
       },
       "instructors": {

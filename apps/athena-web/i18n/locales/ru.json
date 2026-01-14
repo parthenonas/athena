@@ -473,6 +473,17 @@
           "name": "Название",
           "instructor": "Преподаватель",
           "dates": "Период"
+        },
+        "tabs": {
+          "overview": "Обзор",
+          "students": "Студенты",
+          "schedule": "Расписание"
+        },
+        "overview": {
+          "instructor": "Инструктор",
+          "period": "Период обучения",
+          "course": "Базовый курс",
+          "students-count": "Зачислено студентов"
         }
       },
       "instructors": {

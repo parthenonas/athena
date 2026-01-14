@@ -7,7 +7,11 @@ import type {
   CohortResponse,
   CreateCohortRequest,
   UpdateCohortRequest,
-  FilterCohortRequest
+  FilterCohortRequest,
+  EnrollmentResponse,
+  CreateEnrollmentRequest,
+  UpdateEnrollmentRequest,
+  FilterEnrollmentRequest
 } from '@athena/types'
 
 export const useTeaching = () => {
@@ -207,6 +211,103 @@ export const useTeaching = () => {
     }
   }
 
+  const fetchEnrollments = (params: FilterEnrollmentRequest) => {
+    return useApi<Pageable<EnrollmentResponse>>('/api/enrollments', {
+      method: 'GET',
+      params,
+      watch: [
+        () => params.page,
+        () => params.limit,
+        () => params.cohortId,
+        () => params.ownerId,
+        () => params.sortBy,
+        () => params.sortOrder
+      ]
+    })
+  }
+
+  const fetchEnrollment = (id: string) => {
+    return $api<EnrollmentResponse>(`/api/enrollments/${id}`, {
+      method: 'GET'
+    })
+  }
+
+  const createEnrollment = async (payload: CreateEnrollmentRequest) => {
+    try {
+      const data = await $api<EnrollmentResponse>('/api/enrollments', {
+        method: 'POST',
+        body: payload
+      })
+
+      toast.add({
+        title: t('common.success'),
+        description: t('toasts.enrollments.created'),
+        color: 'success',
+        icon: 'i-lucide-check-circle'
+      })
+      return data
+    } catch (error: unknown) {
+      console.error(error)
+      toast.add({
+        title: t('common.error'),
+        description: t('toasts.enrollments.create-error'),
+        color: 'error',
+        icon: 'i-lucide-alert-circle'
+      })
+      throw error
+    }
+  }
+
+  const updateEnrollment = async (id: string, payload: UpdateEnrollmentRequest) => {
+    try {
+      const data = await $api<EnrollmentResponse>(`/api/enrollments/${id}`, {
+        method: 'PATCH',
+        body: payload
+      })
+
+      toast.add({
+        title: t('common.success'),
+        description: t('toasts.enrollments.updated'),
+        color: 'success',
+        icon: 'i-lucide-check-circle'
+      })
+      return data
+    } catch (error: unknown) {
+      console.error(error)
+      toast.add({
+        title: t('common.error'),
+        description: t('toasts.enrollments.update-error'),
+        color: 'error',
+        icon: 'i-lucide-alert-circle'
+      })
+      throw error
+    }
+  }
+
+  const deleteEnrollment = async (id: string) => {
+    try {
+      await $api(`/api/enrollments/${id}`, {
+        method: 'DELETE'
+      })
+
+      toast.add({
+        title: t('common.success'),
+        description: t('toasts.enrollments.deleted'),
+        color: 'success',
+        icon: 'i-lucide-trash-2'
+      })
+    } catch (error: unknown) {
+      console.error(error)
+      toast.add({
+        title: t('common.error'),
+        description: t('toasts.enrollments.delete-error'),
+        color: 'error',
+        icon: 'i-lucide-alert-circle'
+      })
+      throw error
+    }
+  }
+
   return {
     fetchInstructors,
     fetchInstructor,
@@ -217,6 +318,11 @@ export const useTeaching = () => {
     fetchCohort,
     createCohort,
     updateCohort,
-    deleteCohort
+    deleteCohort,
+    fetchEnrollments,
+    fetchEnrollment,
+    createEnrollment,
+    updateEnrollment,
+    deleteEnrollment
   }
 }
