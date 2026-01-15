@@ -489,8 +489,14 @@
           "instructor": "Instructor",
           "period": "Duration",
           "course": "Base Course",
-          "students-count": "Students Enrolled"
-        }
+          "students-count": "Students Enrolled",
+          "not-assigned": "Not assigned",
+          "begin": "Begin",
+          "end": "End"
+        },
+        "loading": "Loading ...",
+        "not-found": "Cohort not found",
+        "unknown": "Unknown cohort"
       },
       "instructors": {
         "title": "Instructors",
@@ -507,6 +513,21 @@
           "user": "User",
           "title": "Title", 
           "created-at": "Created At"
+        }
+      },
+      "enrollments": {
+        "create": "Enroll Student",
+        "delete-title": "Remove Student",
+        "delete-confirm": "Are you sure you want to remove this student from the cohort? Progress data might be lost.",
+        "create-title": "Enroll Student",
+        "edit-title": "Edit Enrollment",
+        "cohort-label": "Cohort",
+        "student-label": "Student",
+        "status-label": "Status",
+        "columns": {
+          "student": "Student",
+          "status": "Status",
+          "joined": "Enrolled Date"
         }
       }
     }
@@ -544,6 +565,11 @@
     "blocked": "Blocked",
     "temporary-blocked": "Temporary Blocked",
     "unknown": "Unknown"
+  },
+  "enrollment-statuses": {
+    "active": "Active",
+    "completed": "Completed",
+    "expelled": "Expelled"
   },
   "toasts": {
     "roles": {
@@ -632,6 +658,14 @@
       "create-error": "Failed to create cohort",
       "update-error": "Failed to update cohort",
       "delete-error": "Failed to delete cohort"
+    },
+    "enrollments": {
+      "created": "Student enrolled successfully",
+      "updated": "Enrollment updated successfully",
+      "deleted": "Enrollment deleted successfully",
+      "create-error": "Failed to enroll student",
+      "update-error": "Failed to update enrollment",
+      "delete-error": "Failed to delete enrollment"
     }
   }
 }

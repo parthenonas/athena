@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FilterEnrollmentRequest, EnrollmentResponse, EnrollmentStatus } from '@athena/types'
+import { type FilterEnrollmentRequest, type EnrollmentResponse, EnrollmentStatus } from '@athena/types'
 import type { TableColumn } from '@nuxt/ui'
 
 const props = defineProps<{
@@ -86,7 +86,6 @@ const getStatusColor = (status: EnrollmentStatus) => {
     case EnrollmentStatus.Active: return 'success'
     case EnrollmentStatus.Completed: return 'primary'
     case EnrollmentStatus.Expelled: return 'error'
-    case EnrollmentStatus.Dropped: return 'warning'
     default: return 'neutral'
   }
 }
@@ -118,7 +117,7 @@ const getStatusColor = (status: EnrollmentStatus) => {
       :loading="loading"
     >
       <template #student-cell="{ row }">
-        <TeachingAccountBadge :account-id="row.original.userId" />
+        <TeachingAccountBadge :account-id="row.original.ownerId" />
       </template>
 
       <template #status-cell="{ row }">
@@ -127,13 +126,13 @@ const getStatusColor = (status: EnrollmentStatus) => {
           variant="subtle"
           size="sm"
         >
-          {{ $t(`enums.enrollmentStatus.${row.original.status}`) }}
+          {{ $t(`enrollment-statuses.${row.original.status}`) }}
         </UBadge>
       </template>
 
       <template #createdAt-cell="{ row }">
         <span class="text-sm text-gray-500">
-          {{ new Date(row.original.createdAt).toLocaleDateString() }}
+          {{ new Date(row.original.enrolledAt).toLocaleDateString() }}
         </span>
       </template>
 

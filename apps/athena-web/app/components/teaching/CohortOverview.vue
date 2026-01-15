@@ -5,7 +5,7 @@ const props = defineProps<{
   cohort: CohortResponse
 }>()
 
-const { fetchInstructor } = useTeaching()
+const { fetchInstructor, fetchEnrollments } = useTeaching()
 
 const { data: instructor, status } = await useAsyncData(
   `instructor-for-cohort-${props.cohort.id}`,
@@ -17,6 +17,15 @@ const { data: instructor, status } = await useAsyncData(
     watch: [() => props.cohort.instructorId]
   }
 )
+
+const { data } = await fetchEnrollments({
+  page: 1,
+  limit: 10,
+  cohortId: undefined,
+  sortBy: 'enrolledAt',
+  sortOrder: 'DESC' })
+
+const total = computed(() => data.value?.meta?.total || 0)
 
 const isLoading = computed(() => status.value === 'pending')
 </script>
@@ -49,25 +58,14 @@ const isLoading = computed(() => status.value === 'pending')
         v-else-if="instructor"
         class="flex items-center gap-3"
       >
-        <UAvatar
-          :alt="instructor.owner?.login"
-          size="md"
-        />
-        <div>
-          <p class="font-bold text-gray-900 dark:text-white">
-            {{ instructor.title }}
-          </p>
-          <p class="text-xs text-gray-500">
-            {{ instructor.owner?.login || 'Unknown User' }}
-          </p>
-        </div>
+        <TeachingAccountBadge :account-id="instructor.ownerId" />
       </div>
 
       <div
         v-else
         class="text-gray-400 text-sm italic"
       >
-        Not assigned
+        {{ $t('pages.teaching.cohorts.overview.not-assigned') }}
       </div>
     </UCard>
 
@@ -84,13 +82,13 @@ const isLoading = computed(() => status.value === 'pending')
 
       <div class="space-y-1">
         <div class="flex justify-between text-sm">
-          <span class="text-gray-500">Start:</span>
+          <span class="text-gray-500"> {{ $t('pages.teaching.cohorts.overview.begin') }}</span>
           <span class="font-medium">
             {{ cohort.startDate ? new Date(cohort.startDate).toLocaleDateString() : '-' }}
           </span>
         </div>
         <div class="flex justify-between text-sm">
-          <span class="text-gray-500">End:</span>
+          <span class="text-gray-500"> {{ $t('pages.teaching.cohorts.overview.end') }}</span>
           <span class="font-medium">
             {{ cohort.endDate ? new Date(cohort.endDate).toLocaleDateString() : '-' }}
           </span>
@@ -110,7 +108,7 @@ const isLoading = computed(() => status.value === 'pending')
       </template>
 
       <div class="text-3xl font-bold text-primary-500">
-        {{ 0 }}
+        {{ total }}
       </div>
     </UCard>
   </div>

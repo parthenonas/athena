@@ -1,5 +1,5 @@
 import { CreateInstructorRequest } from "@athena/types";
-import { IsOptional, IsString, IsUUID, MaxLength } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength } from "class-validator";
 
 /**
  * @class CreateInstructorDto
@@ -24,8 +24,8 @@ export class CreateInstructorDto implements CreateInstructorRequest {
   /**
    * Academic title (e.g., "PhD", "Senior Lecturer").
    */
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
   @MaxLength(100)
-  title?: string | null;
+  title!: string;
 }

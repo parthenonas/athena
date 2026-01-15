@@ -118,12 +118,13 @@ const onConfirmDelete = async () => {
       :loading="loading"
     >
       <template #name-cell="{ row }">
-        <NuxtLink
+        <UButton
+          variant="link"
           :to="`/teaching/cohorts/${row.original.id}`"
-          class="font-medium text-gray-900 dark:text-white hover:text-primary-500 hover:underline"
+          :padded="false"
         >
           {{ row.original.name }}
-        </NuxtLink>
+        </UButton>
       </template>
 
       <template #instructor-cell="{ row }">

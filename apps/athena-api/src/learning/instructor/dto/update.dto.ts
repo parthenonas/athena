@@ -20,5 +20,5 @@ export class UpdateInstructorDto implements UpdateInstructorRequest {
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  title?: string | null;
+  title?: string;
 }

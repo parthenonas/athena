@@ -20,7 +20,7 @@ export class ReadInstructorDto implements InstructorResponse {
 
   /** Academic title. */
   @Expose()
-  title!: string | null;
+  title!: string;
 
   /** Creation timestamp. */
   @Expose()

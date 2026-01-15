@@ -6,7 +6,7 @@ import { SortOrder } from "./common";
 export interface CreateInstructorRequest {
   ownerId: string;
   bio?: string | null;
-  title?: string;
+  title: string;
 }
 
 /**

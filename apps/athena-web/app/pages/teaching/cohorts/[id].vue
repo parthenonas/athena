@@ -28,19 +28,35 @@ const links = computed(() => [{
   slot: 'schedule'
 }])
 
-const title = computed(() => cohort.value?.name || 'Loading...')
+const title = computed(() => {
+  if (status.value === 'pending') {
+    return t('pages.teaching.cohorts.loading')
+  } else if (!cohort.value) {
+    return t('pages.teaching.cohorts.unknown')
+  } else {
+    return cohort.value?.name
+  }
+})
 </script>
 
 <template>
   <UDashboardPage>
     <UDashboardNavbar :title="title">
+      <template #leading>
+        <UButton
+          icon="i-lucide-arrow-left"
+          variant="ghost"
+          color="neutral"
+          @click="$router.back()"
+        />
+      </template>
       <template #right>
         <UButton
           icon="i-lucide-refresh-cw"
           color="neutral"
           variant="ghost"
           :loading="status === 'pending'"
-          @click="refresh"
+          @click="() => refresh()"
         />
       </template>
     </UDashboardNavbar>
@@ -59,7 +75,7 @@ const title = computed(() => cohort.value?.name || 'Loading...')
         class="p-4 text-center"
       >
         <p class="text-gray-500">
-          Cohort not found
+          {{ t('pages.teaching.cohorts.not-found') }}
         </p>
       </div>
 

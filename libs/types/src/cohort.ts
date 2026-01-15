@@ -5,7 +5,7 @@ import { SortOrder } from "./common";
  */
 export interface CreateCohortRequest {
   name: string;
-  instructorId?: string | null;
+  instructorId: string;
   startDate?: Date | string;
   endDate?: Date | string;
 }

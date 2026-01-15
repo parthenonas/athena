@@ -5,7 +5,9 @@ import type {
   CreateEnrollmentRequest,
   UpdateEnrollmentRequest,
   AccountResponse,
-  CohortResponse
+  CohortResponse,
+  FilterCohortRequest,
+  FilterAccountRequest
 } from '@athena/types'
 import { EnrollmentStatus } from '@athena/types'
 import type { SelectMenuItem } from '@nuxt/ui'
@@ -44,25 +46,32 @@ const state = reactive<Schema>({
 })
 
 const statusOptions = computed(() => Object.values(EnrollmentStatus).map(status => ({
-  id: status,
-  label: t(`enums.enrollmentStatus.${status}`)
+  value: status,
+  label: t(`enrollment-statuses.${status}`)
 })))
 
-const cohortSearch = ref('')
-const { data: fetchedCohorts, pending: pendingCohorts } = await fetchCohorts(reactive({
-  limit: 20,
-  search: cohortSearch
-}))
+const cohortFilters = reactive<FilterCohortRequest>({
+  search: undefined,
+  instructorId: undefined,
+  page: 1,
+  limit: 10,
+  sortBy: 'name',
+  sortOrder: 'asc'
+})
+const { data: fetchedCohorts, pending: pendingCohorts } = await fetchCohorts(cohortFilters)
 
 const cohortOptions = computed<SelectMenuItem[]>(() => {
   return (fetchedCohorts.value?.data || []).map(c => ({ id: c.id, label: c.name }))
 })
 
-const userSearch = ref('')
-const { data: fetchedAccounts, pending: pendingAccounts } = await fetchAccounts(reactive({
-  limit: 20,
-  search: userSearch
-}))
+const accountFilters = reactive<FilterAccountRequest>({
+  search: undefined,
+  page: 1,
+  limit: 10,
+  sortBy: 'login',
+  sortOrder: 'ASC'
+})
+const { data: fetchedAccounts, pending: pendingAccounts } = await fetchAccounts(accountFilters)
 
 const specificUser = ref<AccountResponse | null>(null)
 const specificCohort = ref<CohortResponse | null>(null)
@@ -83,12 +92,9 @@ watch(isOpen, async (val) => {
     if (props.enrollmentId) {
       const enrollment = await fetchEnrollment(props.enrollmentId)
       if (enrollment) {
-        state.userId = enrollment.userId
+        state.userId = enrollment.ownerId
         state.cohortId = enrollment.cohortId
         state.status = enrollment.status
-
-        if (enrollment.user) specificUser.value = enrollment.user as unknown as AccountResponse
-        if (enrollment.cohort) specificCohort.value = enrollment.cohort
       }
     } else {
       state.userId = ''
@@ -151,13 +157,12 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
           required
         >
           <USelectMenu
-            v-model:search-term="cohortSearch"
+            v-model:search-term="cohortFilters.search"
             v-model="state.cohortId"
             :items="cohortOptions"
             :loading="pendingCohorts"
             value-key="id"
             class="w-full"
-            placeholder="Select Cohort..."
             :disabled="!!enrollmentId || !!initialCohortId"
           />
         </UFormField>
@@ -168,13 +173,12 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
           required
         >
           <USelectMenu
-            v-model:search-term="userSearch"
+            v-model:search-term="accountFilters.search"
             v-model="state.userId"
             :items="userOptions"
             :loading="pendingAccounts"
             value-key="id"
             class="w-full"
-            placeholder="Select Student..."
             :disabled="!!enrollmentId"
           />
         </UFormField>
@@ -186,8 +190,6 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
           <USelect
             v-model="state.status"
             :items="statusOptions"
-            option-attribute="label"
-            value-attribute="id"
             class="w-full"
           />
         </UFormField>
