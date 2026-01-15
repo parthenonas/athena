@@ -17,6 +17,13 @@ export class FilterCohortDto implements FilterCohortRequest {
   @IsUUID()
   instructorId?: string;
 
+  /**
+   * Filter by specificCourse.
+   */
+  @IsOptional()
+  @IsUUID()
+  courseId?: string;
+
   /** Page number (1-based). */
   @IsOptional()
   @Type(() => Number)

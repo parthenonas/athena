@@ -19,7 +19,14 @@ export class CreateCohortDto implements CreateCohortRequest {
    */
   @IsNotEmpty()
   @IsUUID()
-  instructorId?: string | null;
+  instructorId: string;
+
+  /**
+   * UUID of the assigned Course.
+   */
+  @IsNotEmpty()
+  @IsUUID()
+  courseId: string;
 
   /**
    * Start date of the learning process.

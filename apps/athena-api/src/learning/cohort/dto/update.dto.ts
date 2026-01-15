@@ -20,7 +20,14 @@ export class UpdateCohortDto implements UpdateCohortRequest {
    */
   @IsOptional()
   @IsUUID()
-  instructorId?: string | null;
+  instructorId?: string;
+
+  /**
+   * Reassign or remove instructor (send null to remove).
+   */
+  @IsOptional()
+  @IsUUID()
+  courseId?: string;
 
   /**
    * Update start date.

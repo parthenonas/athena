@@ -11,7 +11,11 @@ import type {
   EnrollmentResponse,
   CreateEnrollmentRequest,
   UpdateEnrollmentRequest,
-  FilterEnrollmentRequest
+  FilterEnrollmentRequest,
+  ScheduleResponse,
+  CreateScheduleRequest,
+  UpdateScheduleRequest,
+  FilterScheduleRequest
 } from '@athena/types'
 
 export const useTeaching = () => {
@@ -308,6 +312,143 @@ export const useTeaching = () => {
     }
   }
 
+  const fetchSchedules = (params: FilterScheduleRequest) => {
+    return useApi<Pageable<ScheduleResponse>>('/api/schedules', {
+      method: 'GET',
+      params,
+      watch: [
+        () => params.page,
+        () => params.limit,
+        () => params.cohortId,
+        () => params.lessonId,
+        () => params.sortBy,
+        () => params.sortOrder
+      ]
+    })
+  }
+
+  const fetchAllSchedules = async (cohortId: string) => {
+    let page = 1
+    const limit = 100
+    let allSchedules: ScheduleResponse[] = []
+    let hasMore = true
+
+    try {
+      while (hasMore) {
+        const response = await $api<Pageable<ScheduleResponse>>('/api/schedules', {
+          method: 'GET',
+          params: {
+            cohortId,
+            page,
+            limit,
+            sortBy: 'startAt',
+            sortOrder: 'ASC'
+          }
+        })
+
+        allSchedules = [...allSchedules, ...response.data]
+
+        if (response.meta.page < response.meta.pages) {
+          page++
+        } else {
+          hasMore = false
+        }
+      }
+
+      return allSchedules
+    } catch (error) {
+      console.error('Failed to fetch all schedules', error)
+      toast.add({
+        title: t('common.error'),
+        description: t('toasts.schedules.fetch-error'),
+        color: 'error'
+      })
+      throw error
+    }
+  }
+
+  const fetchSchedule = (id: string) => {
+    return $api<ScheduleResponse>(`/api/schedules/${id}`, {
+      method: 'GET'
+    })
+  }
+
+  const createSchedule = async (payload: CreateScheduleRequest) => {
+    try {
+      const data = await $api<ScheduleResponse>('/api/schedules', {
+        method: 'POST',
+        body: payload
+      })
+
+      toast.add({
+        title: t('common.success'),
+        description: t('toasts.schedules.created'),
+        color: 'success',
+        icon: 'i-lucide-check-circle'
+      })
+      return data
+    } catch (error: unknown) {
+      console.error(error)
+      toast.add({
+        title: t('common.error'),
+        description: t('toasts.schedules.create-error'),
+        color: 'error',
+        icon: 'i-lucide-alert-circle'
+      })
+      throw error
+    }
+  }
+
+  const updateSchedule = async (id: string, payload: UpdateScheduleRequest) => {
+    try {
+      const data = await $api<ScheduleResponse>(`/api/schedules/${id}`, {
+        method: 'PATCH',
+        body: payload
+      })
+
+      toast.add({
+        title: t('common.success'),
+        description: t('toasts.schedules.updated'),
+        color: 'success',
+        icon: 'i-lucide-check-circle'
+      })
+      return data
+    } catch (error: unknown) {
+      console.error(error)
+      toast.add({
+        title: t('common.error'),
+        description: t('toasts.schedules.update-error'),
+        color: 'error',
+        icon: 'i-lucide-alert-circle'
+      })
+      throw error
+    }
+  }
+
+  const deleteSchedule = async (id: string) => {
+    try {
+      await $api(`/api/schedules/${id}`, {
+        method: 'DELETE'
+      })
+
+      toast.add({
+        title: t('common.success'),
+        description: t('toasts.schedules.deleted'),
+        color: 'success',
+        icon: 'i-lucide-trash-2'
+      })
+    } catch (error: unknown) {
+      console.error(error)
+      toast.add({
+        title: t('common.error'),
+        description: t('toasts.schedules.delete-error'),
+        color: 'error',
+        icon: 'i-lucide-alert-circle'
+      })
+      throw error
+    }
+  }
+
   return {
     fetchInstructors,
     fetchInstructor,
@@ -323,6 +464,12 @@ export const useTeaching = () => {
     fetchEnrollment,
     createEnrollment,
     updateEnrollment,
-    deleteEnrollment
+    deleteEnrollment,
+    fetchSchedules,
+    fetchAllSchedules,
+    fetchSchedule,
+    createSchedule,
+    updateSchedule,
+    deleteSchedule
   }
 }

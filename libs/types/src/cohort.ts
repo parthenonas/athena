@@ -6,6 +6,7 @@ import { SortOrder } from "./common";
 export interface CreateCohortRequest {
   name: string;
   instructorId: string;
+  courseId: string;
   startDate?: Date | string;
   endDate?: Date | string;
 }
@@ -15,7 +16,8 @@ export interface CreateCohortRequest {
  */
 export interface UpdateCohortRequest {
   name?: string;
-  instructorId?: string | null;
+  instructorId?: string;
+  courseId?: string;
   startDate?: Date | string | null;
   endDate?: Date | string | null;
 }
@@ -26,7 +28,8 @@ export interface UpdateCohortRequest {
 export interface CohortResponse {
   id: string;
   name: string;
-  instructorId: string | null;
+  instructorId: string;
+  courseId: string;
   startDate: Date | null;
   endDate: Date | null;
   createdAt: Date;
@@ -39,6 +42,7 @@ export interface CohortResponse {
 export interface FilterCohortRequest {
   search?: string;
   instructorId?: string;
+  courseId?: string;
   page: number;
   limit: number;
   sortBy: "name" | "startDate" | "createdAt";

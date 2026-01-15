@@ -60,7 +60,8 @@
     "upload": "Upload",
     "of": "of",
     "edit": "Edit",
-    "drag": "Drag to reorder"
+    "drag": "Drag to reorder",
+    "or": "or"
   },
   "editor": {
     "bold": "Bold",
@@ -470,6 +471,7 @@
         "edit-title": "Edit Cohort",
         "name-label": "Cohort Name",
         "instructor-label": "Primary Instructor",
+        "course-label": "Course",
         "start-date-label": "Start Date",
         "end-date-label": "End Date",
         "create": "Create Cohort",
@@ -477,6 +479,7 @@
         "delete-confirm": "Are you sure? This will remove the cohort and all associated enrollments.",
         "columns": {
           "name": "Name",
+          "course": "Course",
           "instructor": "Instructor",
           "dates": "Duration"
         },
@@ -529,6 +532,44 @@
           "status": "Status",
           "joined": "Enrolled Date"
         }
+      },
+      "schedule": {
+        "create-title": "Schedule Lesson",
+        "edit-title": "Edit Schedule",
+        "create-hint": "Set dates to automate availability or use manual override to open immediately.",
+        "start-at-label": "Opens At",
+        "end-at-label": "Deadline (Closes At)",
+        "manual-override-label": "Manual Override",
+        "manual-override-help": "Ignore dates and control visibility manually.",
+        "columns": {
+          "lesson": "Lesson",
+          "dates": "Availability",
+          "status": "State"
+        },
+        "empty": "No lessons found in the base course.",
+        "not-scheduled": "Not Scheduled",
+        "manual": "Manual Override",
+        "mode-label": "Access Mode",
+        "modes": {
+          "scheduled": {
+            "label": "Scheduled",
+            "description": "Access within a specific time range"
+          },
+          "manual": {
+            "label": "Always Open",
+            "description": "Lesson is available immediately and forever"
+          }
+        },
+        "interval-settings": {
+          "title": "Interval Settings",
+          "description": "Leaving a field empty means no restriction on that side."
+        },
+        "start-at-help": "Date and time when access opens",
+        "end-at-help": "Access closes at this time",
+        "full-access": {
+          "title": "Full Access",
+          "description": "The lesson will be available to all cohort students immediately, without time limits."
+        }
       }
     }
   },
@@ -570,6 +611,10 @@
     "active": "Active",
     "completed": "Completed",
     "expelled": "Expelled"
+  },
+  "schedule-statuses": {
+    "open": "Open",
+    "closed": "Closed"
   },
   "toasts": {
     "roles": {
@@ -641,7 +686,8 @@
       "deleted": "Lesson deleted",
       "create-error": "Failed to create lesson",
       "update-error": "Failed to update lesson",
-      "delete-error": "Failed to delete lesson"
+      "delete-error": "Failed to delete lesson",
+      "fetch-error": "Failed to fetch lessons"
     },
     "instructors": {
       "created": "Instructor profile created",
@@ -666,6 +712,15 @@
       "create-error": "Failed to enroll student",
       "update-error": "Failed to update enrollment",
       "delete-error": "Failed to delete enrollment"
+    },
+    "schedules": {
+      "created": "Lesson scheduled successfully",
+      "updated": "Schedule updated successfully",
+      "deleted": "Schedule removed",
+      "create-error": "Failed to schedule lesson",
+      "update-error": "Failed to update schedule",
+      "delete-error": "Failed to remove schedule",
+      "fetch-error": "Failed to fetch schedule"
     }
   }
 }

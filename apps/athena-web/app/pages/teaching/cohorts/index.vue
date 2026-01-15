@@ -37,6 +37,11 @@ const columns = computed<TableColumn<CohortResponse>[]>(() => [
     class: 'w-[30%]'
   },
   {
+    accessorKey: 'course',
+    header: t('pages.teaching.cohorts.columns.course'),
+    class: 'w-[30%]'
+  },
+  {
     id: 'instructor',
     header: t('pages.teaching.cohorts.columns.instructor')
   },
@@ -127,8 +132,12 @@ const onConfirmDelete = async () => {
         </UButton>
       </template>
 
+      <template #course-cell="{ row }">
+        <TeachingCourseBadge :course-id="row.original.courseId" />
+      </template>
+
       <template #instructor-cell="{ row }">
-        <TeachingInstructorBadge :instructor-id="row.original.instructorId!" />
+        <TeachingInstructorBadge :instructor-id="row.original.instructorId" />
       </template>
 
       <template #dates-cell="{ row }">

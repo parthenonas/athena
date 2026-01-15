@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
-import type { CreateCohortRequest, UpdateCohortRequest, FilterInstructorRequest, InstructorResponse } from '@athena/types'
+import type { CreateCohortRequest, UpdateCohortRequest, FilterInstructorRequest, InstructorResponse, FilterCourseRequest, CourseResponse } from '@athena/types'
 import type { SelectMenuItem } from '@nuxt/ui'
-import { CalendarDate } from '@internationalized/date'
 
 const props = defineProps<{
   modelValue: boolean
@@ -14,6 +13,7 @@ const emit = defineEmits(['update:modelValue', 'success'])
 
 const { t } = useI18n()
 const { createCohort, updateCohort, fetchCohort, fetchInstructors, fetchInstructor } = useTeaching()
+const { fetchCourses } = useStudio()
 
 const isOpen = computed({
   get: () => props.modelValue,
@@ -21,11 +21,11 @@ const isOpen = computed({
 })
 
 const isLoading = ref(false)
-const search = ref('')
 
 const schema = z.object({
   name: z.string().min(3, t('validation.min-length', { min: 3 })),
-  instructorId: z.string().uuid(),
+  instructorId: z.uuid(),
+  courseId: z.uuid(),
   startDate: z.any().optional(),
   endDate: z.any().optional()
 })
@@ -41,7 +41,7 @@ const state = reactive({
   endDate: undefined as any
 })
 
-const filters = reactive<FilterInstructorRequest>({
+const instructorFilters = reactive<FilterInstructorRequest>({
   page: 1,
   limit: 20,
   search: undefined,
@@ -49,11 +49,12 @@ const filters = reactive<FilterInstructorRequest>({
   sortOrder: 'ASC'
 })
 
-watchDebounced(search, (val) => {
-  filters.search = val
+const instructorSearch = ref('')
+watchDebounced(instructorSearch, (val) => {
+  instructorFilters.search = val
 }, { debounce: 500, maxWait: 1000 })
 
-const { data: fetchedInstructors, pending: pendingInstructors } = await fetchInstructors(filters)
+const { data: fetchedInstructors, pending: pendingInstructors } = await fetchInstructors(instructorFilters)
 const specificInstructor = ref<InstructorResponse | null>(null)
 
 const instructorOptions = computed<SelectMenuItem[]>(() => {
@@ -70,20 +71,35 @@ const instructorOptions = computed<SelectMenuItem[]>(() => {
   }))
 })
 
-const toCalendarDateTime = (dateStr?: string | Date | null): CalendarDate | undefined => {
-  if (!dateStr) return undefined
-  const d = new Date(dateStr)
-  return new CalendarDate(
-    d.getFullYear(),
-    d.getMonth() + 1,
-    d.getDate()
-  )
-}
+const courseFilters = reactive<FilterCourseRequest>({
+  page: 1,
+  limit: 20,
+  search: undefined,
+  sortBy: 'title',
+  sortOrder: 'ASC'
+})
 
-const toNativeDate = (cd?: CalendarDate): Date | undefined => {
-  if (!cd) return undefined
-  return new Date(cd.year, cd.month - 1, cd.day)
-}
+const courseSearch = ref('')
+watchDebounced(instructorSearch, (val) => {
+  instructorFilters.search = val
+}, { debounce: 500, maxWait: 1000 })
+
+const { data: fetchedCourses, pending: pendingCourses } = await fetchCourses(courseFilters)
+const specificCourse = ref<CourseResponse | null>(null)
+
+const courseOptions = computed<SelectMenuItem[]>(() => {
+  const list = fetchedCourses.value?.data || []
+  const result = [...list]
+
+  if (specificCourse.value && !list.find(c => c.id === specificCourse.value?.id)) {
+    result.push(specificCourse.value)
+  }
+
+  return result.map(c => ({
+    id: c.id,
+    label: c.title
+  }))
+})
 
 watch(isOpen, async (val) => {
   if (!val) return
@@ -130,6 +146,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
     const payloadBase = {
       name: formData.name,
       instructorId: formData.instructorId,
+      courseId: formData.courseId,
       startDate: toNativeDate(formData.startDate),
       endDate: toNativeDate(formData.endDate)
     }
@@ -186,10 +203,25 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
           required
         >
           <USelectMenu
-            v-model:search-term="search"
+            v-model:search-term="instructorSearch"
             v-model="state.instructorId"
             :items="instructorOptions"
             :loading="pendingInstructors"
+            value-key="id"
+            class="w-full"
+          />
+        </UFormField>
+
+        <UFormField
+          :label="$t('pages.teaching.cohorts.course-label')"
+          name="instructorId"
+          required
+        >
+          <USelectMenu
+            v-model:search-term="courseSearch"
+            v-model="state.courseId"
+            :items="courseOptions"
+            :loading="pendingCourses"
             value-key="id"
             class="w-full"
           />
@@ -203,6 +235,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
             <UInputDate
               v-model="state.startDate"
               class="w-full"
+              granularity="minute"
             />
           </UFormField>
 
@@ -213,6 +246,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
             <UInputDate
               v-model="state.endDate"
               class="w-full"
+              granularity="minute"
             />
           </UFormField>
         </div>

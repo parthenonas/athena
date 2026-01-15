@@ -9,7 +9,7 @@ const { fetchCohort } = useTeaching()
 
 const cohortId = route.params.id as string
 
-const { data: cohort, status, refresh } = await useAsyncData(
+const { data: cohort, status } = await useAsyncData(
   `cohort-${cohortId}`,
   () => fetchCohort(cohortId)
 )
@@ -48,15 +48,6 @@ const title = computed(() => {
           variant="ghost"
           color="neutral"
           @click="$router.back()"
-        />
-      </template>
-      <template #right>
-        <UButton
-          icon="i-lucide-refresh-cw"
-          color="neutral"
-          variant="ghost"
-          :loading="status === 'pending'"
-          @click="() => refresh()"
         />
       </template>
     </UDashboardNavbar>
@@ -104,7 +95,7 @@ const title = computed(() => {
           <template #schedule>
             <div class="p-4">
               <p class="text-gray-500">
-                Schedule Builder goes here...
+                <TeachingCohortSchedule :cohort="cohort" />
               </p>
             </div>
           </template>

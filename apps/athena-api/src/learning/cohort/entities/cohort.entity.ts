@@ -32,8 +32,14 @@ export class Cohort {
   /**
    * ID of the assigned instructor.
    */
-  @Column({ name: "instructor_id", type: "uuid", nullable: true })
-  instructorId!: string | null;
+  @Column({ name: "instructor_id", type: "uuid", nullable: false })
+  instructorId!: string;
+
+  /**
+   * ID of the assigned instructor.
+   */
+  @Column({ name: "course_id", type: "uuid", nullable: false })
+  courseId!: string;
 
   /**
    * The instructor assigned to supervise this cohort.
