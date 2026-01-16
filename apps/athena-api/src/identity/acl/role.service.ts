@@ -1,15 +1,15 @@
 import { PostgresErrorCode } from "@athena/common";
 import { Pageable, Permission, Policy } from "@athena/types";
 import { Injectable, Logger, NotFoundException, BadRequestException, ConflictException } from "@nestjs/common";
-import { EventEmitter2 } from "@nestjs/event-emitter";
 import { InjectRepository } from "@nestjs/typeorm";
-import { QueryFailedError, Repository } from "typeorm";
+import { QueryFailedError, Repository, DataSource } from "typeorm";
 
 import { CreateRoleDto } from "./dto/create.dto";
 import { FilterRoleDto } from "./dto/filter.dto";
 import { ReadRoleDto } from "./dto/read.dto";
 import { Role } from "./entities/role.entity";
 import { BaseService } from "../../base/base.service";
+import { OutboxService } from "../../outbox";
 import { AthenaEvent, RoleDeletedEvent } from "../../shared/events/types";
 import { isPostgresQueryError } from "../../shared/helpers/errors";
 
@@ -36,7 +36,8 @@ export class RoleService extends BaseService<Role> {
   constructor(
     @InjectRepository(Role)
     private readonly repo: Repository<Role>,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly dataSource: DataSource,
+    private readonly outboxService: OutboxService,
   ) {
     super();
   }
@@ -181,22 +182,28 @@ export class RoleService extends BaseService<Role> {
    */
   async delete(id: string): Promise<void> {
     this.logger.log(`delete() | id=${id}`);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     try {
-      const role = await this.repo.findOne({ where: { id } });
+      const manager = queryRunner.manager;
+      const role = await manager.findOne(Role, { where: { id } });
 
       if (!role) {
         this.logger.warn(`delete() | Role not found | id=${id}`);
         throw new NotFoundException("Role not found");
       }
 
-      await this.repo.remove(role);
+      await manager.remove(Role, role);
 
       const event: RoleDeletedEvent = { name: role.name };
-      this.eventEmitter.emit(AthenaEvent.ROLE_DELETED, event);
+      await this.outboxService.save(manager, AthenaEvent.ROLE_DELETED, event);
+      await queryRunner.commitTransaction();
 
       this.logger.log(`delete() | Role deleted | id=${id}`);
     } catch (error: unknown) {
+      await queryRunner.rollbackTransaction();
       this.logger.error(`delete() | ${(error as Error).message}`, (error as Error).stack);
       if (error instanceof NotFoundException) {
         throw error;
@@ -205,6 +212,8 @@ export class RoleService extends BaseService<Role> {
         this.handleRoleConstraintError(error);
       }
       throw new BadRequestException("Failed to delete role");
+    } finally {
+      await queryRunner.release();
     }
   }
 
