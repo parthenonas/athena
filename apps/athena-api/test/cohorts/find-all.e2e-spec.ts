@@ -58,14 +58,18 @@ describe("GET /cohorts (e2e)", () => {
       title: "Instructor B",
     });
 
+    const course = await fixtures.createCourse({ title: "test" });
+
     const c1 = await fixtures.createCohort({
       name: "Cohort Alpha",
+      courseId: course.id,
       instructorId: profileA.id,
     });
     cohortA_Id = c1.id;
 
     const c2 = await fixtures.createCohort({
       name: "Cohort Beta",
+      courseId: course.id,
       instructorId: profileB.id,
     });
     cohortB_Id = c2.id;

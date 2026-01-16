@@ -26,8 +26,10 @@ describe("GET /enrollments/:id (e2e)", () => {
     adminToken = token;
 
     const instructor = await fixtures.createInstructor({ ownerId: admin.id, title: "Dr." });
+    const course = await fixtures.createCourse({ title: "test" });
     const cohort = await fixtures.createCohort({
       name: "Chemistry",
+      courseId: course.id,
       instructorId: instructor.id,
     });
 

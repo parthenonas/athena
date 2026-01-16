@@ -33,6 +33,7 @@ describe("POST /schedules (e2e)", () => {
     const instructor = await fixtures.createInstructor({ ownerId: admin.id, title: "Math Prof" });
     const cohort = await fixtures.createCohort({
       name: "Math Cohort 1",
+      courseId: course.id,
       instructorId: instructor.id,
     });
     cohortId = cohort.id;

@@ -25,10 +25,12 @@ describe("PATCH /enrollments/:id (e2e)", () => {
 
     const { admin, adminToken: token } = await fixtures.seedAdmin();
     adminToken = token;
+    const course = await fixtures.createCourse({ title: "test" });
 
     const instructor = await fixtures.createInstructor({ ownerId: admin.id, title: "Doc" });
     const cohort = await fixtures.createCohort({
       name: "Math",
+      courseId: course.id,
       instructorId: instructor.id,
     });
 

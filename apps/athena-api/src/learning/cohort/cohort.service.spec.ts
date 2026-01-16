@@ -32,6 +32,7 @@ describe("CohortService", () => {
   const mockCohort: Cohort = {
     id: "cohort-1",
     name: "CS-2024-A",
+    courseId: "course-1",
     instructorId: INSTRUCTOR_ID,
     instructor: {
       id: INSTRUCTOR_ID,
@@ -54,6 +55,7 @@ describe("CohortService", () => {
 
   const mockReadCohort: ReadCohortDto = {
     id: mockCohort.id,
+    courseId: "course-1",
     name: mockCohort.name,
     instructorId: mockCohort.instructorId,
     startDate: mockCohort.startDate,
@@ -64,6 +66,7 @@ describe("CohortService", () => {
 
   const createDto: CreateCohortDto = {
     name: "CS-2024-A",
+    courseId: "course-1",
     instructorId: INSTRUCTOR_ID,
     startDate: new Date(),
   };
