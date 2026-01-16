@@ -60,7 +60,8 @@
     "upload": "Upload",
     "of": "of",
     "edit": "Edit",
-    "drag": "Drag to reorder"
+    "drag": "Drag to reorder",
+    "or": "or"
   },
   "editor": {
     "bold": "Bold",
@@ -184,7 +185,7 @@
         "title": "NEXT GENERATION LEARNING MANAGEMENT SYSTEM",
         "subtitle": "Focused learning. Practical application. Built for engineering excellence. A platform designed for those who build, not just observe.",
         "start-btn": "START LEARNING",
-        "docs-btn": "DOCUMENTATION"
+        "docs-btn": "READ MANUAL"
       }
     },
     "settings": {
@@ -221,8 +222,11 @@
     },
     "dashboard": {
       "learn": "Learning",
+      "teaching": "Teaching",
       "studio": "Studio",
       "admin": "Admin Zone",
+      "cohorts": "Cohorts",
+      "instructors": "Instructors",
       "dashboard": "Dashboard",
       "my-learning": "My Learning",
       "schedule": "Schedule",
@@ -458,6 +462,117 @@
           }
         }
       }
+    },
+    "teaching": {
+      "cohorts": {
+        "title": "Cohorts",
+        "subtitle": "Manage student groups and academic periods",
+        "create-title": "New Cohort",
+        "edit-title": "Edit Cohort",
+        "name-label": "Cohort Name",
+        "instructor-label": "Primary Instructor",
+        "course-label": "Course",
+        "start-date-label": "Start Date",
+        "end-date-label": "End Date",
+        "create": "Create Cohort",
+        "delete-title": "Delete Cohort?",
+        "delete-confirm": "Are you sure? This will remove the cohort and all associated enrollments.",
+        "columns": {
+          "name": "Name",
+          "course": "Course",
+          "instructor": "Instructor",
+          "dates": "Duration"
+        },
+        "tabs": {
+          "overview": "Overview",
+          "students": "Students",
+          "schedule": "Schedule"
+        },
+        "overview": {
+          "instructor": "Instructor",
+          "period": "Duration",
+          "course": "Base Course",
+          "students-count": "Students Enrolled",
+          "not-assigned": "Not assigned",
+          "begin": "Begin",
+          "end": "End"
+        },
+        "loading": "Loading ...",
+        "not-found": "Cohort not found",
+        "unknown": "Unknown cohort"
+      },
+      "instructors": {
+        "title": "Instructors",
+        "subtitle": "Manage teaching staff profiles",
+        "create": "Create Instructor",
+        "create-title": "New Instructor",
+        "edit-title": "Edit Instructor",
+        "user-label": "User Account",
+        "title-label": "Professional Title",
+        "bio-label": "Biography",
+        "delete-title": "Delete Instructor?",
+        "delete-confirm": "This will permanently remove the instructor profile. The user account will remain.",
+        "columns": {
+          "user": "User",
+          "title": "Title", 
+          "created-at": "Created At"
+        }
+      },
+      "enrollments": {
+        "create": "Enroll Student",
+        "delete-title": "Remove Student",
+        "delete-confirm": "Are you sure you want to remove this student from the cohort? Progress data might be lost.",
+        "create-title": "Enroll Student",
+        "edit-title": "Edit Enrollment",
+        "cohort-label": "Cohort",
+        "student-label": "Student",
+        "status-label": "Status",
+        "columns": {
+          "student": "Student",
+          "status": "Status",
+          "joined": "Enrolled Date"
+        }
+      },
+      "schedule": {
+        "create-title": "Schedule Lesson",
+        "edit-title": "Edit Schedule",
+        "create-hint": "Set dates to automate availability or use manual override to open immediately.",
+        "start-at-label": "Opens At",
+        "end-at-label": "Deadline (Closes At)",
+        "manual-override-label": "Manual Override",
+        "manual-override-help": "Ignore dates and control visibility manually.",
+        "delete-title": "Delete Schedule?",
+        "delete-confirm": "Are you sure? This action cannot be undone and will delete this schedule record.",
+        "columns": {
+          "lesson": "Lesson",
+          "dates": "Availability",
+          "status": "State"
+        },
+        "empty": "No lessons found in the base course.",
+        "not-scheduled": "Not Scheduled",
+        "manual": "Manual Override",
+        "mode-label": "Access Mode",
+        "modes": {
+          "scheduled": {
+            "label": "Scheduled",
+            "description": "Access within a specific time range"
+          },
+          "manual": {
+            "label": "Always Open",
+            "description": "Lesson is available immediately and forever"
+          }
+        },
+        "interval-settings": {
+          "title": "Interval Settings",
+          "description": "Leaving a field empty means no restriction on that side."
+        },
+        "start-at-help": "Date and time when access opens",
+        "end-at-help": "Access closes at this time",
+        "full-access": {
+          "title": "Full Access",
+          "description": "The lesson will be available to all cohort students immediately, without time limits."
+        }
+      }
     }
   },
   "permissions": {
@@ -493,6 +608,15 @@
     "blocked": "Blocked",
     "temporary-blocked": "Temporary Blocked",
     "unknown": "Unknown"
+  },
+  "enrollment-statuses": {
+    "active": "Active",
+    "completed": "Completed",
+    "expelled": "Expelled"
+  },
+  "schedule-statuses": {
+    "open": "Open",
+    "closed": "Closed"
   },
   "toasts": {
     "roles": {
@@ -564,7 +688,41 @@
       "deleted": "Lesson deleted",
       "create-error": "Failed to create lesson",
       "update-error": "Failed to update lesson",
-      "delete-error": "Failed to delete lesson"
+      "delete-error": "Failed to delete lesson",
+      "fetch-error": "Failed to fetch lessons"
+    },
+    "instructors": {
+      "created": "Instructor profile created",
+      "updated": "Instructor profile updated",
+      "deleted": "Instructor profile deleted",
+      "create-error": "Failed to create instructor",
+      "update-error": "Failed to update instructor",
+      "delete-error": "Failed to delete instructor"
+    },
+    "cohorts": {
+      "created": "Cohort created",
+      "updated": "Cohort updated",
+      "deleted": "Cohort deleted",
+      "create-error": "Failed to create cohort",
+      "update-error": "Failed to update cohort",
+      "delete-error": "Failed to delete cohort"
+    },
+    "enrollments": {
+      "created": "Student enrolled successfully",
+      "updated": "Enrollment updated successfully",
+      "deleted": "Enrollment deleted successfully",
+      "create-error": "Failed to enroll student",
+      "update-error": "Failed to update enrollment",
+      "delete-error": "Failed to delete enrollment"
+    },
+    "schedules": {
+      "created": "Lesson scheduled successfully",
+      "updated": "Schedule updated successfully",
+      "deleted": "Schedule removed",
+      "create-error": "Failed to schedule lesson",
+      "update-error": "Failed to update schedule",
+      "delete-error": "Failed to remove schedule",
+      "fetch-error": "Failed to fetch schedule"
     }
   }
 }

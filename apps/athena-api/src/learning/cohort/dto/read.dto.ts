@@ -16,7 +16,11 @@ export class ReadCohortDto implements CohortResponse {
 
   /** ID of the assigned instructor. */
   @Expose()
-  instructorId!: string | null;
+  instructorId!: string;
+
+  /** ID of the assigned course. */
+  @Expose()
+  courseId!: string;
 
   /** Start of the semester/course. */
   @Expose()

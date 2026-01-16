@@ -18,6 +18,7 @@ const MOCK_APPLIED_POLICIES: Policy[] = [Policy.OWN_ONLY];
 
 const mockReadCohort: ReadCohortDto = {
   id: MOCK_COHORT_ID,
+  courseId: "course-1",
   name: "Test Cohort",
   instructorId: MOCK_USER_ID,
   startDate: new Date(),
@@ -28,6 +29,7 @@ const mockReadCohort: ReadCohortDto = {
 
 const mockCreateDto: CreateCohortDto = {
   name: "New Cohort",
+  courseId: "course-1",
   instructorId: MOCK_USER_ID,
 };
 

@@ -111,6 +111,7 @@ export class CohortService extends BaseService<Cohort> {
       const entity = this.repo.create({
         name: dto.name,
         instructorId: dto.instructorId,
+        courseId: dto.courseId,
         startDate: dto.startDate,
         endDate: dto.endDate,
       });
@@ -146,6 +147,7 @@ export class CohortService extends BaseService<Cohort> {
 
       if (dto.name !== undefined) cohort.name = dto.name;
       if (dto.instructorId !== undefined) cohort.instructorId = dto.instructorId;
+      if (dto.courseId !== undefined) cohort.courseId = dto.courseId;
       if (dto.startDate !== undefined) cohort.startDate = dto.startDate;
       if (dto.endDate !== undefined) cohort.endDate = dto.endDate;
 

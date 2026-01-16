@@ -8,8 +8,10 @@ import { bootstrapE2E, shutdownE2E } from "../bootstrap-e2e";
 
 const mockCreateDto: CreateCohortDto = {
   name: "E2E Test Cohort",
+  courseId: "",
   instructorId: "",
   startDate: new Date(),
+  endDate: new Date(),
 };
 
 describe("POST /cohorts (e2e)", () => {
@@ -44,6 +46,10 @@ describe("POST /cohorts (e2e)", () => {
       password: "Password123!",
       roleId: managerRole.id,
     });
+
+    const course = await fixtures.createCourse({ title: "test" });
+
+    mockCreateDto.courseId = course.id;
 
     managerToken = await fixtures.login("manager_user", "Password123!");
   }, 30000);

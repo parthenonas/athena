@@ -28,8 +28,10 @@ describe("POST /enrollments (e2e)", () => {
     const adminId = admin.id;
 
     const instructor = await fixtures.createInstructor({ ownerId: adminId, title: "Dr. House" });
+    const course = await fixtures.createCourse({ title: "test" });
     const cohort = await fixtures.createCohort({
       name: "Medical 101",
+      courseId: course.id,
       instructorId: instructor.id,
     });
     cohortId = cohort.id;

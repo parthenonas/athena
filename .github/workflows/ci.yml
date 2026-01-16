@@ -56,7 +56,7 @@ jobs:
         run: npm --workspace libs/types run build
 
       - name: Audit
-        run: npm audit
+        run: npm audit --audit-level=high
 
       - name: Lint API
         run: npm --workspace apps/athena-api run lint

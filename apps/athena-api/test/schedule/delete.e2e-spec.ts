@@ -45,7 +45,11 @@ describe("DELETE /schedules/:id (e2e)", () => {
     ownerToken = await fixtures.login("sched_del_owner", "Password123!");
 
     const ownerProfile = await fixtures.createInstructor({ ownerId: ownerUser.id, title: "Owner Prof" });
-    const ownerCohort = await fixtures.createCohort({ name: "Owner Cohort", instructorId: ownerProfile.id });
+    const ownerCohort = await fixtures.createCohort({
+      name: "Owner Cohort",
+      instructorId: ownerProfile.id,
+      courseId: course.id,
+    });
     cohortId = ownerCohort.id;
 
     const sched = await fixtures.createSchedule({

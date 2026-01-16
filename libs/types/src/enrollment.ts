@@ -37,6 +37,7 @@ export interface EnrollmentResponse {
  * Query parameters for filtering enrollments.
  */
 export interface FilterEnrollmentRequest {
+  search?: string;
   cohortId?: string;
   ownerId?: string;
   status?: EnrollmentStatus;

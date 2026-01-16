@@ -28,8 +28,10 @@ describe("DELETE /enrollments/:id (e2e)", () => {
     adminToken = token;
 
     const instructor = await fixtures.createInstructor({ ownerId: admin.id, title: "Prof" });
+    const course = await fixtures.createCourse({ title: "test" });
     const cohort = await fixtures.createCohort({
       name: "History",
+      courseId: course.id,
       instructorId: instructor.id,
     });
     cohortId = cohort.id;

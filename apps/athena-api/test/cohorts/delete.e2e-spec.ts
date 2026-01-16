@@ -15,6 +15,7 @@ describe("DELETE /cohorts/:id (e2e)", () => {
 
   let ownerInstructorId: string;
   let cohortId: string;
+  let courseId: string;
 
   beforeAll(async () => {
     const res = await bootstrapE2E();
@@ -57,11 +58,15 @@ describe("DELETE /cohorts/:id (e2e)", () => {
       title: "Attacker Instructor",
     });
 
+    const course = await fixtures.createCourse({ title: "test" });
+
     const cohort = await fixtures.createCohort({
       name: "To Be Deleted",
+      courseId: course.id,
       instructorId: ownerProfile.id,
     });
     cohortId = cohort.id;
+    courseId = course.id;
   }, 30000);
 
   afterAll(async () => {
@@ -94,6 +99,7 @@ describe("DELETE /cohorts/:id (e2e)", () => {
 
     const newCohort = await fixtures.createCohort({
       name: "Admin Target",
+      courseId: courseId,
       instructorId: ownerInstructorId,
     });
 

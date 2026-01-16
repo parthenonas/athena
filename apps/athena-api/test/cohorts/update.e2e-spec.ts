@@ -56,8 +56,11 @@ describe("PATCH /cohorts/:id (e2e)", () => {
       title: "Attacker Instructor",
     });
 
+    const course = await fixtures.createCourse({ title: "test" });
+
     const cohort = await fixtures.createCohort({
       name: "Original Name",
+      courseId: course.id,
       instructorId: ownerProfile.id,
       startDate: new Date(),
     });

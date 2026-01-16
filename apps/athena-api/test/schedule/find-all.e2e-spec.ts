@@ -44,7 +44,7 @@ describe("GET /schedules (e2e)", () => {
     instructorAToken = await fixtures.login("inst_sched_a", "Password123!");
     const profileA = await fixtures.createInstructor({ ownerId: userA.id, title: "Prof A" });
 
-    const cohortA = await fixtures.createCohort({ name: "Cohort A", instructorId: profileA.id });
+    const cohortA = await fixtures.createCohort({ name: "Cohort A", instructorId: profileA.id, courseId: course.id });
     cohortA_Id = cohortA.id;
 
     const schedA = await fixtures.createSchedule({
@@ -61,7 +61,7 @@ describe("GET /schedules (e2e)", () => {
     instructorBToken = await fixtures.login("inst_sched_b", "Password123!");
     const profileB = await fixtures.createInstructor({ ownerId: userB.id, title: "Prof B" });
 
-    const cohortB = await fixtures.createCohort({ name: "Cohort B", instructorId: profileB.id });
+    const cohortB = await fixtures.createCohort({ name: "Cohort B", instructorId: profileB.id, courseId: course.id });
 
     const schedB = await fixtures.createSchedule({
       cohortId: cohortB.id,

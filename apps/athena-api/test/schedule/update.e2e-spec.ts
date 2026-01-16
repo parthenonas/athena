@@ -43,7 +43,11 @@ describe("PATCH /schedules/:id (e2e)", () => {
     ownerToken = await fixtures.login("sched_upd_owner", "Password123!");
 
     const ownerProfile = await fixtures.createInstructor({ ownerId: ownerUser.id, title: "Owner Prof" });
-    const ownerCohort = await fixtures.createCohort({ name: "Owner Cohort", instructorId: ownerProfile.id });
+    const ownerCohort = await fixtures.createCohort({
+      name: "Owner Cohort",
+      instructorId: ownerProfile.id,
+      courseId: course.id,
+    });
 
     const sched = await fixtures.createSchedule({
       cohortId: ownerCohort.id,

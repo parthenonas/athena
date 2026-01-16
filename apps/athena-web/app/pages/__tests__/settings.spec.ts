@@ -3,11 +3,16 @@ import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import SettingsPage from '../settings.vue'
 import { nextTick } from 'vue'
 
-const { fetchAccountMock, changePasswordMock, mockUseAsyncData } = vi.hoisted(() => ({
+const { fetchAccountMock, changePasswordMock, mockUseAsyncData, formatDate } = vi.hoisted(() => ({
   fetchAccountMock: vi.fn(),
   changePasswordMock: vi.fn(),
-  mockUseAsyncData: vi.fn()
+  mockUseAsyncData: vi.fn(),
+  formatDate: vi.fn()
 }))
+
+mockNuxtImport('useAppDate', () => {
+  return () => ({ formatDate })
+})
 
 mockNuxtImport('useAsyncData', () => {
   return mockUseAsyncData
