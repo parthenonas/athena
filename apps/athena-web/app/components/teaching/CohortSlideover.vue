@@ -35,6 +35,7 @@ type Schema = z.output<typeof schema>
 const state = reactive({
   name: '',
   instructorId: '',
+  courseId: '',
   // eslint-disable-next-line
   startDate: undefined as any,
   // eslint-disable-next-line

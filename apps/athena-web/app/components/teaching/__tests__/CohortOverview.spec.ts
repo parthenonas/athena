@@ -53,6 +53,7 @@ describe('Cohort Overview', () => {
   const mockCohort = {
     id: 'c-1',
     name: 'Cohort 1',
+    courseId: 'course-1',
     instructorId: 'inst-1',
     startDate: new Date(),
     endDate: new Date(),
@@ -95,7 +96,7 @@ describe('Cohort Overview', () => {
 
     const wrapper = await mountSuspended(CohortOverview, {
       ...defaultMocks,
-      props: { cohort: cohortNoInst }
+      props: { cohort: cohortNoInst as any }
     })
 
     await wrapper.vm.$nextTick()
