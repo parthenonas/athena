@@ -8,7 +8,7 @@ const props = defineProps<{
 
 const { t } = useI18n()
 const { fetchLessons } = useStudio()
-const { fetchAllSchedules } = useTeaching()
+const { fetchAllSchedules, deleteSchedule } = useTeaching()
 
 const search = ref('')
 
@@ -86,6 +86,28 @@ const openEdit = (lesson: LessonResponse, schedule: ScheduleResponse) => {
   selectedLesson.value = { id: lesson.id, title: lesson.title }
   selectedScheduleId.value = schedule.id
   isSlideoverOpen.value = true
+}
+
+const isDeleteOpen = ref(false)
+const scheduleToDelete = ref<ScheduleResponse | null>(null)
+const deleteLoading = ref(false)
+
+const openDelete = (schedule: ScheduleResponse) => {
+  scheduleToDelete.value = schedule
+  isDeleteOpen.value = true
+}
+
+const onConfirmDelete = async () => {
+  if (!scheduleToDelete.value) return
+  deleteLoading.value = true
+  try {
+    await deleteSchedule(scheduleToDelete.value.id)
+    await refreshSchedules()
+    isDeleteOpen.value = false
+  } finally {
+    deleteLoading.value = false
+    scheduleToDelete.value = null
+  }
 }
 
 const onSlideoverSuccess = () => {
@@ -186,14 +208,27 @@ const onSlideoverSuccess = () => {
 
       <template #actions-cell="{ row }">
         <div class="flex justify-end">
-          <UButton
-            v-if="row.original.schedule"
-            icon="i-lucide-pencil"
-            size="xs"
-            color="neutral"
-            variant="ghost"
-            @click="openEdit(row.original.lesson, row.original.schedule)"
-          />
+          <template v-if="row.original.schedule">
+            <UTooltip :text="$t('common.edit')">
+              <UButton
+                icon="i-lucide-pencil"
+                color="neutral"
+                variant="ghost"
+                size="xs"
+                @click="openEdit(row.original.lesson, row.original.schedule)"
+              />
+            </UTooltip>
+
+            <UTooltip :text="$t('common.delete')">
+              <UButton
+                icon="i-lucide-trash"
+                color="error"
+                variant="ghost"
+                size="xs"
+                @click="openDelete(row.original.schedule)"
+              />
+            </UTooltip>
+          </template>
 
           <UButton
             v-else
@@ -224,6 +259,15 @@ const onSlideoverSuccess = () => {
       :lesson-id="selectedLesson.id"
       :lesson-title="selectedLesson.title"
       @success="onSlideoverSuccess"
+    />
+
+    <ConfirmModal
+      v-model:open="isDeleteOpen"
+      danger
+      :title="$t('pages.teaching.schedule.delete-title')"
+      :description="$t('pages.teaching.schedule.delete-confirm')"
+      :loading="deleteLoading"
+      @confirm="onConfirmDelete"
     />
   </div>
 </template>

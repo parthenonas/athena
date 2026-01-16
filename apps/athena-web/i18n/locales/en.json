@@ -541,6 +541,8 @@
         "end-at-label": "Deadline (Closes At)",
         "manual-override-label": "Manual Override",
         "manual-override-help": "Ignore dates and control visibility manually.",
+        "delete-title": "Delete Schedule?",
+        "delete-confirm": "Are you sure? This action cannot be undone and will delete this schedule record.",
         "columns": {
           "lesson": "Lesson",
           "dates": "Availability",

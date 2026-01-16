@@ -2,7 +2,6 @@
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
 import type { CreateScheduleRequest, UpdateScheduleRequest } from '@athena/types'
-import { CalendarDateTime } from '@internationalized/date'
 
 const props = defineProps<{
   modelValue: boolean
@@ -88,12 +87,13 @@ watch(isOpen, async (val) => {
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   isLoading.value = true
   try {
+    const formData = event.data
     const isManual = mode.value === 'manual'
 
     const payloadBase = {
       isOpenManually: isManual,
-      startAt: isManual ? null : (toNativeDate(state.startAt) || null),
-      endAt: isManual ? null : (toNativeDate(state.endAt) || null)
+      startAt: isManual ? null : (toNativeDate(formData.startAt) || null),
+      endAt: isManual ? null : (toNativeDate(formData.endAt) || null)
     }
 
     if (props.scheduleId) {
@@ -187,7 +187,6 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
                 <UInputDate
                   v-model="state.startAt"
                   class="w-full"
-                  :placeholder="new CalendarDateTime(2025, 1, 1, 9, 0)"
                   granularity="minute"
                   icon="i-lucide-calendar-arrow-up"
                 />
@@ -211,7 +210,6 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
                 <UInputDate
                   v-model="state.endAt"
                   class="w-full"
-                  :placeholder="new CalendarDateTime(2025, 2, 1, 23, 59)"
                   granularity="minute"
                   icon="i-lucide-calendar-arrow-down"
                 />

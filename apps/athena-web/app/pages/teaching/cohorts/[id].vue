@@ -4,12 +4,13 @@ definePageMeta({
 })
 
 const route = useRoute()
+const router = useRouter()
 const { t } = useI18n()
 const { fetchCohort } = useTeaching()
 
 const cohortId = route.params.id as string
 
-const { data: cohort, status } = await useAsyncData(
+const { data: cohort, status, refresh } = await useAsyncData(
   `cohort-${cohortId}`,
   () => fetchCohort(cohortId)
 )
@@ -17,16 +18,28 @@ const { data: cohort, status } = await useAsyncData(
 const links = computed(() => [{
   label: t('pages.teaching.cohorts.tabs.overview'),
   icon: 'i-lucide-layout-dashboard',
-  slot: 'overview'
+  slot: 'overview',
+  value: 'overview'
 }, {
   label: t('pages.teaching.cohorts.tabs.students'),
   icon: 'i-lucide-users',
-  slot: 'students'
+  slot: 'students',
+  value: 'students'
 }, {
   label: t('pages.teaching.cohorts.tabs.schedule'),
   icon: 'i-lucide-calendar',
-  slot: 'schedule'
+  slot: 'schedule',
+  value: 'schedule'
 }])
+
+const selectedTab = computed({
+  get() {
+    return (route.query.tab as string) || 'overview'
+  },
+  set(val) {
+    router.replace({ query: { ...route.query, tab: val } })
+  }
+})
 
 const title = computed(() => {
   if (status.value === 'pending') {
@@ -50,9 +63,18 @@ const title = computed(() => {
           @click="$router.back()"
         />
       </template>
+      <template #right>
+        <UButton
+          icon="i-lucide-refresh-cw"
+          color="neutral"
+          variant="ghost"
+          :loading="status === 'pending'"
+          @click="() => refresh()"
+        />
+      </template>
     </UDashboardNavbar>
 
-    <UPageBody class="p-0">
+    <UPageBody>
       <div
         v-if="status === 'pending'"
         class="p-4"
@@ -72,31 +94,29 @@ const title = computed(() => {
 
       <div
         v-else
-        class="flex flex-col h-full"
+        class="flex flex-col h-full px-4"
       >
         <UTabs
+          v-model="selectedTab"
           :items="links"
           class="w-full"
+          :ui="{ content: 'mt-0' }"
         >
           <template #overview>
-            <div class="p-4">
+            <div class="py-4">
               <TeachingCohortOverview :cohort="cohort" />
             </div>
           </template>
 
           <template #students>
-            <div class="p-4">
-              <p class="text-gray-500">
-                <TeachingCohortEnrollments :cohort-id="cohortId" />
-              </p>
+            <div class="py-4">
+              <TeachingCohortEnrollments :cohort-id="cohortId" />
             </div>
           </template>
 
           <template #schedule>
-            <div class="p-4">
-              <p class="text-gray-500">
-                <TeachingCohortSchedule :cohort="cohort" />
-              </p>
+            <div class="py-4">
+              <TeachingCohortSchedule :cohort="cohort" />
             </div>
           </template>
         </UTabs>

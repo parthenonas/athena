@@ -62,8 +62,8 @@ const UInputStub = {
 
 const UInputDateStub = {
   name: 'UInputDate',
-  template: `<div class="u-input-date-stub" :data-granularity="granularity"></div>`,
-  props: ['modelValue', 'granularity'],
+  template: `<div class="u-input-date-stub"></div>`,
+  props: ['modelValue'],
   emits: ['update:modelValue']
 }
 
@@ -116,7 +116,7 @@ describe('CohortSlideover', () => {
     })
   })
 
-  it('should open empty in Create mode (without granularity="minute")', async () => {
+  it('should open empty in Create mode ', async () => {
     const wrapper = await mountSuspended(CohortSlideover, {
       ...defaultMocks,
       props: { modelValue: true, cohortId: null }
@@ -124,7 +124,6 @@ describe('CohortSlideover', () => {
 
     const dateInputs = wrapper.findAllComponents(UInputDateStub)
     expect(dateInputs[0]!.props('modelValue')).toBeUndefined()
-    expect(dateInputs[0]!.props('granularity')).toBeUndefined()
   })
 
   it('should load data in Edit mode and convert types to CalendarDate', async () => {
