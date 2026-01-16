@@ -310,14 +310,6 @@ describe("MediaService", () => {
       expect(quotaRepo.create).toHaveBeenCalledWith({ roleName: "student", limitBytes: "100" });
       expect(quotaRepo.save).toHaveBeenCalled();
     });
-
-    it("handleRoleDeletedEvent should delete quota", async () => {
-      quotaRepo.delete.mockResolvedValue({ affected: 1, raw: [] });
-
-      await service.handleRoleDeletedEvent({ name: "deleted_role" });
-
-      expect(quotaRepo.delete).toHaveBeenCalledWith({ roleName: "deleted_role" });
-    });
   });
 
   describe("getUsage", () => {

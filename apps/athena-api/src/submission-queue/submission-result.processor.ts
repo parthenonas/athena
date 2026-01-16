@@ -1,7 +1,7 @@
+import type { IEventBus } from "@athena/common";
 import type { SubmissionResult } from "@athena/types";
 import { Processor, WorkerHost } from "@nestjs/bullmq";
-import { Logger } from "@nestjs/common";
-import { EventEmitter2 } from "@nestjs/event-emitter";
+import { Inject, Logger } from "@nestjs/common";
 import { Job } from "bullmq";
 
 import { AthenaEvent, SubmissionCompletedEvent } from "../shared/events/types";
@@ -19,7 +19,7 @@ import { AthenaEvent, SubmissionCompletedEvent } from "../shared/events/types";
 export class SubmissionResultProcessor extends WorkerHost {
   private readonly logger = new Logger(SubmissionResultProcessor.name);
 
-  constructor(private eventEmitter: EventEmitter2) {
+  constructor(@Inject("IEventBus") private readonly eventBus: IEventBus) {
     super();
   }
 
@@ -37,7 +37,7 @@ export class SubmissionResultProcessor extends WorkerHost {
 
     this.logger.log(`Received result for ${result.submissionId}. Routing to [${meta?.socketId || "UNKNOWN"}]`);
     const event: SubmissionCompletedEvent = { result };
-    await this.eventEmitter.emitAsync(AthenaEvent.SUBMISSION_COMPLETED, event);
+    await this.eventBus.publish(AthenaEvent.SUBMISSION_COMPLETED, event);
 
     return { processed: true };
   }
