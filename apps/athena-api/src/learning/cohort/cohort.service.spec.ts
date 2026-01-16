@@ -228,6 +228,7 @@ describe("CohortService", () => {
 
       expect(repo.create).toHaveBeenCalledWith({
         name: createDto.name,
+        courseId: "course-1",
         instructorId: createDto.instructorId,
         startDate: createDto.startDate,
         endDate: createDto.endDate,
