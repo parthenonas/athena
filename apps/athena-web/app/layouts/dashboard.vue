@@ -84,6 +84,19 @@ const adminItems = computed<NavigationMenuItem[]>(() => ([
   }
 ]))
 
+const learningItems = computed<NavigationMenuItem[]>(() => ([
+  {
+    label: t('pages.dashboard.cohorts'),
+    icon: 'i-lucide-users-2',
+    to: '/teaching/cohorts'
+  },
+  {
+    label: t('pages.dashboard.instructors'),
+    icon: 'i-lucide-graduation-cap',
+    to: '/teaching/instructors'
+  }
+]))
+
 const footerMenuItems = computed(() => [
   [
     {
@@ -185,6 +198,23 @@ const footerMenuItems = computed(() => [
         <UNavigationMenu
           :collapsed="collapsed"
           :items="studioItems"
+          orientation="vertical"
+        />
+
+        <USeparator
+          v-if="collapsed"
+          class="my-2"
+        />
+        <div
+          v-else
+          class="px-2 mb-2 mt-2"
+        >
+          <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">{{ $t('pages.dashboard.teaching') }}</span>
+        </div>
+
+        <UNavigationMenu
+          :collapsed="collapsed"
+          :items="learningItems"
           orientation="vertical"
         />
 

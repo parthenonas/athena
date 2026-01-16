@@ -33,7 +33,7 @@ export const useStudio = () => {
   }
 
   const fetchCourse = (id: string) => {
-    return useApi<CourseResponse>(`/api/courses/${id}`, {
+    return $api<CourseResponse>(`/api/courses/${id}`, {
       method: 'GET'
     })
   }

@@ -60,17 +60,14 @@ const activeBlock = computed(() =>
 
 const isInspectorOpen = ref(true)
 
-// --- Preview Mode Logic ---
 const isPreviewMode = ref(false)
 
 const togglePreview = () => {
   isPreviewMode.value = !isPreviewMode.value
-  // При входе в превью сбрасываем выделение блока, чтобы не было рамок
   if (isPreviewMode.value) {
     activeBlockId.value = null
   }
 }
-// --------------------------
 
 const isLessonModalOpen = ref(false)
 const selectedLesson = ref<LessonResponse | null>(null)

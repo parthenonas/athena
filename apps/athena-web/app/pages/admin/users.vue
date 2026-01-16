@@ -9,6 +9,9 @@ definePageMeta({
 const { t } = useI18n()
 const { fetchAccounts, deleteAccount } = useAccounts()
 
+const route = useRoute()
+const router = useRouter()
+
 const isSlideoverOpen = ref(false)
 const selectedAccountId = ref<string | null>(null)
 
@@ -60,6 +63,24 @@ const openDelete = (account: AccountResponse) => {
   accountToDelete.value = account
   isDeleteOpen.value = true
 }
+
+watch(() => route.query.accountId, (newId) => {
+  if (newId && typeof newId === 'string') {
+    selectedAccountId.value = newId
+    isSlideoverOpen.value = true
+  } else {
+    isSlideoverOpen.value = false
+    selectedAccountId.value = null
+  }
+}, { immediate: true })
+
+watch(isSlideoverOpen, (isOpen) => {
+  if (!isOpen && route.query.accountId) {
+    const query = { ...route.query }
+    delete query.accountId
+    router.replace({ query })
+  }
+})
 
 const onConfirmDelete = async () => {
   if (!accountToDelete.value) return

@@ -50,10 +50,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   }
 }
 
-const formatDate = (dateString?: string | Date) => {
-  if (!dateString) return ''
-  return new Date(dateString).toLocaleDateString()
-}
+const { formatDate } = useAppDate()
 </script>
 
 <template>
