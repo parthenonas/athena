@@ -1,3 +1,5 @@
+import { GradingStatus } from "@athena/types";
+
 import { StudentProgress } from "../../../domain/student-progress.model";
 import { BlockResult } from "../../../domain/value-objects/block-result.vo";
 import { ProgressOrmEntity } from "../entities/progress.orm.entity";
@@ -8,7 +10,13 @@ export class ProgressMapper {
 
     if (entity.completedBlocks) {
       Object.entries(entity.completedBlocks).forEach(([blockId, rawData]) => {
-        completedBlocksDomain[blockId] = new BlockResult(rawData.score, new Date(rawData.completedAt));
+        completedBlocksDomain[blockId] = new BlockResult(
+          rawData.score,
+          new Date(rawData.completedAt),
+          rawData.status || GradingStatus.GRADED,
+          rawData.submissionData,
+          rawData.feedback,
+        );
       });
     }
 
@@ -33,7 +41,7 @@ export class ProgressMapper {
     entity.studentId = domain.studentId;
     entity.status = domain.status;
     entity.currentScore = domain.currentScore;
-    entity.completedBlocks = domain.completedBlocks as unknown as Record<string, { score: number; completedAt: Date }>;
+    entity.completedBlocks = domain.completedBlocks;
     entity.createdAt = domain.createdAt;
     entity.updatedAt = domain.updatedAt;
     return entity;

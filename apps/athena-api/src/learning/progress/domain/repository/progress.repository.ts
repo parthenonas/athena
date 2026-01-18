@@ -6,4 +6,5 @@ export interface IProgressRepository {
   save(progress: StudentProgress): Promise<void>;
   findByEnrollmentId(enrollmentId: string): Promise<StudentProgress | null>;
   findById(id: string): Promise<StudentProgress | null>;
+  findByUserAndCourse(userId: string, courseId: string): Promise<StudentProgress | null>;
 }

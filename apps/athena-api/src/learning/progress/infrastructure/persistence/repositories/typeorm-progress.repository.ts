@@ -30,4 +30,10 @@ export class TypeOrmProgressRepository implements IProgressRepository {
     if (!entity) return null;
     return ProgressMapper.toDomain(entity);
   }
+
+  async findByUserAndCourse(userId: string, courseId: string): Promise<StudentProgress | null> {
+    const entity = await this.repo.findOne({ where: { studentId: userId, courseId: courseId } });
+    if (!entity) return null;
+    return ProgressMapper.toDomain(entity);
+  }
 }

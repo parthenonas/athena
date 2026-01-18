@@ -1,8 +1,11 @@
-import { ProgressStatus } from "@athena/types";
+import { GradingStatus, ProgressStatus } from "@athena/types";
 import { AggregateRoot } from "@nestjs/cqrs";
 
+import { BlockCompletedEvent } from "./events/block-completed.event";
 import { ProgressInitializedEvent } from "./events/progress-initialized.event";
+import { SubmissionReceivedEvent } from "./events/submission-received.event";
 import { BlockResult } from "./value-objects/block-result.vo";
+import { StudentSubmissionDto } from "../application/dto/student-submission.dto";
 
 export interface StudentProgressProps {
   id: string;
@@ -65,6 +68,33 @@ export class StudentProgress extends AggregateRoot {
     }
   }
 
+  public completeBlockSync(blockId: string, score: number, submissionData?: unknown): void {
+    if (this._status === ProgressStatus.NOT_STARTED) {
+      this._status = ProgressStatus.IN_PROGRESS;
+    }
+
+    const result = new BlockResult(score, new Date(), GradingStatus.GRADED, submissionData);
+
+    this._completedBlocks[blockId] = result;
+    this.recalculateScore();
+    this.updateTimestamp();
+
+    this.apply(new BlockCompletedEvent(this.id, this.studentId, this.courseId, blockId, score));
+  }
+
+  public submitBlockAsync(blockId: string, submissionData: StudentSubmissionDto): void {
+    if (this._status === ProgressStatus.NOT_STARTED) {
+      this._status = ProgressStatus.IN_PROGRESS;
+    }
+
+    const pendingResult = new BlockResult(0, new Date(), GradingStatus.PENDING, submissionData);
+    this._completedBlocks[blockId] = pendingResult;
+
+    this.apply(new SubmissionReceivedEvent(this.id, this.studentId, this.courseId, blockId, submissionData));
+
+    this.updateTimestamp();
+  }
+
   public completeBlock(blockId: string, score: number): void {
     const result = new BlockResult(score, new Date());
     this._completedBlocks[blockId] = result;
@@ -73,8 +103,24 @@ export class StudentProgress extends AggregateRoot {
     this.updateTimestamp();
   }
 
+  public gradeBlock(blockId: string, score: number, feedback?: string): void {
+    const previousAttempt = this._completedBlocks[blockId];
+    const originalSubmissionData = previousAttempt?.submissionData || null;
+
+    const result = new BlockResult(score, new Date(), GradingStatus.GRADED, originalSubmissionData, feedback);
+
+    this._completedBlocks[blockId] = result;
+
+    this.recalculateScore();
+    this.updateTimestamp();
+
+    this.apply(new BlockCompletedEvent(this.id, this.studentId, this.courseId, blockId, score));
+  }
+
   private recalculateScore(): void {
-    this._currentScore = Object.values(this._completedBlocks).reduce((sum, b) => sum + b.score, 0);
+    this._currentScore = Object.values(this._completedBlocks)
+      .filter(b => b.status === GradingStatus.GRADED)
+      .reduce((sum, b) => sum + b.score, 0);
   }
 
   private updateTimestamp(): void {
