@@ -1,11 +1,5 @@
-import { GradingStatus } from "@athena/types";
+import { ProgressStatus, StudentLessonProgress } from "@athena/types";
 import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Unique } from "typeorm";
-
-export enum ProgressStatus {
-  NOT_STARTED = "NOT_STARTED",
-  IN_PROGRESS = "IN_PROGRESS",
-  COMPLETED = "COMPLETED",
-}
 
 @Entity("student_progress")
 @Unique(["enrollmentId", "courseId"])
@@ -32,14 +26,8 @@ export class ProgressOrmEntity {
   @Column({ type: "int", default: 0 })
   currentScore: number;
 
-  @Column({ type: "int", default: 0 })
-  totalBlocksCompleted: number;
-
   @Column("jsonb", { default: {} })
-  completedBlocks: Record<
-    string,
-    { score: number; completedAt: Date; status: GradingStatus; submissionData?: unknown; feedback?: string }
-  >;
+  lessons: Record<string, StudentLessonProgress>;
 
   @CreateDateColumn()
   createdAt: Date;

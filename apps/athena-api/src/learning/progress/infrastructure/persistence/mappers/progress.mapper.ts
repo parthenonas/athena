@@ -1,4 +1,4 @@
-import { GradingStatus } from "@athena/types";
+import { BaseBlockResult, GradingStatus, StudentLessonProgress } from "@athena/types";
 
 import { StudentProgress } from "../../../domain/student-progress.model";
 import { BlockResult } from "../../../domain/value-objects/block-result.vo";
@@ -6,17 +6,30 @@ import { ProgressOrmEntity } from "../entities/progress.orm.entity";
 
 export class ProgressMapper {
   static toDomain(entity: ProgressOrmEntity): StudentProgress {
-    const completedBlocksDomain: Record<string, BlockResult> = {};
+    const lessonsDomain: Record<string, StudentLessonProgress> = {};
 
-    if (entity.completedBlocks) {
-      Object.entries(entity.completedBlocks).forEach(([blockId, rawData]) => {
-        completedBlocksDomain[blockId] = new BlockResult(
-          rawData.score,
-          new Date(rawData.completedAt),
-          rawData.status || GradingStatus.GRADED,
-          rawData.submissionData,
-          rawData.feedback,
-        );
+    if (entity.lessons) {
+      Object.entries(entity.lessons).forEach(([lessonId, rawLesson]) => {
+        const completedBlocks: Record<string, BlockResult> = {};
+
+        if (rawLesson.completedBlocks) {
+          Object.entries(rawLesson.completedBlocks).forEach(([blockId, rawBlock]: [string, BaseBlockResult]) => {
+            completedBlocks[blockId] = new BlockResult(
+              rawBlock.score,
+              new Date(rawBlock.completedAt),
+              rawBlock.status || GradingStatus.GRADED,
+              rawBlock.submissionData,
+              rawBlock.feedback,
+            );
+          });
+        }
+
+        lessonsDomain[lessonId] = {
+          status: rawLesson.status,
+          completedBlocks: completedBlocks,
+          createdAt: new Date(rawLesson.createdAt),
+          updatedAt: new Date(rawLesson.updatedAt),
+        };
       });
     }
 
@@ -27,7 +40,7 @@ export class ProgressMapper {
       studentId: entity.studentId,
       status: entity.status,
       currentScore: entity.currentScore,
-      completedBlocks: completedBlocksDomain,
+      lessons: lessonsDomain,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     });
@@ -41,7 +54,7 @@ export class ProgressMapper {
     entity.studentId = domain.studentId;
     entity.status = domain.status;
     entity.currentScore = domain.currentScore;
-    entity.completedBlocks = domain.completedBlocks;
+    entity.lessons = domain.lessons;
     entity.createdAt = domain.createdAt;
     entity.updatedAt = domain.updatedAt;
     return entity;

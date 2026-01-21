@@ -25,8 +25,17 @@ export class GradingListener {
 
     const score = result.status === ExecutionStatus.Accepted ? 100 : 0;
 
-    const feedback = result.stderr ? `Error: ${result.stderr}` : `Output:\n${result.stdout}`;
+    let feedback = "";
+    if (result.status === ExecutionStatus.SystemError) {
+      feedback = `System Error: ${result.message || "Unknown execution environment error"}`;
+    } else if (result.stderr) {
+      feedback = `Error:\n${result.stderr}`;
+    } else {
+      feedback = `Output:\n${result.stdout}`;
+    }
 
-    await this.commandBus.execute(new GradeBlockCommand(meta.userId, meta.courseId, meta.blockId, score, feedback));
+    await this.commandBus.execute(
+      new GradeBlockCommand(meta.userId, meta.courseId, meta.lessonId, meta.blockId, score, feedback),
+    );
   }
 }

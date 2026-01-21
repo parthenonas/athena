@@ -54,6 +54,7 @@ export class ProgressInitializedHandler implements IEventHandler<ProgressInitial
           updatedAt: new Date(),
         },
         $setOnInsert: {
+          lessons: {},
           createdAt: new Date(),
         },
       },

@@ -18,11 +18,19 @@ export class BlockCompletedHandler implements IEventHandler<BlockCompletedEvent>
   async handle(event: BlockCompletedEvent) {
     this.logger.log(`Projecting Block Completion to Mongo: User ${event.studentId}, Block ${event.blockId}`);
 
+    const blockPath = `lessons.${event.lessonId}.completedBlocks.${event.blockId}`;
+    const lessonStatusPath = `lessons.${event.lessonId}.status`;
+
     await this.dashboardModel.updateOne(
       { studentId: event.studentId, courseId: event.courseId },
       {
-        $inc: { totalScore: event.score },
-        $set: { [`completedBlocks.${event.blockId}`]: event.score, updatedAt: new Date() },
+        $set: {
+          [blockPath]: event.score,
+          [lessonStatusPath]: event.lessonStatus,
+          totalScore: event.courseScore,
+          status: event.courseStatus,
+          updatedAt: new Date(),
+        },
       },
     );
   }

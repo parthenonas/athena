@@ -1,7 +1,13 @@
+import { ProgressStatus } from "@athena/types";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument } from "mongoose";
 
 export type StudentDashboardDocument = HydratedDocument<StudentDashboard>;
+
+export class DashboardLessonData {
+  status: string;
+  completedBlocks: Record<string, number>;
+}
 
 @Schema({ collection: "student_dashboards", timestamps: true })
 export class StudentDashboard {
@@ -29,12 +35,16 @@ export class StudentDashboard {
   @Prop({ default: 0 })
   totalScore: number;
 
+  @Prop({ type: String, enum: ProgressStatus, default: ProgressStatus.IN_PROGRESS })
+  status: ProgressStatus;
+
   @Prop({ type: Object, default: {} })
-  completedBlocks: Record<string, number>;
+  lessons: Record<string, DashboardLessonData>;
 
   @Prop([String])
   recentBadges: string[];
 }
 
 export const StudentDashboardSchema = SchemaFactory.createForClass(StudentDashboard);
+
 StudentDashboardSchema.index({ studentId: 1, courseId: 1 }, { unique: true });

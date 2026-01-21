@@ -5,6 +5,7 @@ export class SubmissionReceivedEvent {
     public readonly progressId: string,
     public readonly studentId: string,
     public readonly courseId: string,
+    public readonly lessonId: string,
     public readonly blockId: string,
     public readonly submissionData: StudentSubmissionDto,
   ) {}

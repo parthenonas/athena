@@ -1,11 +1,11 @@
 import { Module } from "@nestjs/common";
 import { JwtModule, JwtService } from "@nestjs/jwt";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { OutboxModule } from "src/outbox";
 
 import { EnrollmentController } from "./enrollment.controller";
 import { EnrollmentService } from "./enrollment.service";
 import { IdentityModule } from "../../identity";
+import { OutboxModule } from "../../outbox";
 import { Enrollment } from "./entities/enrollment.entity";
 
 @Module({

@@ -15,7 +15,7 @@ export class SubmitAssignmentHandler implements ICommandHandler<SubmitAssignment
   ) {}
 
   async execute(command: SubmitAssignmentCommand): Promise<void> {
-    const { userId, courseId, blockId, payload } = command;
+    const { userId, courseId, lessonId, blockId, payload } = command;
 
     const progress = await this.repo.findByUserAndCourse(userId, courseId);
 
@@ -27,7 +27,7 @@ export class SubmitAssignmentHandler implements ICommandHandler<SubmitAssignment
 
     const progressModel = this.publisher.mergeObjectContext(progress);
 
-    progressModel.submitBlockAsync(blockId, payload);
+    progressModel.submitBlockAsync(blockId, lessonId, payload);
 
     await this.repo.save(progressModel);
 

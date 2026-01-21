@@ -1,5 +1,6 @@
 import { BlockType } from "@athena/types";
 import { BadRequestException, Injectable } from "@nestjs/common";
+import { DataSource } from "typeorm";
 
 import { BlockService } from "./block/block.service";
 import { CodeBlockContentDto } from "./block/dto/content-payload.dto";
@@ -12,6 +13,7 @@ export class ContentService {
   constructor(
     private readonly courseService: CourseService,
     private readonly blockService: BlockService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async createCourse(dto: CreateCourseDto, ownerId: string): Promise<ReadCourseDto> {
@@ -30,5 +32,36 @@ export class ContentService {
     }
 
     return block.content as CodeBlockContentDto;
+  }
+
+  async getProgressStats(
+    courseId: string,
+    lessonId: string,
+  ): Promise<{ totalBlocksInLesson: number; totalLessonsInCourse: number }> {
+    const result = await this.dataSource.query(
+      `
+      SELECT
+        (
+          SELECT COUNT(*)::int 
+          FROM blocks 
+          WHERE lesson_id = $1
+        ) as "blocksCount",
+        (
+          SELECT COUNT(*)::int 
+          FROM lessons 
+          WHERE course_id = $2 
+          AND deleted_at IS NULL 
+          AND is_draft = false
+        ) as "lessonsCount"
+      `,
+      [lessonId, courseId],
+    );
+
+    const row = result[0];
+
+    return {
+      totalBlocksInLesson: +row.blocksCount || 0,
+      totalLessonsInCourse: +row.lessonsCount || 0,
+    };
   }
 }

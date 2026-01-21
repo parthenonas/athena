@@ -33,6 +33,7 @@ export class ProgressSagas {
               context: "LEARN",
               userId: event.studentId,
               courseId: event.courseId,
+              lessonId: event.lessonId,
               blockId: event.blockId,
               socketId: event.submissionData.socketId,
             },

@@ -20,30 +20,32 @@ export class ProgressController {
     private readonly queryBus: QueryBus,
   ) {}
 
-  @Post(":courseId/submit/:blockId")
+  @Post(":courseId/lessons/:lessonId/blocks/:blockId/submit")
   @HttpCode(HttpStatus.ACCEPTED)
   @RequirePermission(Permission.ENROLLMENTS_READ)
   async submitAssignment(
     @Param("courseId") courseId: string,
+    @Param("lessonId") lessonId: string,
     @Param("blockId") blockId: string,
     @Body() dto: StudentSubmissionDto,
     @CurrentUser("sub") userId: string,
   ): Promise<{ status: string }> {
-    await this.commandBus.execute(new SubmitAssignmentCommand(userId, courseId, blockId, dto));
+    await this.commandBus.execute(new SubmitAssignmentCommand(userId, courseId, lessonId, blockId, dto));
     return { status: "pending" };
   }
 
-  @Post(":courseId/view/:blockId")
+  @Post(":courseId/lessons/:lessonId/blocks/:blockId/view")
   @HttpCode(HttpStatus.OK)
   @RequirePermission(Permission.ENROLLMENTS_READ)
   async markAsViewed(
     @Param("courseId") courseId: string,
+    @Param("lessonId") lessonId: string,
     @Param("blockId") blockId: string,
     @CurrentUser("sub") userId: string,
   ): Promise<{ status: string; score: number }> {
     const score = 100;
 
-    await this.commandBus.execute(new CompleteBlockSyncCommand(userId, courseId, blockId, score));
+    await this.commandBus.execute(new CompleteBlockSyncCommand(userId, courseId, lessonId, blockId, score));
 
     return { status: "completed", score };
   }

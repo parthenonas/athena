@@ -1,8 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { CommandBus } from "@nestjs/cqrs";
 import { OnEvent } from "@nestjs/event-emitter";
-import { AthenaEvent, type EnrollmentCreatedEvent } from "src/shared/events/types";
 
+import { AthenaEvent, type EnrollmentCreatedEvent } from "../../../shared/events/types";
 import { InitializeProgressCommand } from "../application/commands/initialize-progress.command";
 
 @Injectable()

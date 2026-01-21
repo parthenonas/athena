@@ -3,12 +3,14 @@ import { CqrsModule } from "@nestjs/cqrs";
 import { JwtModule } from "@nestjs/jwt";
 import { MongooseModule } from "@nestjs/mongoose";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { SubmissionQueueModule } from "src/submission-queue";
 
+import { SubmissionQueueModule } from "../../submission-queue";
 import { GradeBlockHandler } from "./application/commands/handlers/grade-block.handler";
 import { InitializeProgressHandler } from "./application/commands/handlers/initialize-progress.handler";
 import { SubmitAssignmentHandler } from "./application/commands/handlers/submit-assignment.handler";
 import { BlockCompletedHandler } from "./application/events/handlers/block-completed.event";
+import { CourseCompletedHandler } from "./application/events/handlers/course-completed.handler";
+import { LessonCompletedHandler } from "./application/events/handlers/lesson-completed.handler";
 import { ProgressInitializedHandler } from "./application/events/handlers/progress-initialized.handler";
 import { GetStudentProgressHandler } from "./application/queries/handlers/get-student-progress.handler";
 import { ProgressSagas } from "./application/sagas/progress.saga";
@@ -46,6 +48,8 @@ import { GradingListener } from "./presentation/grading.listener";
     CompleteBlockSyncHandler,
     ProgressInitializedHandler,
     BlockCompletedHandler,
+    CourseCompletedHandler,
+    LessonCompletedHandler,
     GetStudentProgressHandler,
     GetStudentDashboardHandler,
     GradeBlockHandler,

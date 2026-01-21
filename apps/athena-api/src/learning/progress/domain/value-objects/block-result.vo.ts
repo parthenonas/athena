@@ -1,6 +1,6 @@
-import { GradingStatus } from "@athena/types";
+import { BaseBlockResult, GradingStatus } from "@athena/types";
 
-export class BlockResult {
+export class BlockResult implements BaseBlockResult {
   constructor(
     public readonly score: number,
     public readonly completedAt: Date,
