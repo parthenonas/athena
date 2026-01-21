@@ -2,17 +2,41 @@ import { EnrollmentStatus, Policy } from "@athena/types";
 import { BadRequestException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 
 import { CreateEnrollmentDto } from "./dto/create.dto";
 import { UpdateEnrollmentDto } from "./dto/update.dto";
 import { EnrollmentService } from "./enrollment.service";
 import { Enrollment } from "./entities/enrollment.entity";
 import { IdentityService } from "../../identity";
+import { OutboxService } from "../../outbox";
 
 const mockIdentityService = {
   checkAbility: jest.fn(),
   applyPoliciesToQuery: jest.fn().mockImplementation(qb => qb),
+};
+
+const mockOutboxService = {
+  save: jest.fn(),
+};
+
+const mockManager = {
+  findOne: jest.fn(),
+  create: jest.fn(),
+  save: jest.fn(),
+};
+
+const mockQueryRunner = {
+  connect: jest.fn(),
+  startTransaction: jest.fn(),
+  commitTransaction: jest.fn(),
+  rollbackTransaction: jest.fn(),
+  release: jest.fn(),
+  manager: mockManager,
+};
+
+const mockDataSource = {
+  createQueryRunner: jest.fn().mockReturnValue(mockQueryRunner),
 };
 
 describe("EnrollmentService", () => {
@@ -79,6 +103,14 @@ describe("EnrollmentService", () => {
           provide: IdentityService,
           useValue: mockIdentityService,
         },
+        {
+          provide: DataSource,
+          useValue: mockDataSource,
+        },
+        {
+          provide: OutboxService,
+          useValue: mockOutboxService,
+        },
       ],
     }).compile();
 
@@ -127,7 +159,7 @@ describe("EnrollmentService", () => {
 
     it("should throw ForbiddenException if policy denied", async () => {
       repo.findOne.mockResolvedValue(mockEnrollment);
-      identityService.checkAbility.mockReturnValue(false); // Deny
+      identityService.checkAbility.mockReturnValue(false);
 
       await expect(service.findOne(ENROLLMENT_ID, OTHER_ID, APPLIED_OWN_ONLY)).rejects.toBeInstanceOf(
         ForbiddenException,
@@ -142,12 +174,17 @@ describe("EnrollmentService", () => {
 
   describe("create", () => {
     it("should map accountId to ownerId correctly", async () => {
-      repo.create.mockReturnValue(mockEnrollment);
-      repo.save.mockResolvedValue(mockEnrollment);
+      mockManager.findOne.mockResolvedValue({ id: COHORT_ID, courseId: "course-123" });
+
+      mockManager.create.mockReturnValue(mockEnrollment);
+      mockManager.save.mockResolvedValue(mockEnrollment);
+
+      mockOutboxService.save.mockResolvedValue(true);
 
       await service.create(createDto);
 
-      expect(repo.create).toHaveBeenCalledWith(
+      expect(mockManager.create).toHaveBeenCalledWith(
+        expect.anything(),
         expect.objectContaining({
           ownerId: createDto.ownerId,
         }),
@@ -155,8 +192,13 @@ describe("EnrollmentService", () => {
     });
 
     it("should throw BadRequestException on error", async () => {
-      repo.save.mockRejectedValue(new Error("Fail"));
+      mockManager.findOne.mockResolvedValue({ id: COHORT_ID, courseId: "course-123" });
+
+      mockManager.save.mockRejectedValue(new Error("Database Fail"));
+
       await expect(service.create(createDto)).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
     });
   });
 
