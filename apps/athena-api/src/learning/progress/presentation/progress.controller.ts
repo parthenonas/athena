@@ -12,6 +12,20 @@ import { StudentSubmissionDto } from "../application/dto/student-submission.dto"
 import { GetStudentDashboardQuery } from "../application/queries/get-student-dashboard.query";
 import { GetStudentProgressQuery } from "../application/queries/get-student-progress.query";
 
+/**
+ * @class ProgressController
+ * @description
+ * The HTTP entry point for Student Progress operations.
+ *
+ * Architecture Role:
+ * - Acts as an Adapter layer.
+ * - Converts HTTP Requests -> Domain Commands/Queries.
+ * - Delegates all logic to the CQRS CommandBus/QueryBus.
+ *
+ * Security:
+ * - Protected by JWT (Authentication).
+ * - Protected by ACL (Authorization via `ENROLLMENTS_READ` permission).
+ */
 @Controller("progress")
 @UseGuards(JwtAuthGuard, AclGuard)
 export class ProgressController {
@@ -20,6 +34,10 @@ export class ProgressController {
     private readonly queryBus: QueryBus,
   ) {}
 
+  /**
+   * Async Submission (Code Challenge).
+   * Returns 202 Accepted because the grading happens in the background (Saga -> Runner).
+   */
   @Post(":courseId/lessons/:lessonId/blocks/:blockId/submit")
   @HttpCode(HttpStatus.ACCEPTED)
   @RequirePermission(Permission.ENROLLMENTS_READ)
@@ -34,6 +52,10 @@ export class ProgressController {
     return { status: "pending" };
   }
 
+  /**
+   * Sync Completion (Video, Text).
+   * Returns 200 OK because the score is calculated immediately (100%).
+   */
   @Post(":courseId/lessons/:lessonId/blocks/:blockId/view")
   @HttpCode(HttpStatus.OK)
   @RequirePermission(Permission.ENROLLMENTS_READ)
@@ -50,12 +72,18 @@ export class ProgressController {
     return { status: "completed", score };
   }
 
+  /**
+   * Fetches the main dashboard (List of enrolled courses with high-level stats).
+   */
   @Get()
   @RequirePermission(Permission.ENROLLMENTS_READ)
   async getMyDashboard(@CurrentUser("sub") userId: string) {
     return this.queryBus.execute(new GetStudentDashboardQuery(userId));
   }
 
+  /**
+   * Fetches the detailed map of a specific course (Lessons, Blocks, Statuses).
+   */
   @Get(":courseId")
   @RequirePermission(Permission.ENROLLMENTS_READ)
   async getMyProgress(@Param("courseId") courseId: string, @CurrentUser("sub") userId: string) {

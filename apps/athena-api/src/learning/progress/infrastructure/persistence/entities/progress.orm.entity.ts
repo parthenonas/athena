@@ -1,6 +1,16 @@
 import { ProgressStatus, StudentLessonProgress } from "@athena/types";
 import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Unique } from "typeorm";
 
+/**
+ * @Entity ProgressOrmEntity
+ * @description
+ * The SQL representation of the StudentProgress aggregate.
+ *
+ * Storage Strategy:
+ * - Hybrid Relational/Document approach.
+ * - Key identifiers (IDs, Status, Score) are columns for fast indexing/querying.
+ * - Detailed lesson data is stored as `jsonb` to handle dynamic course structures without complex joins.
+ */
 @Entity("student_progress")
 @Unique(["enrollmentId", "courseId"])
 export class ProgressOrmEntity {
@@ -26,6 +36,10 @@ export class ProgressOrmEntity {
   @Column({ type: "int", default: 0 })
   currentScore: number;
 
+  /**
+   * Stores the nested map of lessons and blocks.
+   * Mapped via ProgressMapper to domain objects.
+   */
   @Column("jsonb", { default: {} })
   lessons: Record<string, StudentLessonProgress>;
 

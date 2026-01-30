@@ -10,6 +10,20 @@ import { SubmissionReceivedEvent } from "./events/submission-received.event";
 import { BlockResult } from "./value-objects/block-result.vo";
 import { StudentSubmissionDto } from "../application/dto/student-submission.dto";
 
+/**
+ * @class StudentProgress
+ * @description
+ * The Aggregate Root representing a student's progress within a specific Course.
+ *
+ * Responsibilities:
+ * - Consistency Boundary: Ensures scores and statuses (Lesson/Course) are always in sync.
+ * - State Management: Transitions blocks (PENDING -> GRADED) and containers (IN_PROGRESS -> COMPLETED).
+ * - Idempotency: Prevents duplicate scoring for the same block.
+ * - Event Generation: Emits domain events for Read Models and side effects (Certificates, Gamification).
+ *
+ * Structure:
+ * Course -> Lessons -> Blocks (Grades)
+ */
 export class StudentProgress extends AggregateRoot {
   private readonly _id: string;
   private readonly _enrollmentId: string;
@@ -34,6 +48,10 @@ export class StudentProgress extends AggregateRoot {
     this._updatedAt = props.updatedAt;
   }
 
+  /**
+   * Factory method to initialize a fresh progress tracker for a new enrollment.
+   * Emits @see ProgressInitializedEvent
+   */
   static create(id: string, enrollmentId: string, courseId: string, studentId: string): StudentProgress {
     const instance = new StudentProgress({
       id,
@@ -52,6 +70,9 @@ export class StudentProgress extends AggregateRoot {
     return instance;
   }
 
+  /**
+   * Marks the course as started (IN_PROGRESS) if it hasn't been touched yet.
+   */
   public startCourse(): void {
     if (this._status === ProgressStatus.NOT_STARTED) {
       this._status = ProgressStatus.IN_PROGRESS;
@@ -59,6 +80,21 @@ export class StudentProgress extends AggregateRoot {
     }
   }
 
+  /**
+   * Completes a synchronous block (Video, Text, Quiz).
+   *
+   * @param blockId - The ID of the block being completed.
+   * @param lessonId - The parent lesson ID.
+   * @param totalBlocksInLesson - Total count of blocks in this lesson (fetched from Content Service).
+   * @param totalLessonsInCourse - Total count of lessons in this course.
+   * @param score - Score to assign (usually 100 for viewable content).
+   * @param submissionData - Optional metadata (e.g., quiz answers).
+   *
+   * Side Effects:
+   * - Updates Block status to GRADED.
+   * - Recalculates Lesson and Course completion status.
+   * - Emits @see BlockCompletedEvent
+   */
   public completeBlockSync(
     blockId: string,
     lessonId: string,
@@ -98,6 +134,12 @@ export class StudentProgress extends AggregateRoot {
     this.checkForCompletionEvent();
   }
 
+  /**
+   * Initiates an asynchronous submission (e.g., Code Challenge).
+   * Sets the block status to PENDING and waits for the Runner.
+   *
+   * Emits @see SubmissionReceivedEvent to trigger the Saga.
+   */
   public submitBlockAsync(blockId: string, lessonId: string, submissionData: StudentSubmissionDto): void {
     this.ensureCourseStarted();
     this.ensureLessonInitialized(lessonId);
@@ -111,6 +153,17 @@ export class StudentProgress extends AggregateRoot {
     this.apply(new SubmissionReceivedEvent(this.id, this.studentId, this.courseId, lessonId, blockId, submissionData));
   }
 
+  /**
+   * Finalizes an asynchronous submission with a result from the Runner.
+   *
+   * @param score - Calculated score (0 or 100).
+   * @param feedback - Stdout/Stderr or error message from the runner.
+   *
+   * Side Effects:
+   * - Updates Block status from PENDING to GRADED.
+   * - Recalculates totals.
+   * - Emits @see BlockCompletedEvent
+   */
   public gradeBlock(
     blockId: string,
     lessonId: string,
@@ -152,6 +205,8 @@ export class StudentProgress extends AggregateRoot {
     this.checkForCompletionEvent();
   }
 
+  // --- Invariants & Internals ---
+
   private ensureNotCompleted(lessonId: string, blockId: string): void {
     const existing = this._lessons[lessonId]?.completedBlocks[blockId];
     if (existing && existing.status === GradingStatus.GRADED && existing.score === 100) {
@@ -176,9 +231,14 @@ export class StudentProgress extends AggregateRoot {
     }
   }
 
+  /**
+   * Checks if all blocks in the lesson are graded.
+   * If yes, marks lesson as COMPLETED and emits @see LessonCompletedEvent.
+   */
   private recalculateLessonState(lessonId: string, totalBlocksInLesson: number): void {
     const lesson = this._lessons[lessonId];
 
+    // Idempotency: Do not complete twice
     if (lesson.status === ProgressStatus.COMPLETED) {
       return;
     }
@@ -194,6 +254,9 @@ export class StudentProgress extends AggregateRoot {
     }
   }
 
+  /**
+   * Aggregates scores from all lessons and checks if all lessons are COMPLETED.
+   */
   private recalculateCourseState(totalLessonsInCourse: number): void {
     const lessonsArray = Object.values(this._lessons);
 
@@ -220,6 +283,8 @@ export class StudentProgress extends AggregateRoot {
   private updateTimestamp(): void {
     this._updatedAt = new Date();
   }
+
+  // --- Getters ---
 
   get id() {
     return this._id;

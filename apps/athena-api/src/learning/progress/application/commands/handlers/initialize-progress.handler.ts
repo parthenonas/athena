@@ -6,6 +6,19 @@ import { type IProgressRepository, PROGRESS_REPOSITORY } from "../../../domain/r
 import { StudentProgress } from "../../../domain/student-progress.model";
 import { InitializeProgressCommand } from "../initialize-progress.command";
 
+/**
+ * @class InitializeProgressHandler
+ * @description
+ * Creates the initial tracking record for a student when they enroll in a course.
+ *
+ * Triggered by:
+ * - EnrollmentCreatedEvent (via Saga or Event Listener)
+ *
+ * Responsibilities:
+ * - Idempotency: Checks if progress already exists to prevent duplicates.
+ * - Aggregate Creation: Instantiates a new StudentProgress aggregate.
+ * - Event Publication: Commits the 'ProgressInitializedEvent'.
+ */
 @CommandHandler(InitializeProgressCommand)
 export class InitializeProgressHandler implements ICommandHandler<InitializeProgressCommand> {
   private readonly logger = new Logger(InitializeProgressHandler.name);
@@ -32,8 +45,7 @@ export class InitializeProgressHandler implements ICommandHandler<InitializeProg
 
     const progressModel = this.publisher.mergeObjectContext(progress);
 
-    await this.repo.save(progress);
-
+    await this.repo.save(progressModel);
     progressModel.commit();
 
     this.logger.log(`Progress initialized: ${newProgressId}`);

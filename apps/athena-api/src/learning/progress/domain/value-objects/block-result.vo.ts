@@ -1,5 +1,15 @@
 import { BaseBlockResult, GradingStatus } from "@athena/types";
 
+/**
+ * @class BlockResult
+ * @description
+ * A Value Object representing the outcome of a student's interaction with a block.
+ *
+ * Characteristics:
+ * - Immutable: Once created, it represents a fact in the past.
+ * - Equality: Two results are equal if their properties (score, status, time) are identical.
+ * - Validated: Prevents invalid states (e.g., negative scores).
+ */
 export class BlockResult implements BaseBlockResult {
   constructor(
     public readonly score: number,
@@ -13,6 +23,10 @@ export class BlockResult implements BaseBlockResult {
     }
   }
 
+  /**
+   * Deep equality check.
+   * Essential for Change Tracking in DDD (did the result actually change?).
+   */
   equals(other: BlockResult): boolean {
     if (!other) return false;
 

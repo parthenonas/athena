@@ -4,11 +4,24 @@ import { HydratedDocument } from "mongoose";
 
 export type StudentDashboardDocument = HydratedDocument<StudentDashboard>;
 
+/**
+ * Nested schema for lesson summary in dashboard.
+ */
 export class DashboardLessonData {
   status: string;
   completedBlocks: Record<string, number>;
 }
 
+/**
+ * @Schema StudentDashboard
+ * @description
+ * The Read Model for the student's dashboard.
+ * Designed for HIGH PERFORMANCE READS (O(1)).
+ *
+ * Characteristics:
+ * - Denormalized: Contains copies of Course Title, Instructor Name, etc.
+ * - Optimized: No joins required to render the "My Courses" page.
+ */
 @Schema({ collection: "student_dashboards", timestamps: true })
 export class StudentDashboard {
   @Prop({ required: true, index: true })
@@ -38,6 +51,10 @@ export class StudentDashboard {
   @Prop({ type: String, enum: ProgressStatus, default: ProgressStatus.IN_PROGRESS })
   status: ProgressStatus;
 
+  /**
+   * Flat map of lesson statuses.
+   * Allows the frontend to render the course map quickly.
+   */
   @Prop({ type: Object, default: {} })
   lessons: Record<string, DashboardLessonData>;
 

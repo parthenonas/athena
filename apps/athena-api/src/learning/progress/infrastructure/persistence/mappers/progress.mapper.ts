@@ -4,6 +4,15 @@ import { StudentProgress } from "../../../domain/student-progress.model";
 import { BlockResult } from "../../../domain/value-objects/block-result.vo";
 import { ProgressOrmEntity } from "../entities/progress.orm.entity";
 
+/**
+ * @class ProgressMapper
+ * @description
+ * Translates between the Domain Model (Rich Aggregate) and the Persistence Model (ORM Entity).
+ *
+ * Key Responsibility:
+ * - Rehydration: Converts raw JSONB data from SQL into actual `BlockResult` Value Objects.
+ * - Persistence: Extracts state from the Aggregate to save into the DB.
+ */
 export class ProgressMapper {
   static toDomain(entity: ProgressOrmEntity): StudentProgress {
     const lessonsDomain: Record<string, StudentLessonProgress> = {};

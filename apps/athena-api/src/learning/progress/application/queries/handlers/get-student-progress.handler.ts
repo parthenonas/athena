@@ -6,6 +6,20 @@ import { Model } from "mongoose";
 import { StudentDashboard } from "../../../infrastructure/persistence/mongo/schemas/student-dashboard.schema";
 import { GetStudentProgressQuery } from "../get-student-progress.query";
 
+/**
+ * @class GetStudentProgressHandler
+ * @description
+ * Fetches the detailed progress record for a specific student in a specific course.
+ *
+ * Responsibilities:
+ * - Specificity: Filters by BOTH `studentId` and `courseId`.
+ * - Performance: Uses `.lean()` to return a plain JSON object (POJO), bypassing Mongoose overhead.
+ * - Integrity: Throws `NotFoundException` if the record doesn't exist (e.g., user not enrolled).
+ *
+ * Use Case:
+ * Used when the user opens the Course Player/Map to render the list of lessons,
+ * locks/unlocks status, and individual block grades.
+ */
 @QueryHandler(GetStudentProgressQuery)
 export class GetStudentProgressHandler implements IQueryHandler<GetStudentProgressQuery> {
   constructor(

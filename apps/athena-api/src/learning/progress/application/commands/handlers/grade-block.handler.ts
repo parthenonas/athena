@@ -5,6 +5,19 @@ import { ContentService } from "../../../../../content";
 import { type IProgressRepository, PROGRESS_REPOSITORY } from "../../../domain/repository/progress.repository";
 import { GradeBlockCommand } from "../grade-block.command";
 
+/**
+ * @class GradeBlockHandler
+ * @description
+ * Processes the result of an asynchronous code submission.
+ * This handler is typically triggered by a System Listener (Saga/Queue Consumer)
+ * when the Code Runner returns a verdict.
+ *
+ * Workflow:
+ * 1. Retrieves the student's progress.
+ * 2. Fetches fresh course statistics (to know if this block completes the lesson/course).
+ * 3. Applies the grading logic (Score + Feedback) to the aggregate.
+ * 4. Persists the state and triggers domain events (e.g., BlockCompletedEvent).
+ */
 @CommandHandler(GradeBlockCommand)
 export class GradeBlockHandler implements ICommandHandler<GradeBlockCommand> {
   private readonly logger = new Logger(GradeBlockHandler.name);

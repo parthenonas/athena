@@ -4,6 +4,21 @@ import { CommandHandler, ICommandHandler, EventPublisher } from "@nestjs/cqrs";
 import { type IProgressRepository, PROGRESS_REPOSITORY } from "../../../domain/repository/progress.repository";
 import { SubmitAssignmentCommand } from "../submit-assignment.command";
 
+/**
+ * @class SubmitAssignmentHandler
+ * @description
+ * Handles the initial submission of an asynchronous task (e.g., Code Challenge).
+ *
+ * Workflow:
+ * 1. Validates the user has an active progress record.
+ * 2. Updates the block status to PENDING via the aggregate.
+ * 3. Persists the submission payload (code, language) in the aggregate state.
+ * 4. Emits `SubmissionReceivedEvent`.
+ *
+ * Note:
+ * This handler DOES NOT grade the assignment. It triggers the event flow
+ * that eventually activates the `ProgressSagas` -> `SubmissionQueue`.
+ */
 @CommandHandler(SubmitAssignmentCommand)
 export class SubmitAssignmentHandler implements ICommandHandler<SubmitAssignmentCommand> {
   private readonly logger = new Logger(SubmitAssignmentHandler.name);

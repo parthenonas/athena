@@ -6,6 +6,20 @@ import { Model } from "mongoose";
 import { BlockCompletedEvent } from "../../../domain/events/block-completed.event";
 import { StudentDashboard } from "../../../infrastructure/persistence/mongo/schemas/student-dashboard.schema";
 
+/**
+ * @class BlockCompletedHandler
+ * @description
+ * Projector responsible for updating the Read Model (MongoDB) when a block is completed.
+ *
+ * Responsibilities:
+ * - Listens to `BlockCompletedEvent`.
+ * - Performs an atomic update (`$set`) on the `StudentDashboard` document.
+ * - Updates nested fields: specific block score, lesson status, course total score.
+ *
+ * Why this matters:
+ * This ensures the UI dashboard is always consistent with the Domain state
+ * without requiring the Frontend to calculate scores or statuses.
+ */
 @EventsHandler(BlockCompletedEvent)
 export class BlockCompletedHandler implements IEventHandler<BlockCompletedEvent> {
   private readonly logger = new Logger(BlockCompletedHandler.name);

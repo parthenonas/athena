@@ -8,6 +8,20 @@ import { SubmissionQueueService } from "../../../../submission-queue";
 import { SubmissionPayloadDto } from "../../../../submission-queue/dto/submission-payload.dto";
 import { SubmissionReceivedEvent } from "../../domain/events/submission-received.event";
 
+/**
+ * @class ProgressSagas
+ * @description
+ * Orchestrates the side effects of domain events using RxJS streams.
+ *
+ * Responsibilities:
+ * - Listens for `SubmissionReceivedEvent` (when a student submits code).
+ * - Enriches the submission data by fetching execution context (Time Limits, Test Cases) from `ContentService`.
+ * - Transforms the data into a standardized `SubmissionPayload`.
+ * - Dispatches the payload to the `SubmissionQueueService` for execution by the Runner.
+ *
+ * Pattern:
+ * Event -> Saga -> Enrichment -> Queue -> Runner
+ */
 @Injectable()
 export class ProgressSagas {
   private readonly logger = new Logger(ProgressSagas.name);
@@ -21,6 +35,7 @@ export class ProgressSagas {
   submissionReceived = (events$: Observable<unknown>): Observable<ICommand | null> => {
     return events$.pipe(
       ofType(SubmissionReceivedEvent),
+
       mergeMap(async event => {
         try {
           this.logger.log(`Saga processing submission: ${event.progressId}`);
