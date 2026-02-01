@@ -59,5 +59,10 @@
   "dependencies": {
     "@nestjs/mapped-types": "^2.1.0",
     "cookie-parser": "^1.4.7"
+  },
+  "overrides": {
+    "fast-xml-parser": "^5.3.4",
+    "lodash": "^4.17.21",
+    "@nestjs/config": "^4.0.2"
   }
 }
