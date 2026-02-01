@@ -7,10 +7,10 @@ import { AccountController } from "./account.controller";
 import { AccountService } from "./account.service";
 import { Account } from "./entities/account.entity";
 import { Role } from "../acl/entities/role.entity";
-import { ProfileRecord } from "../profile-record/entities/profile-record.entity";
+import { Profile } from "../profile/entities/profile.entity";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Account, Role, ProfileRecord]), JwtModule, ConfigModule],
+  imports: [TypeOrmModule.forFeature([Account, Role, Profile]), JwtModule, ConfigModule],
   providers: [AccountService],
   exports: [AccountService, JwtModule],
   controllers: [AccountController],
