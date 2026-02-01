@@ -13,6 +13,7 @@ const options = {
   username: process.env.DATABASE_USERNAME,
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
+  schema: "public",
   entities: ["**/*.entity{.ts,.js}"],
   migrations: [join(__dirname, "../migrations/*{.ts,.js}")],
 } satisfies TypeOrmModuleOptions;

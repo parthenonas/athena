@@ -4,10 +4,11 @@ import UsersPage from '../users.vue'
 import { nextTick } from 'vue'
 import { Status } from '@athena/types'
 
-const { fetchAccountsMock, deleteAccountMock, refreshMock } = vi.hoisted(() => ({
+const { fetchAccountsMock, deleteAccountMock, refreshMock, fetchAccountMock } = vi.hoisted(() => ({
   fetchAccountsMock: vi.fn(),
   deleteAccountMock: vi.fn(),
-  refreshMock: vi.fn()
+  refreshMock: vi.fn(),
+  fetchAccountMock: vi.fn()
 }))
 
 vi.mock('@athena/types', () => ({
@@ -21,7 +22,8 @@ vi.mock('@athena/types', () => ({
 vi.mock('~/composables/useAccounts', () => ({
   useAccounts: () => ({
     fetchAccounts: fetchAccountsMock,
-    deleteAccount: deleteAccountMock
+    deleteAccount: deleteAccountMock,
+    fetchAccount: fetchAccountMock
   })
 }))
 
@@ -115,7 +117,7 @@ describe('Accounts (Users) Page', () => {
         UTable: UTableStub,
         AdminRoleBadge: AdminRoleBadgeStub,
         ConfirmModal: ConfirmModalStub,
-        AdminRolesSlideover: SlideoverStub,
+        AdminAccountsSlideover: SlideoverStub,
         UButton: UButtonStub,
         UInput: UInputStub,
         UBadge: { template: '<span class="badge">{{ label }}</span>', props: ['label'] },

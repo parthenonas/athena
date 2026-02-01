@@ -2,11 +2,13 @@ import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { EventEmitterModule } from "@nestjs/event-emitter";
+import { MongooseModule } from "@nestjs/mongoose";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { ContentModule } from "./content";
 import { IdentityModule } from "./identity";
 import { LearningModule } from "./learning";
+import { ProgressModule } from "./learning/progress";
 import { MediaModule } from "./media";
 import { NotificationModule } from "./notification";
 import { OutboxModule } from "./outbox";
@@ -31,6 +33,13 @@ import { SubmissionQueueModule } from "./submission-queue";
       }),
       inject: [ConfigService],
     }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
+        uri: config.get<string>("MONGO_URI"),
+      }),
+      inject: [ConfigService],
+    }),
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (cfg: ConfigService) => ({
@@ -49,6 +58,7 @@ import { SubmissionQueueModule } from "./submission-queue";
     MediaModule,
     LearningModule,
     OutboxModule,
+    ProgressModule,
   ],
 })
 export class AppModule {}
