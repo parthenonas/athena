@@ -263,7 +263,7 @@ export class StudentProgress extends AggregateRoot {
     this._currentScore = lessonsArray.reduce((acc: number, lesson: StudentLessonProgress) => {
       const lessonScore = Object.values(lesson.completedBlocks)
         .filter(b => b.status === GradingStatus.GRADED)
-        .reduce((sum: number, b: BlockResult) => sum + b.score, 0) as number;
+        .reduce((sum: number, b: BlockResult) => sum + b.score, 0);
       return acc + lessonScore;
     }, 0);
 

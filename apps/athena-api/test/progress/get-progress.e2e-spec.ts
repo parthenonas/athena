@@ -36,7 +36,7 @@ describe("GET /progress/:courseId (Detailed) (e2e)", () => {
       instructorId: (await fixtures.createInstructor()).id,
       name: "DeepCohort",
     });
-    await fixtures.createEnrollment({ cohortId: cohort.id, accountId: user.id });
+    await fixtures.enrollStudentWithProgress({ userId: user.id, cohortId: cohort.id, courseId });
 
     await new Promise(r => setTimeout(r, 1000));
   }, 30000);

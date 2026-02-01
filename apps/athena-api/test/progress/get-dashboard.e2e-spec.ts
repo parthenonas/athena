@@ -34,7 +34,7 @@ describe("GET /progress (Dashboard) (e2e)", () => {
       instructorId: (await fixtures.createInstructor()).id,
       name: "DashCohort",
     });
-    await fixtures.createEnrollment({ cohortId: cohort.id, accountId: user.id });
+    await fixtures.enrollStudentWithProgress({ userId: user.id, cohortId: cohort.id, courseId: course.id });
 
     await new Promise(r => setTimeout(r, 1000));
   }, 30000);

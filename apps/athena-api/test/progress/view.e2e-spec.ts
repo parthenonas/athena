@@ -46,7 +46,7 @@ describe("POST /progress/.../view (e2e)", () => {
       instructorId: (await fixtures.createInstructor()).id,
       name: "C1",
     });
-    await fixtures.createEnrollment({ cohortId: cohort.id, accountId: user.id });
+    await fixtures.enrollStudentWithProgress({ userId: user.id, cohortId: cohort.id, courseId });
     await new Promise(r => setTimeout(r, 500));
   }, 30000);
 
