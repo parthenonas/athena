@@ -10,6 +10,7 @@ import { Block } from "../../src/content/block/entities/block.entity";
 import { Course } from "../../src/content/course/entities/course.entity";
 import { Lesson } from "../../src/content/lesson/entities/lesson.entity";
 import { IdentityService } from "../../src/identity";
+import { Profile } from "../../src/identity/profile/entities/profile.entity";
 import { Cohort } from "../../src/learning/cohort/entities/cohort.entity";
 import { Enrollment } from "../../src/learning/enrollment/entities/enrollment.entity";
 import { Instructor } from "../../src/learning/instructor/entities/instructor.entity";
@@ -24,6 +25,7 @@ export class TestFixtures {
   private readonly cohortRepo: Repository<Cohort>;
   private readonly enrollmentRepo: Repository<Enrollment>;
   private readonly scheduleRepo: Repository<Schedule>;
+  private readonly profileRepo: Repository<Profile>;
   private readonly commandBus: CommandBus;
 
   constructor(
@@ -38,6 +40,7 @@ export class TestFixtures {
     this.cohortRepo = this.app.get(getRepositoryToken(Cohort));
     this.enrollmentRepo = this.app.get(getRepositoryToken(Enrollment));
     this.scheduleRepo = this.app.get(getRepositoryToken(Schedule));
+    this.profileRepo = this.app.get(getRepositoryToken(Profile));
     this.commandBus = this.app.get(CommandBus);
   }
 
@@ -99,6 +102,18 @@ export class TestFixtures {
     const http = request(this.app.getHttpServer());
     const res = await http.post("/accounts/login").send({ login, password });
     return res.body.accessToken;
+  }
+
+  async createProfile(args: Partial<Profile> = {}): Promise<Profile> {
+    const defaultData = {
+      firstName: "Test",
+      lastName: "User",
+      ownerId: args.ownerId || uuid(),
+      metadata: {},
+    };
+
+    const entity = this.profileRepo.create({ ...defaultData, ...args });
+    return this.profileRepo.save(entity);
   }
 
   async createCourse(args: Partial<Course> = {}): Promise<Course> {
