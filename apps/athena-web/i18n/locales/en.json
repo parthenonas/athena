@@ -137,13 +137,26 @@
         }
       },
       "accounts-slideover": {
+        "tab-account": "Account",
+        "tab-profile": "Profile",
         "login-label": "Login",
         "password-label": "Password",
         "password-help": "Leave empty to keep current password",
         "role-label": "Role",
+        "firstname-label": "First Name",
+        "lastname-label": "Last Name",
+        "patronymic-label": "Patronymic",
+        "birthdate-label": "Date of Birth",
         "errors": {
           "login-min": "Login must be at least 3 characters",
-          "password-rule": "Password must contain uppercase and lowercase letters, numbers, and special characters"
+          "password-rule": "Password must contain uppercase and lowercase letters, numbers, and special characters",
+          "role-required": "Role is required",
+          "firstname-min": "First name minimum length is {length}",
+          "lastname-min": "Last name minimum length is {length}",
+          "patronymic-min": "Last name minimum length is {length}",
+          "firstname-max": "First name max length is {length}",
+          "lastname-max": "Last name max length is {length}",
+          "patronymic-max": "Last name max length is {length}"
         }
       },
       "quotas": {
@@ -668,7 +681,19 @@
         "error": "Delete failed"
       }
     },
-   "quotas": {
+    "profiles": {
+      "created": {
+        "title": "Profile created",
+        "description": "User profile has been successfully set up.",
+        "error": "Failed to create profile"
+      },
+      "updated": {
+        "title": "Profile updated",
+        "description": "Profile details have been successfully saved.",
+        "error": "Failed to update profile"
+      }
+    },
+    "quotas": {
       "updated": "Quota updated",
       "deleted": "Quota reset to default",
       "error": "Quota operation failed"

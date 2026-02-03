@@ -5,6 +5,7 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
 import { MongooseModule } from "@nestjs/mongoose";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
+import { AppService } from "./app.service";
 import { ContentModule } from "./content";
 import { IdentityModule } from "./identity";
 import { LearningModule } from "./learning";
@@ -60,5 +61,6 @@ import { SubmissionQueueModule } from "./submission-queue";
     OutboxModule,
     ProgressModule,
   ],
+  providers: [AppService],
 })
 export class AppModule {}

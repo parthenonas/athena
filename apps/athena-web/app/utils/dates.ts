@@ -11,13 +11,13 @@ import {
 export const toCalendarDate = (dateStr?: string | Date | null) => {
   if (!dateStr) return undefined
   const d = new Date(dateStr)
-  return fromDate(d, getLocalTimeZone())
+  return _toCalendarDate(fromDate(d, getLocalTimeZone()))
 }
 
 export const toCalendarDateTime = (dateStr?: string | Date | null) => {
   if (!dateStr) return undefined
   const d = new Date(dateStr)
-  return fromDate(d, getLocalTimeZone())
+  return _toCalendarDateTime(fromDate(d, getLocalTimeZone()))
 }
 
 export const toNativeDate = (cd?: CalendarDate | CalendarDateTime) => {

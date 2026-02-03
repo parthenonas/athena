@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '#ui/types'
 import { z } from 'zod'
-import type { CreateAccountRequest, UpdateAccountRequest, FilterRoleRequest, RoleResponse } from '@athena/types'
+import type {
+  CreateAccountRequest,
+  UpdateAccountRequest,
+  FilterRoleRequest,
+  RoleResponse,
+  CreateProfileRequest,
+  UpdateProfileRequest
+} from '@athena/types'
 import type { SelectMenuItem } from '@nuxt/ui'
-import { PASSWORD_REGEX } from '@athena/common'
+import { PASSWORD_REGEX, MIN_NAME_LENGTH, MAX_NAME_LENGTH } from '@athena/common'
 
 const props = defineProps<{
   modelValue: boolean
@@ -15,24 +22,54 @@ const emit = defineEmits(['update:modelValue', 'refresh'])
 const { t } = useI18n()
 const { fetchAccount, createAccount, updateAccount } = useAccounts()
 const { fetchRoles, fetchRole } = useRoles()
+const { fetchProfile, createProfile, updateProfile } = useProfiles()
 
 const isLoading = ref(false)
-
 const search = ref('')
-
 const specificRole = ref<RoleResponse | null>(null)
+const hasProfile = ref(false)
 
-const state = reactive<CreateAccountRequest | UpdateAccountRequest>({
+const state = reactive({
   login: '',
   password: '',
-  roleId: undefined
+  roleId: undefined as string | undefined,
+  firstName: '',
+  lastName: '',
+  patronymic: '',
+  // eslint-disable-next-line
+  birthDate: undefined as any,
 })
+
+const items = computed(() => [
+  {
+    label: t('components.admin.accounts-slideover.tab-account'),
+    icon: 'i-lucide-user',
+    slot: 'account'
+  },
+  {
+    label: t('components.admin.accounts-slideover.tab-profile'),
+    icon: 'i-lucide-contact',
+    slot: 'profile'
+  }
+])
 
 const schema = computed(() => {
   const baseSchema = z.object({
     login: z.string()
       .min(3, t('components.admin.accounts-slideover.errors.login-min')),
-    roleId: z.string(t('components.admin.accounts-slideover.errors.role-required'))
+    roleId: z.string(t('components.admin.accounts-slideover.errors.role-required')),
+    firstName: z.string()
+      .min(MIN_NAME_LENGTH, t('components.admin.accounts-slideover.errors.firstname-min', { length: MIN_NAME_LENGTH }))
+      .max(MAX_NAME_LENGTH, t('components.admin.accounts-slideover.errors.firstname-max', { length: MAX_NAME_LENGTH }))
+      .optional(),
+    lastName: z.string()
+      .min(MIN_NAME_LENGTH, t('components.admin.accounts-slideover.errors.lastname-min', { length: MIN_NAME_LENGTH }))
+      .max(MAX_NAME_LENGTH, t('components.admin.accounts-slideover.errors.lastname-max', { length: MAX_NAME_LENGTH }))
+      .optional(),
+    patronymic: z.string()
+      .min(MIN_NAME_LENGTH, t('components.admin.accounts-slideover.errors.patronymic-min', { length: MIN_NAME_LENGTH }))
+      .max(MAX_NAME_LENGTH, t('components.admin.accounts-slideover.errors.patronymic-max', { length: MAX_NAME_LENGTH }))
+      .optional()
   })
 
   if (!props.accountId) {
@@ -89,6 +126,7 @@ watch(isOpen, async (val) => {
   if (!val) return
 
   isLoading.value = true
+  hasProfile.value = false
   try {
     if (props.accountId) {
       const account = await fetchAccount(props.accountId)
@@ -108,10 +146,29 @@ watch(isOpen, async (val) => {
           }
         }
       }
+
+      const profile = await fetchProfile(props.accountId)
+      if (profile) {
+        hasProfile.value = true
+        state.firstName = profile.firstName
+        state.lastName = profile.lastName
+        state.patronymic = profile.patronymic || ''
+        state.birthDate = toCalendarDate(profile.birthDate)
+      } else {
+        hasProfile.value = false
+        state.firstName = ''
+        state.lastName = ''
+        state.patronymic = ''
+        state.birthDate = null
+      }
     } else {
       state.login = ''
       state.password = ''
       state.roleId = undefined
+      state.firstName = ''
+      state.lastName = ''
+      state.patronymic = ''
+      state.birthDate = null
     }
   } catch (e) {
     console.error(e)
@@ -126,21 +183,45 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
     const formData = event.data
 
     if (props.accountId) {
-      const payload: UpdateAccountRequest = {
+      const accPayload: UpdateAccountRequest = {
         login: formData.login,
         roleId: state.roleId
       }
       if (formData.password) {
-        payload.password = formData.password
+        accPayload.password = formData.password
       }
-      await updateAccount(props.accountId, payload)
+      await updateAccount(props.accountId, accPayload)
+
+      const profPayload: UpdateProfileRequest = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        patronymic: formData.patronymic,
+        birthDate: toNativeDate(state.birthDate)
+      }
+
+      if (hasProfile.value) {
+        await updateProfile(props.accountId, profPayload)
+      } else {
+        await createProfile(props.accountId, profPayload as CreateProfileRequest)
+        hasProfile.value = true
+      }
     } else {
-      const payload: CreateAccountRequest = {
+      const accPayload: CreateAccountRequest = {
         login: formData.login,
         password: formData.password!,
         roleId: state.roleId
       }
-      await createAccount(payload)
+      const newAccount = await createAccount(accPayload)
+
+      if (newAccount && newAccount.id) {
+        const profPayload: CreateProfileRequest = {
+          firstName: formData.firstName!,
+          lastName: formData.lastName!,
+          patronymic: formData.patronymic!,
+          birthDate: toNativeDate(state.birthDate)
+        }
+        await createProfile(newAccount.id, profPayload)
+      }
     }
 
     emit('refresh')
@@ -164,47 +245,105 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
         id="accounts-form"
         :schema="schema"
         :state="state"
-        class="h-full flex flex-col gap-6"
+        class="h-full flex flex-col"
         @submit="onSubmit"
       >
-        <UFormField
-          :label="$t('components.admin.accounts-slideover.login-label')"
-          name="login"
-          required
+        <UTabs
+          :items="items"
+          class="w-full"
         >
-          <UInput
-            v-model="state.login"
-            autofocus
-            class="w-full"
-          />
-        </UFormField>
+          <template #account>
+            <div class="flex flex-col gap-6 pt-4">
+              <UFormField
+                :label="$t('components.admin.accounts-slideover.login-label')"
+                name="login"
+                required
+              >
+                <UInput
+                  v-model="state.login"
+                  autofocus
+                  class="w-full"
+                />
+              </UFormField>
 
-        <UFormField
-          :label="$t('components.admin.accounts-slideover.password-label')"
-          name="password"
-          :required="!accountId"
-          :help="accountId ? $t('components.admin.accounts-slideover.password-help') : undefined"
-        >
-          <UInput
-            v-model="state.password"
-            type="password"
-            class="w-full"
-          />
-        </UFormField>
+              <UFormField
+                :label="$t('components.admin.accounts-slideover.password-label')"
+                name="password"
+                :required="!accountId"
+                :help="accountId ? $t('components.admin.accounts-slideover.password-help') : undefined"
+              >
+                <UInput
+                  v-model="state.password"
+                  type="password"
+                  class="w-full"
+                />
+              </UFormField>
 
-        <UFormField
-          :label="$t('components.admin.accounts-slideover.role-label')"
-          name="roleId"
-        >
-          <USelectMenu
-            v-model:search-term="search"
-            v-model="state.roleId"
-            :items="roles"
-            :loading="pending"
-            value-key="id"
-            class="w-full"
-          />
-        </UFormField>
+              <UFormField
+                :label="$t('components.admin.accounts-slideover.role-label')"
+                name="roleId"
+              >
+                <USelectMenu
+                  v-model:search-term="search"
+                  v-model="state.roleId"
+                  :items="roles"
+                  :loading="pending"
+                  value-key="id"
+                  class="w-full"
+                />
+              </UFormField>
+            </div>
+          </template>
+
+          <template #profile>
+            <div class="flex flex-col gap-6 pt-4">
+              <div class="grid grid-cols-2 gap-4">
+                <UFormField
+                  :label="$t('components.admin.accounts-slideover.lastname-label')"
+                  name="lastName"
+                  required
+                >
+                  <UInput
+                    v-model="state.lastName"
+                    class="w-full"
+                  />
+                </UFormField>
+
+                <UFormField
+                  :label="$t('components.admin.accounts-slideover.firstname-label')"
+                  name="firstName"
+                  required
+                >
+                  <UInput
+                    v-model="state.firstName"
+                    class="w-full"
+                  />
+                </UFormField>
+              </div>
+
+              <UFormField
+                :label="$t('components.admin.accounts-slideover.patronymic-label')"
+                name="patronymic"
+              >
+                <UInput
+                  v-model="state.patronymic"
+                  class="w-full"
+                />
+              </UFormField>
+
+              <UFormField
+                :label="$t('components.admin.accounts-slideover.birthdate-label')"
+                name="birthDate"
+              >
+                <UInputDate
+                  v-model="state.birthDate"
+                  class="w-full"
+                  granularity="minute"
+                />
+              </UFormField>
+            </div>
+          </template>
+        </UTabs>
       </UForm>
     </template>
 
