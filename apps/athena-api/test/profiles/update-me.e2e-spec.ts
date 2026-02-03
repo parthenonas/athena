@@ -9,7 +9,6 @@ describe("Profile /me Routes (e2e)", () => {
   let fixtures: any;
 
   let fullAccessUserToken: string;
-
   let readOnlyUserToken: string;
 
   beforeAll(async () => {
@@ -22,12 +21,18 @@ describe("Profile /me Routes (e2e)", () => {
       permissions: [Permission.PROFILES_READ, Permission.PROFILES_CREATE, Permission.PROFILES_UPDATE],
     });
 
-    await fixtures.createUser({
+    const user1 = await fixtures.createUser({
       login: "full_access",
       password: "Password123!",
       roleId: fullRole.id,
     });
     fullAccessUserToken = await fixtures.login("full_access", "Password123!");
+
+    await fixtures.createProfile({
+      ownerId: user1.id,
+      firstName: "Original",
+      lastName: "Made",
+    });
 
     const readRole = await fixtures.createRole({
       name: "profile_read",
