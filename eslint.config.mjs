@@ -72,7 +72,7 @@ export default tseslint.config(
     }
   },
   {
-    files: ["apps/*/src/**/*.ts"],
+    files: ["apps/*/src/**/*.ts", "libs/*/src/**/*.ts"],
     languageOptions: {
         parserOptions: {
         projectService: true,
@@ -80,7 +80,8 @@ export default tseslint.config(
         }
     },
     rules: {
-        "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }]
+        "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+        "@typescript-eslint/no-empty-object-type": "off"
     }
   },
   {

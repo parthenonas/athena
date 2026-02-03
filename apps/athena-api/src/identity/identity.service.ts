@@ -13,7 +13,7 @@ import { RoleService } from "./acl/role.service";
  * bounded context. Its purpose is to provide a unified, simplified API
  * for other modules (e.g. Learning, Courses, Admin UI) without exposing
  * internal services such as `AccountService`, `RoleService`, or
- * `ProfileRecordsService`.
+ * `ProfileService`.
  *
  * ## Responsibilities
  * - High-level account lookup and creation.

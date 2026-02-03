@@ -6,19 +6,18 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
 } from "typeorm";
 
 import { Role } from "../../acl/entities/role.entity";
-import { ProfileRecord } from "../../profile-record/entities/profile-record.entity";
+import { Profile } from "../../profile/entities/profile.entity";
 
 /**
  * @Entity Account
  * Represents a system account for authentication and access control.
- * Personal data is stored as dynamic key-value records (ProfileRecord).
  */
 @Entity("accounts")
 @Unique("accounts__login__uk", ["login"])
@@ -59,12 +58,10 @@ export class Account {
   status!: Status;
 
   /**
-   * One-to-many relationship to profile records.
+   * One-to-one relationship to profile.
    */
-  @OneToMany(() => ProfileRecord, record => record.account, {
-    cascade: true,
-  })
-  profileRecords!: ProfileRecord[];
+  @OneToOne(() => Profile, profile => profile.owner)
+  profile?: Profile;
 
   /**
    * Timestamps.

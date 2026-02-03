@@ -3,10 +3,10 @@ import { Module } from "@nestjs/common";
 import { AccountModule } from "./account/account.module";
 import { AclModule } from "./acl/acl.module";
 import { IdentityService } from "./identity.service";
-import { ProfileRecordModule } from "./profile-record/profile-record.module";
+import { ProfileModule } from "./profile";
 
 @Module({
-  imports: [AccountModule, AclModule, ProfileRecordModule],
+  imports: [AccountModule, AclModule, ProfileModule],
   providers: [IdentityService],
   exports: [IdentityService],
 })
