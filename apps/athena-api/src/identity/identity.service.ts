@@ -7,6 +7,7 @@ import { CreateAccountDto } from "./account/dto/create.dto";
 import { AbilityService } from "./acl/ability.service";
 import { CreateRoleDto } from "./acl/dto/create.dto";
 import { RoleService } from "./acl/role.service";
+import { ProfileService } from "./profile/profile.service";
 
 /**
  * The **IdentityService** acts as a *facade* over the entire Identity
@@ -34,6 +35,7 @@ export class IdentityService {
     private readonly accountService: AccountService,
     private readonly roleService: RoleService,
     private readonly abilityService: AbilityService,
+    private readonly profileService: ProfileService,
   ) {}
 
   /**
@@ -82,6 +84,18 @@ export class IdentityService {
    */
   async findAccountById(id: string) {
     return this.accountService.findOne(id);
+  }
+
+  /**
+   * Retrieves an account profile using accounts identifier.
+   *
+   * @param ownerId - A unique id on account.
+   * @returns Profile entity or `null` if not found.
+   *
+   * Delegates to {@link ProfileService.findByOwnerId}.
+   */
+  async findProfileByOwnerId(ownerId: string) {
+    return this.profileService.findByOwnerId(ownerId, ownerId);
   }
 
   /**

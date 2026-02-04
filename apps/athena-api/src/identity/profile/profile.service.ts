@@ -1,12 +1,15 @@
 import { Policy } from "@athena/types";
 import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { QueryFailedError, Repository } from "typeorm";
+import { AthenaEvent } from "src/shared/events/types";
+import { DataSource, QueryFailedError, Repository } from "typeorm";
 
 import { CreateProfileDto } from "./dto/create.dto";
 import { UpdateProfileDto } from "./dto/update.dto";
 import { Profile } from "./entities/profile.entity";
+import { OutboxService } from "../../outbox";
 import { AbilityService } from "../acl/ability.service";
+import { ProfileUpdatedEvent } from "./events/profile-updated.event";
 
 /**
  * @class ProfileService
@@ -29,6 +32,8 @@ export class ProfileService {
     @InjectRepository(Profile)
     private readonly profileRepo: Repository<Profile>,
     private readonly abilityService: AbilityService,
+    private readonly dataSource: DataSource,
+    private readonly outboxService: OutboxService,
   ) {}
 
   /**
@@ -44,19 +49,42 @@ export class ProfileService {
   async create(ownerId: string, dto: CreateProfileDto): Promise<Profile> {
     this.logger.log(`create() | ownerId=${ownerId}`);
 
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      const existing = await this.profileRepo.findOne({ where: { ownerId } });
+      const manager = queryRunner.manager;
+
+      const existing = await manager.findOne(Profile, { where: { ownerId } });
       if (existing) {
         throw new BadRequestException("Profile for this account already exists");
       }
 
-      const profile = this.profileRepo.create({
+      const profile = manager.create(Profile, {
         ...dto,
         ownerId,
       });
+      const savedProfile = await manager.save(Profile, profile);
 
-      return await this.profileRepo.save(profile);
+      const event = new ProfileUpdatedEvent(
+        savedProfile.ownerId,
+        savedProfile.firstName,
+        savedProfile.lastName,
+        savedProfile.patronymic || "",
+        savedProfile.avatarUrl || "",
+        savedProfile.metadata,
+      );
+
+      await this.outboxService.save(manager, AthenaEvent.PROFILE_UPDATED, event);
+
+      await queryRunner.commitTransaction();
+
+      this.logger.log(`create() | Profile created and event scheduled | id=${savedProfile.id}`);
+      return savedProfile;
     } catch (error: unknown) {
+      await queryRunner.rollbackTransaction();
+
       if (error instanceof BadRequestException) throw error;
 
       this.logger.error(`create() | ${(error as Error).message}`, (error as Error).stack);
@@ -64,6 +92,8 @@ export class ProfileService {
         throw new BadRequestException("Profile already exists");
       }
       throw new BadRequestException("Failed to create profile");
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -130,8 +160,14 @@ export class ProfileService {
   ): Promise<Profile> {
     this.logger.log(`update() | target=${targetOwnerId}, requester=${requesterId}`);
 
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      const profile = await this.profileRepo.findOne({ where: { ownerId: targetOwnerId } });
+      const manager = queryRunner.manager;
+
+      const profile = await manager.findOne(Profile, { where: { ownerId: targetOwnerId } });
 
       if (!profile) {
         throw new NotFoundException("Profile not found");
@@ -143,16 +179,33 @@ export class ProfileService {
         }
       }
 
-      this.profileRepo.merge(profile, dto);
-      const saved = await this.profileRepo.save(profile);
+      manager.merge(Profile, profile, dto);
+      const savedProfile = await manager.save(Profile, profile);
 
-      this.logger.log(`update() | Profile updated | id=${saved.id}`);
-      return saved;
+      const event = new ProfileUpdatedEvent(
+        savedProfile.ownerId,
+        savedProfile.firstName,
+        savedProfile.lastName,
+        savedProfile.patronymic || "",
+        savedProfile.avatarUrl || "",
+        savedProfile.metadata,
+      );
+
+      await this.outboxService.save(manager, AthenaEvent.PROFILE_UPDATED, event);
+
+      await queryRunner.commitTransaction();
+
+      this.logger.log(`update() | Profile updated and event scheduled | id=${savedProfile.id}`);
+      return savedProfile;
     } catch (error: unknown) {
+      await queryRunner.rollbackTransaction();
+
       if (error instanceof NotFoundException || error instanceof ForbiddenException) throw error;
 
       this.logger.error(`update() | ${(error as Error).message}`, (error as Error).stack);
       throw new BadRequestException("Failed to update profile");
+    } finally {
+      await queryRunner.release();
     }
   }
 }

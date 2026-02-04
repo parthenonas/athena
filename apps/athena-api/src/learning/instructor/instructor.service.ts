@@ -8,7 +8,9 @@ import {
   Logger,
   NotFoundException,
 } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
 import { InjectRepository } from "@nestjs/typeorm";
+import { Model } from "mongoose";
 import { Brackets, QueryFailedError, Repository } from "typeorm";
 
 import { CreateInstructorDto } from "./dto/create.dto";
@@ -18,6 +20,7 @@ import { UpdateInstructorDto } from "./dto/update.dto";
 import { Instructor } from "./entities/instructor.entity";
 import { BaseService } from "../../base/base.service";
 import { IdentityService } from "../../identity";
+import { InstructorView } from "./schemas/instructor-view.schema";
 import { isPostgresQueryError } from "../../shared/helpers/errors";
 
 /**
@@ -39,6 +42,8 @@ export class InstructorService extends BaseService<Instructor> {
     @InjectRepository(Instructor)
     private readonly repo: Repository<Instructor>,
     private readonly identityService: IdentityService,
+    @InjectModel(InstructorView.name)
+    private readonly instructorViewModel: Model<InstructorView>,
   ) {
     super();
   }
@@ -120,6 +125,8 @@ export class InstructorService extends BaseService<Instructor> {
 
     await this.identityService.findAccountById(dto.ownerId);
 
+    let saved: Instructor | null = null;
+
     try {
       const entity = this.repo.create({
         ownerId: dto.ownerId,
@@ -127,8 +134,7 @@ export class InstructorService extends BaseService<Instructor> {
         title: dto.title,
       });
 
-      const saved = await this.repo.save(entity);
-      return this.toDto(saved, ReadInstructorDto);
+      saved = await this.repo.save(entity);
     } catch (error) {
       this.logger.error(`create error: ${(error as Error).message}`);
       if (error instanceof QueryFailedError) {
@@ -136,6 +142,34 @@ export class InstructorService extends BaseService<Instructor> {
       }
       throw new BadRequestException("Failed to create instructor profile");
     }
+
+    if (saved) {
+      const profile = await this.identityService.findProfileByOwnerId(dto.ownerId);
+      try {
+        await this.instructorViewModel.create({
+          instructorId: saved.id,
+          ownerId: saved.ownerId,
+          title: saved.title || "",
+          bio: saved.bio || "",
+          avatarUrl: profile?.avatarUrl || "",
+          firstName: profile?.firstName || "",
+          lastName: profile?.lastName || "",
+          patronymic: profile?.patronymic || "",
+        });
+      } catch (error) {
+        this.logger.error(`create mongo view error: ${(error as Error).message}`);
+
+        try {
+          await this.repo.remove(saved);
+        } catch (error) {
+          this.logger.error(`failed to remove instructor profile: ${(error as Error).message}`);
+        }
+
+        throw new BadRequestException("Failed to create instructor profile");
+      }
+    }
+
+    return this.toDto(saved, ReadInstructorDto);
   }
 
   /**
@@ -147,6 +181,7 @@ export class InstructorService extends BaseService<Instructor> {
     ownerId: string,
     appliedPolicies: Policy[] = [],
   ): Promise<ReadInstructorDto> {
+    let updated: Instructor | null;
     try {
       const instructor = await this.repo.findOne({ where: { id } });
       if (!instructor) throw new NotFoundException("Instructor profile not found");
@@ -160,8 +195,7 @@ export class InstructorService extends BaseService<Instructor> {
       if (dto.bio !== undefined) instructor.bio = dto.bio;
       if (dto.title !== undefined) instructor.title = dto.title;
 
-      const updated = await this.repo.save(instructor);
-      return this.toDto(updated, ReadInstructorDto);
+      updated = await this.repo.save(instructor);
     } catch (error) {
       if (error instanceof NotFoundException || error instanceof ForbiddenException) throw error;
       if (error instanceof QueryFailedError) {
@@ -171,6 +205,25 @@ export class InstructorService extends BaseService<Instructor> {
       if (error instanceof NotFoundException) throw error;
       throw new BadRequestException("Failed to update instructor");
     }
+
+    if (updated) {
+      try {
+        await this.instructorViewModel.updateOne(
+          { instructorId: updated.id },
+          {
+            $set: {
+              title: updated.title,
+              bio: updated.bio,
+              updatedAt: new Date(),
+            },
+          },
+        );
+      } catch (error) {
+        this.logger.error(`Failed to update InstructorView for ${updated.id}: ${(error as Error).message}`);
+      }
+    }
+
+    return this.toDto(updated, ReadInstructorDto);
   }
 
   /**
