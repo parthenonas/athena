@@ -1,13 +1,13 @@
 import { Policy } from "@athena/types";
 import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { AthenaEvent } from "src/shared/events/types";
 import { DataSource, QueryFailedError, Repository } from "typeorm";
 
 import { CreateProfileDto } from "./dto/create.dto";
 import { UpdateProfileDto } from "./dto/update.dto";
 import { Profile } from "./entities/profile.entity";
 import { OutboxService } from "../../outbox";
+import { AthenaEvent } from "../../shared/events/types";
 import { AbilityService } from "../acl/ability.service";
 import { ProfileUpdatedEvent } from "./events/profile-updated.event";
 

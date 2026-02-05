@@ -202,7 +202,6 @@ export class InstructorService extends BaseService<Instructor> {
         this.handleInstructorConstraintError(error);
       }
 
-      if (error instanceof NotFoundException) throw error;
       throw new BadRequestException("Failed to update instructor");
     }
 
@@ -241,6 +240,12 @@ export class InstructorService extends BaseService<Instructor> {
 
     try {
       await this.repo.remove(instructor);
+
+      try {
+        await this.instructorViewModel.deleteOne({ instructorId: id });
+      } catch (mongoError) {
+        this.logger.error(`Failed to delete InstructorView for ${id}: ${(mongoError as Error).message}`);
+      }
     } catch (err: unknown) {
       this.logger.error(`delete() | ${(err as Error).message}`, (err as Error).stack);
       throw new BadRequestException("Failed to delete instructor");

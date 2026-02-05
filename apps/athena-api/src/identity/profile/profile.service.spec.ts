@@ -2,19 +2,21 @@ import { Policy } from "@athena/types";
 import { BadRequestException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 import { v4 as uuid } from "uuid";
 
 import { CreateProfileDto } from "./dto/create.dto";
 import { UpdateProfileDto } from "./dto/update.dto";
 import { Profile } from "./entities/profile.entity";
 import { ProfileService } from "./profile.service";
+import { OutboxService } from "../../outbox";
 import { AbilityService } from "../acl/ability.service";
 
 describe("ProfileService", () => {
   let service: ProfileService;
   let repo: Repository<Profile>;
   let abilityService: AbilityService;
+  let outboxService: OutboxService;
 
   const mockOwnerId = uuid();
   const mockProfileId = uuid();
@@ -38,6 +40,28 @@ describe("ProfileService", () => {
     check: jest.fn(),
   };
 
+  const mockOutboxService = {
+    save: jest.fn(),
+  };
+
+  const mockQueryRunner = {
+    connect: jest.fn(),
+    startTransaction: jest.fn(),
+    commitTransaction: jest.fn(),
+    rollbackTransaction: jest.fn(),
+    release: jest.fn(),
+    manager: {
+      findOne: jest.fn(),
+      create: jest.fn(),
+      save: jest.fn(),
+      merge: jest.fn(),
+    },
+  };
+
+  const mockDataSource = {
+    createQueryRunner: jest.fn().mockReturnValue(mockQueryRunner),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -50,12 +74,21 @@ describe("ProfileService", () => {
           provide: AbilityService,
           useValue: mockAbilityService,
         },
+        {
+          provide: DataSource,
+          useValue: mockDataSource,
+        },
+        {
+          provide: OutboxService,
+          useValue: mockOutboxService,
+        },
       ],
     }).compile();
 
     service = module.get<ProfileService>(ProfileService);
     repo = module.get<Repository<Profile>>(getRepositoryToken(Profile));
     abilityService = module.get<AbilityService>(AbilityService);
+    outboxService = module.get<OutboxService>(OutboxService);
 
     jest.clearAllMocks();
   });
@@ -71,25 +104,36 @@ describe("ProfileService", () => {
     };
 
     it("should create profile if not exists", async () => {
-      mockRepo.findOne.mockResolvedValue(null);
-
-      mockRepo.create.mockReturnValue(mockProfile);
-
-      mockRepo.save.mockResolvedValue(mockProfile);
+      mockQueryRunner.manager.findOne.mockResolvedValue(null);
+      mockQueryRunner.manager.create.mockReturnValue(mockProfile);
+      mockQueryRunner.manager.save.mockResolvedValue(mockProfile);
 
       const result = await service.create(mockOwnerId, createDto);
 
-      expect(repo.findOne).toHaveBeenCalledWith({ where: { ownerId: mockOwnerId } });
-      expect(repo.create).toHaveBeenCalledWith({ ...createDto, ownerId: mockOwnerId });
-      expect(repo.save).toHaveBeenCalled();
+      expect(mockDataSource.createQueryRunner).toHaveBeenCalled();
+      expect(mockQueryRunner.connect).toHaveBeenCalled();
+      expect(mockQueryRunner.startTransaction).toHaveBeenCalled();
+
+      expect(mockQueryRunner.manager.findOne).toHaveBeenCalledWith(Profile, { where: { ownerId: mockOwnerId } });
+      expect(mockQueryRunner.manager.create).toHaveBeenCalledWith(Profile, { ...createDto, ownerId: mockOwnerId });
+      expect(mockQueryRunner.manager.save).toHaveBeenCalled();
+
+      expect(mockOutboxService.save).toHaveBeenCalled();
+
+      expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
+      expect(mockQueryRunner.release).toHaveBeenCalled();
+
       expect(result).toEqual(mockProfile);
     });
 
     it("should throw BadRequest if profile already exists", async () => {
-      mockRepo.findOne.mockResolvedValue(mockProfile);
+      mockQueryRunner.manager.findOne.mockResolvedValue(mockProfile);
 
       await expect(service.create(mockOwnerId, createDto)).rejects.toThrow(BadRequestException);
-      expect(repo.create).not.toHaveBeenCalled();
+
+      expect(mockQueryRunner.manager.create).not.toHaveBeenCalled();
+      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
+      expect(mockQueryRunner.release).toHaveBeenCalled();
     });
   });
 
@@ -125,33 +169,39 @@ describe("ProfileService", () => {
     const updateDto: UpdateProfileDto = { firstName: "Petr" };
 
     it("should update profile fields if found and policy allows", async () => {
-      mockRepo.findOne.mockResolvedValue(mockProfile);
+      mockQueryRunner.manager.findOne.mockResolvedValue(mockProfile);
       mockAbilityService.check.mockReturnValue(true);
-      mockRepo.merge.mockImplementation((entity, dto) => Object.assign(entity, dto));
-      mockRepo.save.mockResolvedValue({ ...mockProfile, firstName: "Petr" });
+      mockQueryRunner.manager.merge.mockImplementation((entity, dto) => Object.assign(entity, dto));
+      mockQueryRunner.manager.save.mockResolvedValue({ ...mockProfile, firstName: "Petr" });
 
       const result = await service.update(mockOwnerId, updateDto, mockOwnerId, [Policy.OWN_ONLY]);
 
       expect(abilityService.check).toHaveBeenCalledWith(Policy.OWN_ONLY, mockOwnerId, mockProfile);
-      expect(repo.merge).toHaveBeenCalledWith(mockProfile, updateDto);
+      expect(mockQueryRunner.manager.merge).toHaveBeenCalledWith(Profile, mockProfile, updateDto);
+
+      expect(mockOutboxService.save).toHaveBeenCalled();
+      expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
+
       expect(result.firstName).toBe("Petr");
     });
 
     it("should throw ForbiddenException if policy check fails", async () => {
-      mockRepo.findOne.mockResolvedValue(mockProfile);
+      mockQueryRunner.manager.findOne.mockResolvedValue(mockProfile);
       mockAbilityService.check.mockReturnValue(false);
 
       await expect(service.update(mockOwnerId, updateDto, "stranger-id", [Policy.OWN_ONLY])).rejects.toThrow(
         ForbiddenException,
       );
 
-      expect(repo.save).not.toHaveBeenCalled();
+      expect(mockQueryRunner.manager.save).not.toHaveBeenCalled();
+      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
     });
 
     it("should throw NotFound if profile missing", async () => {
-      mockRepo.findOne.mockResolvedValue(null);
+      mockQueryRunner.manager.findOne.mockResolvedValue(null);
 
       await expect(service.update(mockOwnerId, updateDto, mockOwnerId)).rejects.toThrow(NotFoundException);
+      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
     });
   });
 });
