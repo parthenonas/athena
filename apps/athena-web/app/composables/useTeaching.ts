@@ -15,7 +15,8 @@ import type {
   ScheduleResponse,
   CreateScheduleRequest,
   UpdateScheduleRequest,
-  FilterScheduleRequest
+  FilterScheduleRequest,
+  InstructorView
 } from '@athena/types'
 
 export const useTeaching = () => {
@@ -116,6 +117,26 @@ export const useTeaching = () => {
       })
       throw error
     }
+  }
+
+  const fetchInstructorsView = (params: FilterInstructorRequest) => {
+    return useApi<Pageable<InstructorView>>('/api/instructors/public', {
+      method: 'GET',
+      params,
+      watch: [
+        () => params.page,
+        () => params.limit,
+        () => params.search,
+        () => params.sortBy,
+        () => params.sortOrder
+      ]
+    })
+  }
+
+  const fetchInstructorView = (id: string) => {
+    return $api<InstructorView>(`/api/instructors/public/${id}`, {
+      method: 'GET'
+    })
   }
 
   const fetchCohorts = (params: FilterCohortRequest) => {
@@ -470,6 +491,8 @@ export const useTeaching = () => {
     fetchSchedule,
     createSchedule,
     updateSchedule,
-    deleteSchedule
+    deleteSchedule,
+    fetchInstructorsView,
+    fetchInstructorView
   }
 }

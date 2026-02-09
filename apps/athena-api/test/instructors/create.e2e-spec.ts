@@ -24,6 +24,8 @@ describe("POST /instructors (e2e)", () => {
     app = res.app;
     fixtures = res.fixtures;
 
+    await fixtures.resetDatabase();
+
     const managerRole = await fixtures.createRole({
       name: "hr_manager",
       permissions: [Permission.INSTRUCTORS_CREATE],
@@ -43,6 +45,12 @@ describe("POST /instructors (e2e)", () => {
       roleId: candidateRole.id,
     });
     targetUserId = candidate.id;
+
+    await fixtures.createProfile({
+      ownerId: targetUserId,
+      firstName: "Candidate",
+      lastName: "User",
+    });
 
     mockCreateDto.ownerId = targetUserId;
   }, 30000);

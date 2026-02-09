@@ -5,10 +5,11 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { Profile } from "./entities/profile.entity";
 import { ProfileController } from "./profile.controller";
 import { ProfileService } from "./profile.service";
+import { OutboxModule } from "../../outbox";
 import { AclModule } from "../acl/acl.module";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Profile]), AclModule, JwtModule],
+  imports: [TypeOrmModule.forFeature([Profile]), AclModule, JwtModule, OutboxModule],
   controllers: [ProfileController],
   providers: [ProfileService, JwtService],
   exports: [ProfileService],

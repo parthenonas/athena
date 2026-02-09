@@ -1,7 +1,9 @@
 import { Permission, BlockType, EnrollmentStatus } from "@athena/types";
 import { INestApplication } from "@nestjs/common";
 import { CommandBus } from "@nestjs/cqrs";
+import { getModelToken } from "@nestjs/mongoose";
 import { getRepositoryToken } from "@nestjs/typeorm";
+import { Model } from "mongoose";
 import request from "supertest";
 import { DataSource, Repository } from "typeorm";
 import { v4 as uuid } from "uuid";
@@ -14,6 +16,7 @@ import { Profile } from "../../src/identity/profile/entities/profile.entity";
 import { Cohort } from "../../src/learning/cohort/entities/cohort.entity";
 import { Enrollment } from "../../src/learning/enrollment/entities/enrollment.entity";
 import { Instructor } from "../../src/learning/instructor/entities/instructor.entity";
+import { InstructorView } from "../../src/learning/instructor/schemas/instructor-view.schema";
 import { InitializeProgressCommand } from "../../src/learning/progress/application/commands/initialize-progress.command";
 import { Schedule } from "../../src/learning/schedule/entities/schedule.entity";
 
@@ -26,6 +29,7 @@ export class TestFixtures {
   private readonly enrollmentRepo: Repository<Enrollment>;
   private readonly scheduleRepo: Repository<Schedule>;
   private readonly profileRepo: Repository<Profile>;
+  private readonly instructorViewModel: Model<InstructorView>;
   private readonly commandBus: CommandBus;
 
   constructor(
@@ -41,6 +45,7 @@ export class TestFixtures {
     this.enrollmentRepo = this.app.get(getRepositoryToken(Enrollment));
     this.scheduleRepo = this.app.get(getRepositoryToken(Schedule));
     this.profileRepo = this.app.get(getRepositoryToken(Profile));
+    this.instructorViewModel = this.app.get(getModelToken(InstructorView.name));
     this.commandBus = this.app.get(CommandBus);
   }
 
@@ -49,6 +54,10 @@ export class TestFixtures {
 
     for (const entity of entities) {
       await this.dataSource.query(`TRUNCATE TABLE "${entity.tableName}" RESTART IDENTITY CASCADE;`);
+    }
+
+    if (this.instructorViewModel) {
+      await this.instructorViewModel.deleteMany({});
     }
   }
 
@@ -159,7 +168,23 @@ export class TestFixtures {
     };
 
     const entity = this.instructorRepo.create({ ...defaultData, ...args });
-    return this.instructorRepo.save(entity);
+    const saved = await this.instructorRepo.save(entity);
+
+    const profile = await this.profileRepo.findOne({ where: { ownerId: saved.ownerId } });
+
+    if (this.instructorViewModel) {
+      await this.instructorViewModel.create({
+        instructorId: saved.id,
+        ownerId: saved.ownerId,
+        title: saved.title!,
+        bio: saved.bio!,
+        firstName: profile?.firstName || "Unknown",
+        lastName: profile?.lastName || "Unknown",
+        avatarUrl: profile?.avatarUrl || "",
+      });
+    }
+
+    return saved;
   }
 
   async createCohort(args: Partial<Cohort> = {}): Promise<Cohort> {

@@ -21,7 +21,7 @@ vi.mock('~/composables/useTeaching', () => ({
     fetchCohort: fetchCohortMock,
     createCohort: createCohortMock,
     updateCohort: updateCohortMock,
-    fetchInstructors: fetchInstructorsMock
+    fetchInstructorsView: fetchInstructorsMock
   })
 }))
 

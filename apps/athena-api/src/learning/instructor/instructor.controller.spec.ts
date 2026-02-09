@@ -5,6 +5,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 
 import { CreateInstructorDto } from "./dto/create.dto";
 import { FilterInstructorDto } from "./dto/filter.dto";
+import { ReadInstructorViewDto } from "./dto/read-view.dto";
 import { ReadInstructorDto } from "./dto/read.dto";
 import { UpdateInstructorDto } from "./dto/update.dto";
 import { InstructorController } from "./instructor.controller";
@@ -25,6 +26,16 @@ const mockReadInstructor: ReadInstructorDto = {
   updatedAt: new Date(),
 };
 
+const mockReadInstructorView: ReadInstructorViewDto = {
+  instructorId: MOCK_INSTRUCTOR_ID,
+  ownerId: MOCK_USER_ID,
+  firstName: "Ivan",
+  lastName: "Ivanov",
+  title: "Prof",
+  bio: "Bio",
+  avatarUrl: "avatar.jpg",
+};
+
 const mockCreateDto: CreateInstructorDto = {
   ownerId: MOCK_USER_ID,
   bio: "Bio",
@@ -40,6 +51,11 @@ const mockFilterDto: FilterInstructorDto = {
 
 const mockPageable: Pageable<ReadInstructorDto> = {
   data: [mockReadInstructor],
+  meta: { total: 1, page: 1, limit: 10, pages: 1 },
+};
+
+const mockPageViewable: Pageable<ReadInstructorViewDto> = {
+  data: [mockReadInstructorView],
   meta: { total: 1, page: 1, limit: 10, pages: 1 },
 };
 
@@ -64,6 +80,8 @@ describe("InstructorController", () => {
             create: jest.fn(),
             update: jest.fn(),
             delete: jest.fn(),
+            findAllView: jest.fn(),
+            findOneView: jest.fn(),
           },
         },
         {
@@ -94,6 +112,17 @@ describe("InstructorController", () => {
     });
   });
 
+  describe("findAllView", () => {
+    it("should return public view list", async () => {
+      service.findAllView.mockResolvedValue(mockPageViewable);
+
+      const result = await controller.findAllView(mockFilterDto);
+
+      expect(service.findAllView).toHaveBeenCalledWith(mockFilterDto);
+      expect(result).toEqual(mockPageViewable);
+    });
+  });
+
   describe("findOne", () => {
     it("should return single instructor", async () => {
       service.findOne.mockResolvedValue(mockReadInstructor);
@@ -102,6 +131,17 @@ describe("InstructorController", () => {
 
       expect(service.findOne).toHaveBeenCalledWith(MOCK_INSTRUCTOR_ID, MOCK_USER_ID, MOCK_APPLIED_POLICIES);
       expect(result).toEqual(mockReadInstructor);
+    });
+  });
+
+  describe("findOneView", () => {
+    it("should return single public view", async () => {
+      service.findOneView.mockResolvedValue(mockReadInstructorView);
+
+      const result = await controller.findOneView(MOCK_INSTRUCTOR_ID);
+
+      expect(service.findOneView).toHaveBeenCalledWith(MOCK_INSTRUCTOR_ID);
+      expect(result).toEqual(mockReadInstructorView);
     });
   });
 

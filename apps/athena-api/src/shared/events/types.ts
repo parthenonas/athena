@@ -4,6 +4,7 @@ export enum AthenaEvent {
   ROLE_DELETED = "role.deleted",
   SUBMISSION_COMPLETED = "submission.completed",
   ENROLLMENT_CREATED = "enrollment.created",
+  PROFILE_UPDATED = "profile.updated",
 }
 
 export interface SubmissionCompletedEvent {
