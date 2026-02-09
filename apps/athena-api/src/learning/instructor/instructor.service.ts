@@ -10,11 +10,13 @@ import {
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { InjectRepository } from "@nestjs/typeorm";
+import { plainToInstance } from "class-transformer";
 import { Model } from "mongoose";
 import { Brackets, QueryFailedError, Repository } from "typeorm";
 
 import { CreateInstructorDto } from "./dto/create.dto";
 import { FilterInstructorDto } from "./dto/filter.dto";
+import { ReadInstructorViewDto } from "./dto/read-view.dto";
 import { ReadInstructorDto } from "./dto/read.dto";
 import { UpdateInstructorDto } from "./dto/update.dto";
 import { Instructor } from "./entities/instructor.entity";
@@ -114,6 +116,76 @@ export class InstructorService extends BaseService<Instructor> {
     } catch (err) {
       if (err instanceof NotFoundException || err instanceof ForbiddenException) throw err;
       throw new BadRequestException("Failed to fetch instructor");
+    }
+  }
+
+  /**
+   * Reads from MongoDB (Read Model).
+   * High performance, includes Identity data (names, avatars).
+   */
+  async findAllView(filters: FilterInstructorDto): Promise<Pageable<ReadInstructorViewDto>> {
+    const { page, limit, search, sortBy, sortOrder } = filters;
+    this.logger.log(`findAllView() | mongo | search="${search}"`);
+
+    const query = {};
+
+    if (search?.trim()) {
+      const regex = new RegExp(search.trim(), "i");
+      query["$or"] = [{ firstName: regex }, { lastName: regex }, { title: regex }, { bio: regex }];
+    }
+
+    const sort = {};
+    sort[sortBy] = sortOrder === "ASC" ? 1 : -1;
+
+    try {
+      const total = await this.instructorViewModel.countDocuments(query);
+
+      const rawData = await this.instructorViewModel
+        .find(query)
+        .sort(sort)
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .exec();
+
+      const data = rawData.map(doc =>
+        plainToInstance(ReadInstructorViewDto, doc, {
+          excludeExtraneousValues: true,
+        }),
+      );
+
+      return {
+        data: data,
+        meta: {
+          total,
+          page,
+          limit,
+          pages: Math.ceil(total / limit),
+        },
+      };
+    } catch (error) {
+      this.logger.error(`findAllView error: ${(error as Error).message}`);
+      throw new BadRequestException("Failed to fetch instructors view");
+    }
+  }
+
+  /**
+   * Reads a single instructor view from MongoDB by Instructor ID.
+   */
+  async findOneView(instructorId: string): Promise<ReadInstructorViewDto> {
+    try {
+      const doc = await this.instructorViewModel.findOne({ instructorId }).exec();
+
+      if (!doc) {
+        throw new NotFoundException("Instructor not found");
+      }
+
+      return plainToInstance(ReadInstructorViewDto, doc, {
+        excludeExtraneousValues: true,
+      });
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      this.logger.error(`findOneView error: ${(error as Error).message}`);
+      throw new BadRequestException("Failed to fetch instructor view");
     }
   }
 

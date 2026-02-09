@@ -25,6 +25,8 @@ const mockInstructorViewModel = {
   updateOne: jest.fn(),
   deleteOne: jest.fn(),
   find: jest.fn(),
+  findOne: jest.fn(),
+  countDocuments: jest.fn(),
 };
 
 describe("InstructorService", () => {
@@ -255,6 +257,53 @@ describe("InstructorService", () => {
       await expect(service.findOne(INSTRUCTOR_ID, "other", APPLIED_OWN_ONLY)).rejects.toBeInstanceOf(
         ForbiddenException,
       );
+    });
+  });
+
+  describe("findAllView", () => {
+    it("should query mongodb", async () => {
+      const mockExec = jest.fn().mockResolvedValue([{ instructorId: "1", firstName: "A", toObject: () => ({}) }]);
+      const mockLimit = jest.fn().mockReturnValue({ exec: mockExec });
+      const mockSkip = jest.fn().mockReturnValue({ limit: mockLimit });
+      const mockSort = jest.fn().mockReturnValue({ skip: mockSkip });
+      instructorViewModel.find.mockReturnValue({ sort: mockSort });
+      instructorViewModel.countDocuments.mockResolvedValue(10);
+
+      const result = await service.findAllView({
+        page: 1,
+        limit: 10,
+        sortBy: "createdAt",
+        sortOrder: "DESC",
+        search: "John",
+      });
+
+      expect(instructorViewModel.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          $or: expect.arrayContaining([expect.objectContaining({ firstName: expect.any(RegExp) })]),
+        }),
+      );
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].firstName).toBe("A");
+    });
+  });
+
+  describe("findOneView", () => {
+    it("should return view if found", async () => {
+      const mockDoc = { instructorId: "1", firstName: "A" };
+      const mockExec = jest.fn().mockResolvedValue(mockDoc);
+      instructorViewModel.findOne.mockReturnValue({ exec: mockExec });
+
+      const result = await service.findOneView("1");
+
+      expect(instructorViewModel.findOne).toHaveBeenCalledWith({ instructorId: "1" });
+      expect(result.firstName).toBe("A");
+    });
+
+    it("should throw NotFoundException if not found", async () => {
+      const mockExec = jest.fn().mockResolvedValue(null);
+      instructorViewModel.findOne.mockReturnValue({ exec: mockExec });
+
+      await expect(service.findOneView("1")).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 });

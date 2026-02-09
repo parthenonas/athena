@@ -41,3 +41,13 @@ export interface FilterInstructorRequest {
   sortBy: "createdAt" | "title";
   sortOrder: SortOrder;
 }
+
+export interface InstructorView {
+  instructorId: string;
+  ownerId: string;
+  firstName: string;
+  lastName: string;
+  avatarUrl?: string;
+  title: string;
+  bio: string;
+}
