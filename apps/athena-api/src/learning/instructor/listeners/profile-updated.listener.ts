@@ -24,6 +24,7 @@ export class ProfileUpdatedListener {
         $set: {
           firstName: event.firstName,
           lastName: event.lastName,
+          patronymic: event.patronymic,
           avatarUrl: event.avatarUrl,
         },
       },

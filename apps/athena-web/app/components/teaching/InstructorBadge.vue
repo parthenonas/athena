@@ -3,12 +3,12 @@ const props = defineProps<{
   instructorId: string
 }>()
 
-const { fetchInstructor } = useTeaching()
+const { fetchInstructorView } = useTeaching()
 
 const { data: instructor, status } = await useAsyncData(
-  `instructor-${props.instructorId}`,
+  `instructor-view-${props.instructorId}`,
   async () => {
-    return await fetchInstructor(props.instructorId)
+    return await fetchInstructorView(props.instructorId)
   },
   {
     lazy: true,
@@ -16,6 +16,8 @@ const { data: instructor, status } = await useAsyncData(
     dedupe: 'defer'
   }
 )
+
+console.log('fuck')
 </script>
 
 <template>
@@ -31,9 +33,10 @@ const { data: instructor, status } = await useAsyncData(
   <UButton
     v-else
     variant="link"
-    :to="{ path: '/teaching/instructors', query: { instructorId: instructor.id } }"
+    :to="{ path: '/teaching/instructors', query: { instructorId: instructor.instructorId } }"
     :padded="false"
   >
-    {{ instructor.title }}
+    {{ instructor.firstName }} {{ instructor.lastName }}
+    <span class="text-gray-400 text-xs ml-1">({{ instructor.title }})</span>
   </UButton>
 </template>
