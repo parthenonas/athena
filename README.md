@@ -1,3 +1,19 @@
+<!-- 
+   Copyright 2026 Parthenonas
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
 # Athena LMS
 
 Athena is a modular Learning Management System (LMS) built as a TypeScript monorepo.
@@ -46,8 +62,8 @@ The project is under active development and not production-ready yet.
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/shekshuev/athena-lms.git
-   cd athena-lms
+   git clone https://github.com/parthenonas/athena.git
+   cd athena
    ```
 
 2. **Install dependencies:**
@@ -132,7 +148,3 @@ Triggered on PRs and pushes to `main` and `develop`.
 > On Linux: Ensure [isolate](https://github.com/ioi/isolate) is installed and you have sudo rights (or configured sudoers).
 > 
 > On macOS/Windows: You cannot run apps/athena-runner natively with code execution enabled. 
-
-## License
-
-MIT License Copyright © 2025 [Sergei Shekshuev](https://github.com/shekshuev)
