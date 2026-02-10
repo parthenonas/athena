@@ -4,10 +4,20 @@ import UsersPage from '../users.vue'
 import { nextTick } from 'vue'
 import { Status } from '@athena/types'
 
-const { fetchAccountsMock, deleteAccountMock, refreshMock } = vi.hoisted(() => ({
+const { fetchAccountsMock,
+  deleteAccountMock,
+  refreshMock,
+  fetchAccountMock,
+  fetchProfileMock,
+  createProfileMock,
+  updateProfileMock } = vi.hoisted(() => ({
   fetchAccountsMock: vi.fn(),
   deleteAccountMock: vi.fn(),
-  refreshMock: vi.fn()
+  refreshMock: vi.fn(),
+  fetchAccountMock: vi.fn(),
+  fetchProfileMock: vi.fn(),
+  createProfileMock: vi.fn(),
+  updateProfileMock: vi.fn()
 }))
 
 vi.mock('@athena/types', () => ({
@@ -21,7 +31,16 @@ vi.mock('@athena/types', () => ({
 vi.mock('~/composables/useAccounts', () => ({
   useAccounts: () => ({
     fetchAccounts: fetchAccountsMock,
-    deleteAccount: deleteAccountMock
+    deleteAccount: deleteAccountMock,
+    fetchAccount: fetchAccountMock
+  })
+}))
+
+vi.mock('~/composables/useProfiles', () => ({
+  useAccounts: () => ({
+    fetchProfile: fetchProfileMock,
+    createProfile: createProfileMock,
+    updateProfile: updateProfileMock
   })
 }))
 
@@ -115,7 +134,7 @@ describe('Accounts (Users) Page', () => {
         UTable: UTableStub,
         AdminRoleBadge: AdminRoleBadgeStub,
         ConfirmModal: ConfirmModalStub,
-        AdminRolesSlideover: SlideoverStub,
+        AdminAccountsSlideover: SlideoverStub,
         UButton: UButtonStub,
         UInput: UInputStub,
         UBadge: { template: '<span class="badge">{{ label }}</span>', props: ['label'] },

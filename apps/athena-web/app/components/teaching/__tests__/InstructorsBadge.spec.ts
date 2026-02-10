@@ -9,7 +9,7 @@ const { mockUseAsyncData } = vi.hoisted(() => {
 })
 
 mockNuxtImport('useTeaching', () => {
-  return () => ({ fetchInstructor: vi.fn() })
+  return () => ({ fetchInstructorView: vi.fn() })
 })
 
 mockNuxtImport('useAsyncData', () => {
@@ -18,22 +18,39 @@ mockNuxtImport('useAsyncData', () => {
 
 const USkeletonStub = {
   name: 'USkeleton',
-  template: `
-    <div data-testid="skeleton" />
-  `
+  template: '<div data-testid="skeleton" />'
 }
 
-const UButtonStub = { name: 'UButton', template: '<button data-testid="button"><slot /></button>' }
+const UButtonStub = {
+  name: 'UButton',
+  template: '<button data-testid="button"><slot /></button>'
+}
+
+const UAvatarStub = {
+  name: 'UAvatar',
+  template: '<img data-testid="avatar" />'
+}
 
 describe('InstructorBadge', () => {
   const instructorId = 'instructor-123'
-  const instructorName = 'Super Admin'
+
+  const mockInstructorView = {
+    instructorId: instructorId,
+    firstName: 'John',
+    lastName: 'Wick',
+    title: 'Baba Yaga',
+    avatarUrl: 'https://example.com/avatar.jpg'
+  }
 
   const defaultMocks = {
     global: {
       stubs: {
-        USkeleton: USkeletonStub,
-        UButton: UButtonStub
+        'USkeleton': USkeletonStub,
+        'u-skeleton': USkeletonStub,
+        'UButton': UButtonStub,
+        'u-button': UButtonStub,
+        'UAvatar': UAvatarStub,
+        'u-avatar': UAvatarStub
       }
     }
   }
@@ -53,7 +70,7 @@ describe('InstructorBadge', () => {
 
     const wrapper = await mountSuspended(InstructorBadge, {
       ...defaultMocks,
-      props: { modelValue: true, instructorId }
+      props: { instructorId }
     })
 
     expect(wrapper.find('[data-testid="skeleton"]').exists()).toBe(true)
@@ -69,7 +86,7 @@ describe('InstructorBadge', () => {
 
     const wrapper = await mountSuspended(InstructorBadge, {
       ...defaultMocks,
-      props: { modelValue: true, instructorId }
+      props: { instructorId }
     })
 
     await flushPromises()
@@ -81,22 +98,24 @@ describe('InstructorBadge', () => {
 
   it('should show button with instructor login on success', async () => {
     mockUseAsyncData.mockReturnValue({
-      data: ref({ id: instructorId, title: instructorName }),
+      data: ref(mockInstructorView),
       status: ref('success')
     })
 
     const wrapper = await mountSuspended(InstructorBadge, {
       ...defaultMocks,
-      props: { modelValue: true, instructorId }
+      props: { instructorId }
     })
 
     await flushPromises()
 
-    console.warn(wrapper.html())
-
     const btn = wrapper.find('[data-testid="button"]')
     expect(btn.exists()).toBe(true)
 
-    expect(wrapper.text()).toContain(instructorName)
+    console.log(wrapper.text())
+
+    const text = wrapper.text()
+    expect(text).toContain('John Wick')
+    expect(text).toContain('Baba Yaga')
   })
 })

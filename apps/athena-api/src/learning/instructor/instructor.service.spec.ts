@@ -1,6 +1,7 @@
 import { PostgresErrorCode } from "@athena/common";
 import { Policy } from "@athena/types";
-import { ConflictException, ForbiddenException, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from "@nestjs/common";
+import { getModelToken } from "@nestjs/mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
 import { QueryFailedError, Repository } from "typeorm";
@@ -10,17 +11,29 @@ import { UpdateInstructorDto } from "./dto/update.dto";
 import { Instructor } from "./entities/instructor.entity";
 import { InstructorService } from "./instructor.service";
 import { IdentityService } from "../../identity";
+import { InstructorView } from "./schemas/instructor-view.schema";
 
 const mockIdentityService = {
   findAccountById: jest.fn(),
   checkAbility: jest.fn(),
+  findProfileByOwnerId: jest.fn(),
   applyPoliciesToQuery: jest.fn().mockImplementation(qb => qb),
+};
+
+const mockInstructorViewModel = {
+  create: jest.fn(),
+  updateOne: jest.fn(),
+  deleteOne: jest.fn(),
+  find: jest.fn(),
+  findOne: jest.fn(),
+  countDocuments: jest.fn(),
 };
 
 describe("InstructorService", () => {
   let service: InstructorService;
   let repo: jest.Mocked<Repository<Instructor>>;
   let identityService: typeof mockIdentityService;
+  let instructorViewModel: typeof mockInstructorViewModel;
 
   const USER_ID = "user-1";
   const OTHER_ID = "user-99";
@@ -81,16 +94,26 @@ describe("InstructorService", () => {
           provide: IdentityService,
           useValue: mockIdentityService,
         },
+        {
+          provide: getModelToken(InstructorView.name),
+          useValue: mockInstructorViewModel,
+        },
       ],
     }).compile();
 
     service = module.get<InstructorService>(InstructorService);
     repo = module.get(getRepositoryToken(Instructor));
     identityService = module.get(IdentityService);
+    instructorViewModel = module.get(getModelToken(InstructorView.name));
 
     jest.clearAllMocks();
     identityService.checkAbility.mockReturnValue(true);
     identityService.findAccountById.mockResolvedValue({ id: USER_ID });
+    identityService.findProfileByOwnerId.mockResolvedValue({
+      firstName: "John",
+      lastName: "Doe",
+      avatarUrl: "http://avatar.com",
+    });
   });
 
   describe("findAll", () => {
@@ -120,13 +143,25 @@ describe("InstructorService", () => {
   });
 
   describe("create", () => {
-    it("should create profile", async () => {
+    it("should create profile and sync to mongo", async () => {
       repo.create.mockReturnValue(mockInstructor);
       repo.save.mockResolvedValue(mockInstructor);
+      instructorViewModel.create.mockResolvedValue({} as any);
 
       const res = await service.create(createDto);
 
       expect(identityService.findAccountById).toHaveBeenCalledWith(USER_ID);
+      expect(repo.save).toHaveBeenCalled();
+
+      expect(identityService.findProfileByOwnerId).toHaveBeenCalledWith(USER_ID);
+      expect(instructorViewModel.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          instructorId: INSTRUCTOR_ID,
+          ownerId: USER_ID,
+          firstName: "John",
+        }),
+      );
+
       expect(res.ownerId).toBe(USER_ID);
     });
 
@@ -138,11 +173,22 @@ describe("InstructorService", () => {
       repo.save.mockRejectedValue(error);
 
       await expect(service.create(createDto)).rejects.toBeInstanceOf(ConflictException);
+      expect(instructorViewModel.create).not.toHaveBeenCalled();
+    });
+
+    it("should rollback postgres if mongo fails", async () => {
+      repo.create.mockReturnValue(mockInstructor);
+      repo.save.mockResolvedValue(mockInstructor);
+      instructorViewModel.create.mockRejectedValue(new Error("Mongo Down"));
+
+      await expect(service.create(createDto)).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(repo.remove).toHaveBeenCalledWith(mockInstructor);
     });
   });
 
   describe("update", () => {
-    it("should update bio when allowed", async () => {
+    it("should update bio and sync to mongo when allowed", async () => {
       repo.findOne.mockResolvedValue(mockInstructor);
       repo.save.mockResolvedValue({ ...mockInstructor, bio: "New" });
 
@@ -150,6 +196,12 @@ describe("InstructorService", () => {
 
       expect(identityService.checkAbility).toHaveBeenCalledWith(Policy.OWN_ONLY, USER_ID, mockInstructor);
       expect(repo.save).toHaveBeenCalled();
+
+      expect(instructorViewModel.updateOne).toHaveBeenCalledWith(
+        { instructorId: INSTRUCTOR_ID },
+        { $set: expect.objectContaining({ bio: "New" }) },
+      );
+
       expect(res.bio).toBe("New");
     });
 
@@ -160,6 +212,7 @@ describe("InstructorService", () => {
       await expect(service.update(INSTRUCTOR_ID, updateDto, OTHER_ID, APPLIED_OWN_ONLY)).rejects.toBeInstanceOf(
         ForbiddenException,
       );
+      expect(instructorViewModel.updateOne).not.toHaveBeenCalled();
     });
 
     it("should throw NotFoundException", async () => {
@@ -177,6 +230,7 @@ describe("InstructorService", () => {
 
       expect(identityService.checkAbility).toHaveBeenCalledWith(Policy.OWN_ONLY, USER_ID, mockInstructor);
       expect(repo.remove).toHaveBeenCalled();
+      expect(instructorViewModel.deleteOne).toHaveBeenCalledWith({ instructorId: INSTRUCTOR_ID });
     });
 
     it("should throw ForbiddenException if policy denied", async () => {
@@ -186,6 +240,7 @@ describe("InstructorService", () => {
       await expect(service.delete(INSTRUCTOR_ID, OTHER_ID, APPLIED_OWN_ONLY)).rejects.toBeInstanceOf(
         ForbiddenException,
       );
+      expect(instructorViewModel.deleteOne).not.toHaveBeenCalled();
     });
 
     it("should throw NotFoundException", async () => {
@@ -202,6 +257,53 @@ describe("InstructorService", () => {
       await expect(service.findOne(INSTRUCTOR_ID, "other", APPLIED_OWN_ONLY)).rejects.toBeInstanceOf(
         ForbiddenException,
       );
+    });
+  });
+
+  describe("findAllView", () => {
+    it("should query mongodb", async () => {
+      const mockExec = jest.fn().mockResolvedValue([{ instructorId: "1", firstName: "A", toObject: () => ({}) }]);
+      const mockLimit = jest.fn().mockReturnValue({ exec: mockExec });
+      const mockSkip = jest.fn().mockReturnValue({ limit: mockLimit });
+      const mockSort = jest.fn().mockReturnValue({ skip: mockSkip });
+      instructorViewModel.find.mockReturnValue({ sort: mockSort });
+      instructorViewModel.countDocuments.mockResolvedValue(10);
+
+      const result = await service.findAllView({
+        page: 1,
+        limit: 10,
+        sortBy: "createdAt",
+        sortOrder: "DESC",
+        search: "John",
+      });
+
+      expect(instructorViewModel.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          $or: expect.arrayContaining([expect.objectContaining({ firstName: expect.any(RegExp) })]),
+        }),
+      );
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].firstName).toBe("A");
+    });
+  });
+
+  describe("findOneView", () => {
+    it("should return view if found", async () => {
+      const mockDoc = { instructorId: "1", firstName: "A" };
+      const mockExec = jest.fn().mockResolvedValue(mockDoc);
+      instructorViewModel.findOne.mockReturnValue({ exec: mockExec });
+
+      const result = await service.findOneView("1");
+
+      expect(instructorViewModel.findOne).toHaveBeenCalledWith({ instructorId: "1" });
+      expect(result.firstName).toBe("A");
+    });
+
+    it("should throw NotFoundException if not found", async () => {
+      const mockExec = jest.fn().mockResolvedValue(null);
+      instructorViewModel.findOne.mockReturnValue({ exec: mockExec });
+
+      await expect(service.findOneView("1")).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 });

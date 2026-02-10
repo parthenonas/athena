@@ -1,8 +1,9 @@
 import { Pageable, Policy } from "@athena/types";
 import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { DataSource, Repository } from "typeorm";
 
+import { OutboxService } from "../../outbox";
 import { CreateEnrollmentDto } from "./dto/create.dto";
 import { FilterEnrollmentDto } from "./dto/filter.dto";
 import { ReadEnrollmentDto } from "./dto/read.dto";
@@ -10,6 +11,8 @@ import { UpdateEnrollmentDto } from "./dto/update.dto";
 import { Enrollment } from "./entities/enrollment.entity";
 import { BaseService } from "../../base/base.service";
 import { IdentityService } from "../../identity";
+import { AthenaEvent, EnrollmentCreatedEvent } from "../../shared/events/types";
+import { Cohort } from "../cohort/entities/cohort.entity";
 
 /**
  * @class EnrollmentService
@@ -30,6 +33,8 @@ export class EnrollmentService extends BaseService<Enrollment> {
     @InjectRepository(Enrollment)
     private readonly repo: Repository<Enrollment>,
     private readonly identityService: IdentityService,
+    private readonly dataSource: DataSource,
+    private readonly outboxService: OutboxService,
   ) {
     super();
   }
@@ -101,21 +106,55 @@ export class EnrollmentService extends BaseService<Enrollment> {
   }
 
   /**
-   * Creates a new enrollment (adds student to cohort).
+   * Creates a new enrollment transactionally and emits an event via Outbox.
+   *
+   * Flow:
+   * 1. Start Transaction.
+   * 2. Find Cohort to retrieve Course ID (needed for Progress).
+   * 3. Create Enrollment record.
+   * 4. Write ENROLLMENT_CREATED event to Outbox.
+   * 5. Commit.
    */
   async create(dto: CreateEnrollmentDto): Promise<ReadEnrollmentDto> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
-      const entity = this.repo.create({
+      const manager = queryRunner.manager;
+      const cohort = await manager.findOne(Cohort, { where: { id: dto.cohortId } });
+
+      if (!cohort) {
+        throw new NotFoundException(`Cohort with id ${dto.cohortId} not found`);
+      }
+
+      const entity = manager.create(Enrollment, {
         cohortId: dto.cohortId,
         ownerId: dto.ownerId,
         status: dto.status,
       });
 
-      const saved = await this.repo.save(entity);
+      const saved = await manager.save(Enrollment, entity);
+
+      const event: EnrollmentCreatedEvent = {
+        id: saved.id,
+        userId: saved.ownerId,
+        cohortId: saved.cohortId,
+        courseId: cohort.courseId,
+      };
+
+      await this.outboxService.save(manager, AthenaEvent.ENROLLMENT_CREATED, event);
+
+      await queryRunner.commitTransaction();
+      this.logger.log(`Enrollment created and event staged | id=${saved.id}`);
       return this.toDto(saved, ReadEnrollmentDto);
     } catch (error) {
-      this.logger.error(`create error: ${(error as Error).message}`);
+      await queryRunner.rollbackTransaction();
+      this.logger.error(`create error: ${(error as Error).message}`, (error as Error).stack);
+
+      if (error instanceof NotFoundException) throw error;
       throw new BadRequestException("Failed to enroll student");
+    } finally {
+      await queryRunner.release();
     }
   }
 

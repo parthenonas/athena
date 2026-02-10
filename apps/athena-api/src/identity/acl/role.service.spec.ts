@@ -5,22 +5,23 @@ jest.mock("../account/entities/account.entity", () => ({
 import { PostgresErrorCode } from "@athena/common";
 import { Permission, Policy } from "@athena/types";
 import { BadRequestException, ConflictException, NotFoundException } from "@nestjs/common";
-import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Test, TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { QueryFailedError, Repository } from "typeorm";
+import { DataSource, QueryFailedError, Repository } from "typeorm";
 
 import { CreateRoleDto } from "./dto/create.dto";
 import { FilterRoleDto } from "./dto/filter.dto";
 import { ReadRoleDto } from "./dto/read.dto";
 import { Role } from "./entities/role.entity";
 import { RoleService } from "./role.service";
+import { OutboxService } from "../../outbox";
 import { AthenaEvent } from "../../shared/events/types";
 
 describe("RoleService", () => {
   let service: RoleService;
   let repo: jest.Mocked<Repository<Role>>;
-  let eventEmitter: jest.Mocked<EventEmitter2>;
+  let dataSource: jest.Mocked<DataSource>;
+  let outboxService: jest.Mocked<OutboxService>;
 
   const mockRole: Role = {
     id: "role-1",
@@ -49,6 +50,20 @@ describe("RoleService", () => {
     policies: mockRole.policies,
   };
 
+  const queryRunnerMock = {
+    connect: jest.fn(),
+    startTransaction: jest.fn(),
+    commitTransaction: jest.fn(),
+    rollbackTransaction: jest.fn(),
+    release: jest.fn(),
+    manager: {
+      findOne: jest.fn(),
+      save: jest.fn(),
+      remove: jest.fn(),
+      create: jest.fn(),
+    },
+  };
+
   const createQueryBuilderMock = () => {
     const qb: any = {
       where: jest.fn().mockReturnThis(),
@@ -65,6 +80,7 @@ describe("RoleService", () => {
 
   beforeEach(async () => {
     qbMock = createQueryBuilderMock();
+    jest.clearAllMocks();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -81,10 +97,15 @@ describe("RoleService", () => {
           },
         },
         {
-          provide: EventEmitter2,
+          provide: DataSource,
           useValue: {
-            emit: jest.fn(),
-            emitAsync: jest.fn(),
+            createQueryRunner: jest.fn().mockReturnValue(queryRunnerMock),
+          },
+        },
+        {
+          provide: OutboxService,
+          useValue: {
+            save: jest.fn(),
           },
         },
       ],
@@ -92,7 +113,8 @@ describe("RoleService", () => {
 
     service = module.get<RoleService>(RoleService);
     repo = module.get(getRepositoryToken(Role));
-    eventEmitter = module.get(EventEmitter2);
+    dataSource = module.get(DataSource);
+    outboxService = module.get(OutboxService);
   });
 
   describe("findAll (pagination + search + sort)", () => {
@@ -263,48 +285,63 @@ describe("RoleService", () => {
 
   describe("delete", () => {
     it("should delete a role", async () => {
-      repo.findOne.mockResolvedValue(mockRole);
-
-      repo.remove.mockResolvedValue(mockRole);
+      queryRunnerMock.manager.findOne.mockResolvedValue(mockRole);
+      queryRunnerMock.manager.remove.mockResolvedValue(mockRole);
 
       await expect(service.delete("role-1")).resolves.toBeUndefined();
 
-      expect(repo.findOne).toHaveBeenCalledWith({ where: { id: "role-1" } });
-      expect(repo.remove).toHaveBeenCalledWith(mockRole);
-      expect(eventEmitter.emit).toHaveBeenCalledWith(AthenaEvent.ROLE_DELETED, { name: mockRole.name });
+      expect(dataSource.createQueryRunner).toHaveBeenCalled();
+      expect(queryRunnerMock.connect).toHaveBeenCalled();
+      expect(queryRunnerMock.startTransaction).toHaveBeenCalled();
+
+      expect(queryRunnerMock.manager.findOne).toHaveBeenCalledWith(Role, { where: { id: "role-1" } });
+      expect(queryRunnerMock.manager.remove).toHaveBeenCalledWith(Role, mockRole);
+
+      expect(outboxService.save).toHaveBeenCalledWith(queryRunnerMock.manager, AthenaEvent.ROLE_DELETED, {
+        name: mockRole.name,
+      });
+      expect(queryRunnerMock.commitTransaction).toHaveBeenCalled();
+      expect(queryRunnerMock.release).toHaveBeenCalled();
     });
 
     it("should throw NotFoundException if role does not exist", async () => {
-      repo.findOne.mockResolvedValue(null);
+      queryRunnerMock.manager.findOne.mockResolvedValue(null);
 
       await expect(service.delete("x")).rejects.toBeInstanceOf(NotFoundException);
-      expect(repo.remove).not.toHaveBeenCalled();
+
+      expect(queryRunnerMock.startTransaction).toHaveBeenCalled();
+      expect(queryRunnerMock.rollbackTransaction).toHaveBeenCalled();
+      expect(queryRunnerMock.manager.remove).not.toHaveBeenCalled();
+      expect(outboxService.save).not.toHaveBeenCalled();
+      expect(queryRunnerMock.release).toHaveBeenCalled();
     });
 
     it("should throw ConflictException on FK violation", async () => {
-      repo.findOne.mockResolvedValue(mockRole);
+      queryRunnerMock.manager.findOne.mockResolvedValue(mockRole);
 
       const pgError: any = new QueryFailedError("fk error", [], new Error());
       pgError.code = PostgresErrorCode.FOREIGN_KEY_VIOLATION;
       pgError.constraint = "accounts__role_id__fk";
 
-      repo.remove.mockRejectedValue(pgError);
+      queryRunnerMock.manager.remove.mockRejectedValue(pgError);
 
       await expect(service.delete("role-1")).rejects.toMatchObject({
         constructor: ConflictException,
         message: "Cannot delete role: it is used by existing accounts",
       });
+
+      expect(queryRunnerMock.rollbackTransaction).toHaveBeenCalled();
+      expect(queryRunnerMock.release).toHaveBeenCalled();
     });
 
     it("should throw BadRequestException on other db errors", async () => {
-      repo.findOne.mockResolvedValue(mockRole);
-
+      queryRunnerMock.manager.findOne.mockResolvedValue(mockRole);
       const pgError: any = new Error("some db error");
-      pgError.code = "99999";
 
-      repo.remove.mockRejectedValue(pgError);
+      queryRunnerMock.manager.remove.mockRejectedValue(pgError);
 
       await expect(service.delete("role-1")).rejects.toBeInstanceOf(BadRequestException);
+      expect(queryRunnerMock.rollbackTransaction).toHaveBeenCalled();
     });
   });
 

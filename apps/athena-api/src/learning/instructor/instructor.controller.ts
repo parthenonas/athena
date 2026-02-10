@@ -17,6 +17,7 @@ import type { Request } from "express";
 
 import { CreateInstructorDto } from "./dto/create.dto";
 import { FilterInstructorDto } from "./dto/filter.dto";
+import { ReadInstructorViewDto } from "./dto/read-view.dto";
 import { ReadInstructorDto } from "./dto/read.dto";
 import { UpdateInstructorDto } from "./dto/update.dto";
 import { InstructorService } from "./instructor.service";
@@ -53,6 +54,26 @@ export class InstructorController {
   ): Promise<Pageable<ReadInstructorDto>> {
     const appliedPolicies = req.appliedPolicies || [];
     return this.service.findAll(filters, userId, appliedPolicies);
+  }
+
+  /**
+   * GET /instructors
+   * Public catalog of instructors.
+   * Reads from MongoDB Projection.
+   */
+  @Get("/public")
+  async findAllView(@Query() filters: FilterInstructorDto): Promise<Pageable<ReadInstructorViewDto>> {
+    return this.service.findAllView(filters);
+  }
+
+  /**
+   * GET /instructors/public/:id
+   * Public single instructor view.
+   * Reads from MongoDB Projection.
+   */
+  @Get("/public/:id")
+  async findOneView(@Param("id") id: string): Promise<ReadInstructorViewDto> {
+    return this.service.findOneView(id);
   }
 
   /**

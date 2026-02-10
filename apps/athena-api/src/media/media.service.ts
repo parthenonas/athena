@@ -21,7 +21,6 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { OnEvent } from "@nestjs/event-emitter";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { v4 as uuid } from "uuid";
@@ -33,7 +32,6 @@ import { StorageUsageDto } from "./dto/usage.dto";
 import { StoredFile } from "./entities/stored-file.entity";
 import { BaseService } from "../base/base.service";
 import { MediaQuota } from "./entities/media-quota.entity";
-import { AthenaEvent } from "../shared/events/types";
 
 /**
  * @class MediaService
@@ -375,21 +373,6 @@ export class MediaService extends BaseService<StoredFile> implements OnModuleIni
 
     if (result.affected === 0) {
       this.logger.warn(`deleteQuota() | No quota found for role=${roleName} (already default)`);
-    }
-  }
-
-  /**
-   * EVENT LISTENER: Cleans up quota when a role is deleted.
-   * Decoupled communication between Identity and Media modules.
-   */
-  @OnEvent(AthenaEvent.ROLE_DELETED)
-  async handleRoleDeletedEvent(payload: { name: string }) {
-    this.logger.log(`Event "role.deleted" received for role="${payload.name}". Cleaning up quotas...`);
-
-    const result = await this.quotaRepo.delete({ roleName: payload.name });
-
-    if (result.affected) {
-      this.logger.log(`Quota for role="${payload.name}" deleted.`);
     }
   }
 

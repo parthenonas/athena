@@ -1,7 +1,3 @@
-jest.mock("../profile-record/entities/profile-record.entity", () => ({
-  ProfileRecord: class MockProfileRecord {},
-}));
-
 jest.mock("argon2", () => ({
   verify: jest.fn(),
   hash: jest.fn(),
@@ -41,7 +37,7 @@ describe("AccountService", () => {
       updatedAt: new Date(),
     },
     status: "active" as any,
-    profileRecords: [],
+    profile: undefined,
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,

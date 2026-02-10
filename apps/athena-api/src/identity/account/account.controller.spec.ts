@@ -26,7 +26,7 @@ describe("AccountController", () => {
     roleId: "role-1",
     role: undefined as any,
     status: "active" as any,
-    profileRecords: [],
+    profile: undefined,
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,

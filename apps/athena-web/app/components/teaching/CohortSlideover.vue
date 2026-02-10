@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
-import type { CreateCohortRequest, UpdateCohortRequest, FilterInstructorRequest, InstructorResponse, FilterCourseRequest, CourseResponse } from '@athena/types'
+import type { CreateCohortRequest, UpdateCohortRequest, FilterInstructorRequest, FilterCourseRequest, CourseResponse, InstructorView } from '@athena/types'
 import type { SelectMenuItem } from '@nuxt/ui'
 
 const props = defineProps<{
@@ -12,7 +12,7 @@ const props = defineProps<{
 const emit = defineEmits(['update:modelValue', 'success'])
 
 const { t } = useI18n()
-const { createCohort, updateCohort, fetchCohort, fetchInstructors, fetchInstructor } = useTeaching()
+const { createCohort, updateCohort, fetchCohort, fetchInstructorsView, fetchInstructorView } = useTeaching()
 const { fetchCourses } = useStudio()
 
 const isOpen = computed({
@@ -55,20 +55,20 @@ watchDebounced(instructorSearch, (val) => {
   instructorFilters.search = val
 }, { debounce: 500, maxWait: 1000 })
 
-const { data: fetchedInstructors, pending: pendingInstructors } = await fetchInstructors(instructorFilters)
-const specificInstructor = ref<InstructorResponse | null>(null)
+const { data: fetchedInstructors, pending: pendingInstructors } = await fetchInstructorsView(instructorFilters)
+const specificInstructor = ref<InstructorView | null>(null)
 
 const instructorOptions = computed<SelectMenuItem[]>(() => {
   const list = fetchedInstructors.value?.data || []
   const result = [...list]
 
-  if (specificInstructor.value && !list.find(i => i.id === specificInstructor.value?.id)) {
+  if (specificInstructor.value && !list.find(i => i.instructorId === specificInstructor.value?.instructorId)) {
     result.push(specificInstructor.value)
   }
 
   return result.map(inst => ({
-    id: inst.id,
-    label: inst.title
+    id: inst.instructorId,
+    label: `${inst.firstName} ${inst.lastName} (${inst.title})`
   }))
 })
 
@@ -116,10 +116,10 @@ watch(isOpen, async (val) => {
         state.endDate = toCalendarDateTime(cohort.endDate)
 
         const currentList = fetchedInstructors.value?.data || []
-        const instructorExists = currentList.find(i => i.id === cohort.instructorId)
+        const instructorExists = currentList.find(i => i.instructorId === cohort.instructorId)
         if (cohort.instructorId && !instructorExists) {
           try {
-            const instructorData = await fetchInstructor(cohort.instructorId)
+            const instructorData = await fetchInstructorView(cohort.instructorId)
             specificInstructor.value = instructorData
           } catch (e) {
             console.error('Failed to load specific account', e)

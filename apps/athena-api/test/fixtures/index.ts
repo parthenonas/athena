@@ -1,16 +1,23 @@
 import { Permission, BlockType, EnrollmentStatus } from "@athena/types";
 import { INestApplication } from "@nestjs/common";
+import { CommandBus } from "@nestjs/cqrs";
+import { getModelToken } from "@nestjs/mongoose";
 import { getRepositoryToken } from "@nestjs/typeorm";
+import { Model } from "mongoose";
 import request from "supertest";
 import { DataSource, Repository } from "typeorm";
+import { v4 as uuid } from "uuid";
 
 import { Block } from "../../src/content/block/entities/block.entity";
 import { Course } from "../../src/content/course/entities/course.entity";
 import { Lesson } from "../../src/content/lesson/entities/lesson.entity";
 import { IdentityService } from "../../src/identity";
+import { Profile } from "../../src/identity/profile/entities/profile.entity";
 import { Cohort } from "../../src/learning/cohort/entities/cohort.entity";
 import { Enrollment } from "../../src/learning/enrollment/entities/enrollment.entity";
 import { Instructor } from "../../src/learning/instructor/entities/instructor.entity";
+import { InstructorView } from "../../src/learning/instructor/schemas/instructor-view.schema";
+import { InitializeProgressCommand } from "../../src/learning/progress/application/commands/initialize-progress.command";
 import { Schedule } from "../../src/learning/schedule/entities/schedule.entity";
 
 export class TestFixtures {
@@ -21,6 +28,9 @@ export class TestFixtures {
   private readonly cohortRepo: Repository<Cohort>;
   private readonly enrollmentRepo: Repository<Enrollment>;
   private readonly scheduleRepo: Repository<Schedule>;
+  private readonly profileRepo: Repository<Profile>;
+  private readonly instructorViewModel: Model<InstructorView>;
+  private readonly commandBus: CommandBus;
 
   constructor(
     private readonly app: INestApplication,
@@ -34,6 +44,9 @@ export class TestFixtures {
     this.cohortRepo = this.app.get(getRepositoryToken(Cohort));
     this.enrollmentRepo = this.app.get(getRepositoryToken(Enrollment));
     this.scheduleRepo = this.app.get(getRepositoryToken(Schedule));
+    this.profileRepo = this.app.get(getRepositoryToken(Profile));
+    this.instructorViewModel = this.app.get(getModelToken(InstructorView.name));
+    this.commandBus = this.app.get(CommandBus);
   }
 
   async resetDatabase() {
@@ -41,6 +54,10 @@ export class TestFixtures {
 
     for (const entity of entities) {
       await this.dataSource.query(`TRUNCATE TABLE "${entity.tableName}" RESTART IDENTITY CASCADE;`);
+    }
+
+    if (this.instructorViewModel) {
+      await this.instructorViewModel.deleteMany({});
     }
   }
 
@@ -96,12 +113,24 @@ export class TestFixtures {
     return res.body.accessToken;
   }
 
+  async createProfile(args: Partial<Profile> = {}): Promise<Profile> {
+    const defaultData = {
+      firstName: "Test",
+      lastName: "User",
+      ownerId: args.ownerId || uuid(),
+      metadata: {},
+    };
+
+    const entity = this.profileRepo.create({ ...defaultData, ...args });
+    return this.profileRepo.save(entity);
+  }
+
   async createCourse(args: Partial<Course> = {}): Promise<Course> {
     const defaultData = {
       title: "Test Course",
       description: "Default Desc",
       isPublished: false,
-      ownerId: "user-1",
+      ownerId: uuid(),
     };
 
     const entity = this.courseRepo.create({ ...defaultData, ...args });
@@ -121,7 +150,7 @@ export class TestFixtures {
 
   async createBlock(args: Partial<Block> = {}): Promise<Block> {
     const defaultData = {
-      lessonId: args.lessonId || "temp-lesson-id-for-block",
+      lessonId: args.lessonId || uuid(),
       orderIndex: 1024,
       type: BlockType.Text,
       content: { json: { default: true } },
@@ -133,13 +162,29 @@ export class TestFixtures {
 
   async createInstructor(args: Partial<Instructor> = {}): Promise<Instructor> {
     const defaultData = {
-      ownerId: "user-1",
+      ownerId: uuid(),
       bio: "Default Bio",
       title: "Default Title",
     };
 
     const entity = this.instructorRepo.create({ ...defaultData, ...args });
-    return this.instructorRepo.save(entity);
+    const saved = await this.instructorRepo.save(entity);
+
+    const profile = await this.profileRepo.findOne({ where: { ownerId: saved.ownerId } });
+
+    if (this.instructorViewModel) {
+      await this.instructorViewModel.create({
+        instructorId: saved.id,
+        ownerId: saved.ownerId,
+        title: saved.title!,
+        bio: saved.bio!,
+        firstName: profile?.firstName || "Unknown",
+        lastName: profile?.lastName || "Unknown",
+        avatarUrl: profile?.avatarUrl || "",
+      });
+    }
+
+    return saved;
   }
 
   async createCohort(args: Partial<Cohort> = {}): Promise<Cohort> {
@@ -159,6 +204,23 @@ export class TestFixtures {
 
     const entity = this.enrollmentRepo.create({ ...defaultData, ...args });
     return this.enrollmentRepo.save(entity);
+  }
+
+  async enrollStudentWithProgress(args: {
+    userId: string;
+    cohortId: string;
+    courseId: string;
+    status?: EnrollmentStatus;
+  }): Promise<Enrollment> {
+    const enrollment = await this.createEnrollment({
+      ownerId: args.userId,
+      cohortId: args.cohortId,
+      status: args.status || EnrollmentStatus.Active,
+    });
+
+    await this.commandBus.execute(new InitializeProgressCommand(enrollment.id, args.courseId, args.userId));
+
+    return enrollment;
   }
 
   async createSchedule(args: Partial<Schedule> = {}): Promise<Schedule> {

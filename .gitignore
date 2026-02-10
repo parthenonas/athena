@@ -48,3 +48,5 @@ vitest.config.*.timestamp*
 test-output
 
 .env
+
+*.py

@@ -12,3 +12,5 @@ export * from "./enrollment";
 export * from "./schedule";
 export * from "./cohort";
 export * from "./instructor";
+export * from "./progress";
+export * from "./profile";
