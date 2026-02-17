@@ -204,6 +204,13 @@
       "confirm-password": "Повторите новый пароль",
       "change-password-btn": "Обновить пароль",
       "password-changed": "Пароль успешно изменен",
+      "profile-title": "Профиль",
+      "first-name": "Имя",
+      "last-name": "Фамилия",
+      "patronymic": "Отчество",
+      "save-profile-btn": "Сохранить изменения",
+      "remove-avatar": "Удалить фото",
+      "upload-avatar": "Загрузить фото",
       "errors": {
         "old-password-required": "Введите текущий пароль",
         "passwords-mismatch": "Пароли не совпадают"

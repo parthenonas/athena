@@ -107,6 +107,17 @@ const onFileSelect = async (event: Event) => {
   }
 }
 
+const onRemoveAvatar = async () => {
+  isProfileLoading.value = true
+  try {
+    await updateMe({ avatarUrl: null })
+
+    profileState.avatarUrl = ''
+  } finally {
+    isProfileLoading.value = false
+  }
+}
+
 const onProfileSubmit = async (event: FormSubmitEvent<ProfileSchema>) => {
   isProfileLoading.value = true
   try {
@@ -140,7 +151,6 @@ const { formatDate } = useAppDate()
         v-if="accountStatus === 'pending'"
         class="flex items-center gap-4 animate-pulse"
       >
-        <USkeleton class="h-20 w-20 rounded-full" />
         <div class="space-y-2">
           <USkeleton class="h-4 w-32" />
           <USkeleton class="h-4 w-24" />
@@ -151,12 +161,6 @@ const { formatDate } = useAppDate()
         v-else-if="me"
         class="flex items-start md:items-center gap-6"
       >
-        <UAvatar
-          :alt="me.login"
-          size="3xl"
-          class="font-display uppercase"
-        />
-
         <div class="flex-1 space-y-1">
           <div class="flex items-center gap-3 flex-wrap">
             <h2 class="text-xl font-bold font-display">
@@ -215,22 +219,37 @@ const { formatDate } = useAppDate()
               size="3xl"
               class="ring-4 ring-white dark:ring-gray-900"
             />
-            <button
-              class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white"
-              :disabled="isProfileLoading"
-              @click="triggerFileInput"
-            >
-              <UIcon
-                name="i-lucide-camera"
-                class="w-6 h-6"
-              />
-            </button>
-          </div>
 
-          <div class="text-xs text-gray-500 text-center max-w-37.5">
-            Allowed *.jpeg, *.jpg, *.png, *.webp
-            <br>
-            Max 5 MB
+            <div
+              class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <button
+                type="button"
+                class="text-white hover:text-primary-400 transition-colors"
+                :title="$t('pages.settings.upload-avatar')"
+                :disabled="isProfileLoading"
+                @click="triggerFileInput"
+              >
+                <UIcon
+                  name="i-lucide-camera"
+                  class="w-6 h-6"
+                />
+              </button>
+
+              <button
+                v-if="profileState.avatarUrl"
+                type="button"
+                class="text-white hover:text-error-400 transition-colors"
+                :title="$t('pages.settings.remove-avatar')"
+                :disabled="isProfileLoading"
+                @click="onRemoveAvatar"
+              >
+                <UIcon
+                  name="i-lucide-trash-2"
+                  class="w-6 h-6"
+                />
+              </button>
+            </div>
           </div>
 
           <input
@@ -250,33 +269,42 @@ const { formatDate } = useAppDate()
         >
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <UFormField
-              label="First Name"
+              :label="$t('pages.settings.first-name')"
               name="firstName"
               required
             >
-              <UInput v-model="profileState.firstName" />
+              <UInput
+                v-model="profileState.firstName"
+                class="w-full"
+              />
             </UFormField>
 
             <UFormField
-              label="Last Name"
+              :label="$t('pages.settings.last-name')"
               name="lastName"
               required
             >
-              <UInput v-model="profileState.lastName" />
+              <UInput
+                v-model="profileState.lastName"
+                class="w-full"
+              />
+            </UFormField>
+
+            <UFormField
+              :label="$t('pages.settings.patronymic')"
+              name="patronymic"
+            >
+              <UInput
+                v-model="profileState.patronymic"
+                class="w-full"
+              />
             </UFormField>
           </div>
-
-          <UFormField
-            label="Patronymic"
-            name="patronymic"
-          >
-            <UInput v-model="profileState.patronymic" />
-          </UFormField>
 
           <div class="flex justify-end pt-2">
             <UButton
               type="submit"
-              label="Save Profile"
+              :label="$t('pages.settings.save-profile-btn')"
               color="primary"
               :loading="isProfileLoading"
             />
@@ -300,48 +328,53 @@ const { formatDate } = useAppDate()
       <UForm
         :schema="schema"
         :state="state"
-        class="space-y-4 max-w-lg"
+        class="flex-1 space-y-4"
         @submit="onSubmit"
       >
-        <UFormField
-          :label="$t('pages.settings.old-password')"
-          name="oldPassword"
-          required
-        >
-          <UInput
-            v-model="state.oldPassword"
-            type="password"
-            autocomplete="current-password"
-          />
-        </UFormField>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <UFormField
+            :label="$t('pages.settings.old-password')"
+            name="oldPassword"
+            required
+          >
+            <UInput
+              v-model="state.oldPassword"
+              class="w-full"
+              type="password"
+              autocomplete="current-password"
+            />
+          </UFormField>
+          <div />
 
-        <USeparator class="my-2" />
+          <UFormField
 
-        <UFormField
-          :label="$t('pages.settings.new-password')"
-          name="newPassword"
-          required
-        >
-          <UInput
-            v-model="state.newPassword"
-            type="password"
-            autocomplete="new-password"
-          />
-        </UFormField>
+            :label="$t('pages.settings.new-password')"
+            name="newPassword"
+            required
+          >
+            <UInput
+              v-model="state.newPassword"
+              class="w-full"
+              type="password"
+              autocomplete="new-password"
+            />
+          </UFormField>
 
-        <UFormField
-          :label="$t('pages.settings.confirm-password')"
-          name="confirmPassword"
-          required
-        >
-          <UInput
-            v-model="state.confirmPassword"
-            type="password"
-            autocomplete="new-password"
-          />
-        </UFormField>
+          <UFormField
+            :label="$t('pages.settings.confirm-password')"
+            name="confirmPassword"
+            required
+          >
+            <UInput
+              v-model="state.confirmPassword"
+              class="w-full"
+              type="password"
+              autocomplete="new-password"
+            />
+          </UFormField>
+        </div>
 
-        <div class="pt-2">
+        <div class="flex justify-end pt-2">
           <UButton
             type="submit"
             :label="$t('pages.settings.change-password-btn')"
