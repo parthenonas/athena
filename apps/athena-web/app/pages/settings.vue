@@ -242,6 +242,7 @@ const { formatDate } = useAppDate()
                 class="text-white hover:text-error-400 transition-colors"
                 :title="$t('pages.settings.remove-avatar')"
                 :disabled="isProfileLoading"
+                data-testid="remove-avatar-btn"
                 @click="onRemoveAvatar"
               >
                 <UIcon
