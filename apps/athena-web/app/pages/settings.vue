@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
-import { PASSWORD_REGEX } from '@athena/common'
+import { PASSWORD_REGEX, MAX_NAME_LENGTH, MIN_NAME_LENGTH } from '@athena/common'
+import { FileAccess } from '@athena/types'
 
 definePageMeta({
   layout: 'dashboard'
@@ -9,8 +10,39 @@ definePageMeta({
 
 const { t } = useI18n()
 const { fetchAccount, changePassword } = useAccounts()
+const { fetchMe, updateMe, createMe } = useProfiles()
+const { uploadFile } = useMedia()
 
-const { data: me, status } = await useAsyncData('me', () => fetchAccount('me'))
+const { data: me, status: accountStatus } = await useAsyncData('me', () => fetchAccount('me'))
+const { data: profile, status: profileStatus, refresh } = await useAsyncData('profile-me', () => fetchMe())
+
+const isProfileLoading = ref(false)
+const fileInput = ref<HTMLInputElement | null>(null)
+
+const profileState = reactive({
+  firstName: '',
+  lastName: '',
+  patronymic: '',
+  avatarUrl: ''
+})
+
+watch(profile, (newVal) => {
+  if (newVal) {
+    profileState.firstName = newVal.firstName
+    profileState.lastName = newVal.lastName
+    profileState.patronymic = newVal.patronymic || ''
+    profileState.avatarUrl = newVal.avatarUrl || ''
+  }
+}, { immediate: true })
+
+const profileSchema = z.object({
+  firstName: z.string().min(MIN_NAME_LENGTH).max(MAX_NAME_LENGTH),
+  lastName: z.string().min(MIN_NAME_LENGTH).max(MAX_NAME_LENGTH),
+  patronymic: z.string().max(MAX_NAME_LENGTH).optional(),
+  avatarUrl: z.string().optional()
+})
+
+type ProfileSchema = z.output<typeof profileSchema>
 
 const isLoading = ref(false)
 
@@ -50,6 +82,45 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   }
 }
 
+const triggerFileInput = () => {
+  fileInput.value?.click()
+}
+
+const onFileSelect = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  if (!target.files?.length) return
+
+  const file = target.files[0]
+  isProfileLoading.value = true
+
+  try {
+    const uploaded = await uploadFile(file!, FileAccess.Public)
+
+    profileState.avatarUrl = uploaded.url
+
+    if (profile.value) {
+      await updateMe({ avatarUrl: uploaded.url })
+    }
+  } finally {
+    isProfileLoading.value = false
+    if (fileInput.value) fileInput.value.value = ''
+  }
+}
+
+const onProfileSubmit = async (event: FormSubmitEvent<ProfileSchema>) => {
+  isProfileLoading.value = true
+  try {
+    if (profile.value) {
+      await updateMe(event.data)
+    } else {
+      await createMe(event.data)
+      await refresh()
+    }
+  } finally {
+    isProfileLoading.value = false
+  }
+}
+
 const { formatDate } = useAppDate()
 </script>
 
@@ -66,7 +137,7 @@ const { formatDate } = useAppDate()
 
     <UCard>
       <div
-        v-if="status === 'pending'"
+        v-if="accountStatus === 'pending'"
         class="flex items-center gap-4 animate-pulse"
       >
         <USkeleton class="h-20 w-20 rounded-full" />
@@ -106,6 +177,111 @@ const { formatDate } = useAppDate()
             <span class="text-gray-500 ">{{ $t('pages.settings.member-since', { date: formatDate(me.createdAt) }) }}</span>
           </div>
         </div>
+      </div>
+    </UCard>
+
+    <UCard>
+      <template #header>
+        <div class="flex items-center gap-2">
+          <UIcon name="i-lucide-user" />
+          <h3 class="font-display font-semibold">
+            {{ $t('pages.settings.profile-title') || 'Personal Information' }}
+          </h3>
+        </div>
+      </template>
+
+      <div
+        v-if="profileStatus === 'pending'"
+        class="space-y-4 animate-pulse"
+      >
+        <div class="flex items-center gap-4">
+          <USkeleton class="h-20 w-20 rounded-full" />
+          <div class="space-y-2 flex-1">
+            <USkeleton class="h-8 w-1/3" />
+            <USkeleton class="h-4 w-1/4" />
+          </div>
+        </div>
+      </div>
+
+      <div
+        v-else
+        class="flex flex-col md:flex-row gap-8"
+      >
+        <div class="flex flex-col items-center gap-4">
+          <div class="relative group">
+            <UAvatar
+              :src="profileState.avatarUrl"
+              :alt="profileState.firstName"
+              size="3xl"
+              class="ring-4 ring-white dark:ring-gray-900"
+            />
+            <button
+              class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white"
+              :disabled="isProfileLoading"
+              @click="triggerFileInput"
+            >
+              <UIcon
+                name="i-lucide-camera"
+                class="w-6 h-6"
+              />
+            </button>
+          </div>
+
+          <div class="text-xs text-gray-500 text-center max-w-37.5">
+            Allowed *.jpeg, *.jpg, *.png, *.webp
+            <br>
+            Max 5 MB
+          </div>
+
+          <input
+            ref="fileInput"
+            type="file"
+            accept="image/*"
+            class="hidden"
+            @change="onFileSelect"
+          >
+        </div>
+
+        <UForm
+          :schema="profileSchema"
+          :state="profileState"
+          class="flex-1 space-y-4"
+          @submit="onProfileSubmit"
+        >
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <UFormField
+              label="First Name"
+              name="firstName"
+              required
+            >
+              <UInput v-model="profileState.firstName" />
+            </UFormField>
+
+            <UFormField
+              label="Last Name"
+              name="lastName"
+              required
+            >
+              <UInput v-model="profileState.lastName" />
+            </UFormField>
+          </div>
+
+          <UFormField
+            label="Patronymic"
+            name="patronymic"
+          >
+            <UInput v-model="profileState.patronymic" />
+          </UFormField>
+
+          <div class="flex justify-end pt-2">
+            <UButton
+              type="submit"
+              label="Save Profile"
+              color="primary"
+              :loading="isProfileLoading"
+            />
+          </div>
+        </UForm>
       </div>
     </UCard>
 

@@ -691,6 +691,16 @@
         "title": "Profile updated",
         "description": "Profile details have been successfully saved.",
         "error": "Failed to update profile"
+      },
+      "me-created": {
+        "title": "Welcome!",
+        "description": "Your profile has been set up successfully.",
+        "error": "Failed to set up your profile."
+      },
+      "me-updated": {
+        "title": "Saved",
+        "description": "Your personal information has been updated.",
+        "error": "Failed to save your changes."
       }
     },
     "quotas": {
