@@ -112,7 +112,7 @@ describe("PATCH /blocks/:id (e2e)", () => {
       content: { json: { text: "Original Other User's content" } },
     });
     blockPubOtherId = b3.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

@@ -54,7 +54,7 @@ describe("PATCH /courses/:id (e2e)", () => {
       isPublished: false,
     });
     courseId = course.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

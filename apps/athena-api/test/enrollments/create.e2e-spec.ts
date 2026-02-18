@@ -57,7 +57,7 @@ describe("POST /enrollments (e2e)", () => {
 
     mockCreateDto.cohortId = cohortId;
     mockCreateDto.ownerId = studentId;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

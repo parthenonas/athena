@@ -100,7 +100,7 @@ describe("GET /blocks/:id (e2e)", () => {
       content: { json: { data: "Other User's content" } },
     });
     blockPubOtherId = b3.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

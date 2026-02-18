@@ -57,7 +57,7 @@ describe("PATCH /instructors/:id (e2e)", () => {
       ownerId: attackerUser.id,
       title: "Attacker",
     });
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

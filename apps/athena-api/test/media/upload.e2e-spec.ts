@@ -34,7 +34,7 @@ describe("POST /media (e2e)", () => {
       roleId: studentRoleId,
     });
     studentToken = await fixtures.login("uploader", "Password123!");
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

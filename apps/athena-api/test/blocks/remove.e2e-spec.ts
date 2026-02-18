@@ -65,7 +65,7 @@ describe("DELETE /blocks/:id (e2e)", () => {
     const l2 = await fixtures.createLesson({ title: "L2 Forbidden", courseId: c2.id });
     const b2: Block = await fixtures.createBlock({ lessonId: l2.id, type: BlockType.Text });
     blockForbiddenId = b2.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

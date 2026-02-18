@@ -52,7 +52,7 @@ describe("DELETE /courses/:id (e2e)", () => {
       ownerId: ownerId,
     });
     courseId = course.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

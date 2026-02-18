@@ -73,6 +73,18 @@ export class LessonController {
   }
 
   /**
+   * GET /lessons/:id/view
+   * Returns the aggregated MongoDB Read Model (Lesson + all Blocks).
+   * Intended for Studio (Authors/Admins). Contains sensitive block data.
+   */
+  @Get(":id/view")
+  @RequirePermission(Permission.LESSONS_READ)
+  async findOneView(@Param("id") id: string, @CurrentUser("sub") userId: string, @Req() req: Request) {
+    const appliedPolicies = req.appliedPolicies || [];
+    return this.service.findOneView(id, userId, appliedPolicies);
+  }
+
+  /**
    * POST /lessons
    * Creates a new lesson.
    * Service verifies that the user owns the parent course.

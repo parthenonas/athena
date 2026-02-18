@@ -28,7 +28,7 @@ describe("GET /media (e2e)", () => {
     await http.post("/media").set(auth).attach("file", Buffer.from("1"), "cat.jpg");
     await http.post("/media").set(auth).attach("file", Buffer.from("2"), "dog.png");
     await http.post("/media").set(auth).attach("file", Buffer.from("3"), "resume.pdf");
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

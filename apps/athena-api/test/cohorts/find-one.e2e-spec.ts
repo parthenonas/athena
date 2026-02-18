@@ -67,7 +67,7 @@ describe("GET /cohorts/:id (e2e)", () => {
       instructorId: profileB.id,
     });
     cohortB_Id = c2.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

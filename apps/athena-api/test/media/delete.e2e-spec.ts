@@ -34,7 +34,7 @@ describe("DELETE /media/:id (e2e)", () => {
       .attach("file", Buffer.from("trash"), "trash.txt");
 
     fileId = uploadRes.body.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

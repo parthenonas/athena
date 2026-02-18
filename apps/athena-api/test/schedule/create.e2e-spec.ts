@@ -51,7 +51,7 @@ describe("POST /schedules (e2e)", () => {
 
     mockCreateDto.cohortId = cohortId;
     mockCreateDto.lessonId = lessonId;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

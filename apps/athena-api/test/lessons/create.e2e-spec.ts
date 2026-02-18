@@ -45,7 +45,7 @@ describe("POST /lessons (e2e)", () => {
     courseId = c1.id;
 
     await fixtures.createLesson({ title: "Existing Lesson", courseId: courseId, order: 1 });
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

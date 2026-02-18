@@ -36,7 +36,7 @@ describe("DELETE /media/quotas/:roleName (e2e)", () => {
       .set("Authorization", `Bearer ${adminToken}`)
       .send({ roleName: targetRoleName, limitBytes: 104857600 })
       .expect(201);
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

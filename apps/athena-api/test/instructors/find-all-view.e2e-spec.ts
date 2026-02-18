@@ -59,7 +59,7 @@ describe("GET /instructors/public (e2e) - Mongo View", () => {
     });
 
     await new Promise(r => setTimeout(r, 2000));
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

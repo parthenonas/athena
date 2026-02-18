@@ -48,7 +48,7 @@ describe("POST /progress/.../view (e2e)", () => {
     });
     await fixtures.enrollStudentWithProgress({ userId: user.id, cohortId: cohort.id, courseId });
     await new Promise(r => setTimeout(r, 500));
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

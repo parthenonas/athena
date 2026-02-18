@@ -45,6 +45,7 @@ describe("LessonController", () => {
           useValue: {
             findAll: jest.fn(),
             findOne: jest.fn(),
+            findOneView: jest.fn(),
             create: jest.fn(),
             update: jest.fn(),
             softDelete: jest.fn(),
@@ -109,6 +110,21 @@ describe("LessonController", () => {
 
       expect(service.findOne).toHaveBeenCalledWith(LESSON_ID, USER_ID, policies);
       expect(result).toEqual(mockReadLesson);
+    });
+  });
+
+  describe("findOneView", () => {
+    it("should return the aggregated lesson view from MongoDB", async () => {
+      const policies = [Policy.OWN_ONLY];
+      const req = { appliedPolicies: policies } as unknown as Request;
+
+      const mockLessonView = { lessonId: LESSON_ID, blocks: [] } as any;
+      service.findOneView.mockResolvedValue(mockLessonView);
+
+      const result = await controller.findOneView(LESSON_ID, USER_ID, req);
+
+      expect(service.findOneView).toHaveBeenCalledWith(LESSON_ID, USER_ID, policies);
+      expect(result).toEqual(mockLessonView);
     });
   });
 

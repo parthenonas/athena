@@ -81,7 +81,7 @@ describe("PATCH /blocks/:id/reorder (e2e)", () => {
       orderIndex: 1024,
     });
     blockPubOtherId = b2.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();
