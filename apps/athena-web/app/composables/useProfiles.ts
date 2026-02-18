@@ -58,9 +58,68 @@ export const useProfiles = () => {
     }
   }
 
+  const fetchMe = async () => {
+    return await $api<ProfileResponse>('/api/profiles/me', { method: 'GET' })
+  }
+
+  const createMe = async (body: CreateProfileRequest) => {
+    try {
+      const data = await $api<ProfileResponse>('/api/profiles/me', {
+        method: 'POST',
+        body
+      })
+
+      toast.add({
+        title: t('toasts.profiles.me-created.title'),
+        description: t('toasts.profiles.me-created.description'),
+        color: 'success',
+        icon: 'i-lucide-check-circle'
+      })
+      return data
+    } catch (error: unknown) {
+      console.error(error)
+      toast.add({
+        title: t('common.error'),
+        description: t('toasts.profiles.me-created.error'),
+        color: 'error',
+        icon: 'i-lucide-alert-circle'
+      })
+      throw error
+    }
+  }
+
+  const updateMe = async (body: UpdateProfileRequest) => {
+    try {
+      const data = await $api<ProfileResponse>('/api/profiles/me', {
+        method: 'PATCH',
+        body
+      })
+
+      toast.add({
+        title: t('toasts.profiles.me-updated.title'),
+        description: t('toasts.profiles.me-updated.description'),
+        color: 'success',
+        icon: 'i-lucide-save'
+      })
+      return data
+    } catch (error: unknown) {
+      console.error(error)
+      toast.add({
+        title: t('common.error'),
+        description: t('toasts.profiles.me-updated.error'),
+        color: 'error',
+        icon: 'i-lucide-alert-circle'
+      })
+      throw error
+    }
+  }
+
   return {
     fetchProfile,
     createProfile,
-    updateProfile
+    updateProfile,
+    fetchMe,
+    createMe,
+    updateMe
   }
 }

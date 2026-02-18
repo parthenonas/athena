@@ -6,7 +6,7 @@ export interface CreateProfileRequest {
   firstName: string;
   lastName: string;
   patronymic?: string;
-  avatarUrl?: string;
+  avatarUrl?: string | null;
   birthDate?: Date;
   metadata?: ProfileMetadata;
 }

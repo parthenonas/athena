@@ -211,6 +211,13 @@
       "confirm-password": "Confirm New Password",
       "change-password-btn": "Update Password",
       "password-changed": "Password changed successfully",
+      "profile-title": "Profile",
+      "first-name": "First name",
+      "last-name": "Last name",
+      "patronymic": "Patronymic",
+      "save-profile-btn": "Save Profile",
+      "remove-avatar": "Remove photo",
+      "upload-avatar": "Upload photo",
       "errors": {
         "old-password-required": "Please enter your current password",
         "passwords-mismatch": "Passwords do not match"
@@ -691,6 +698,16 @@
         "title": "Profile updated",
         "description": "Profile details have been successfully saved.",
         "error": "Failed to update profile"
+      },
+      "me-created": {
+        "title": "Welcome!",
+        "description": "Your profile has been set up successfully.",
+        "error": "Failed to set up your profile."
+      },
+      "me-updated": {
+        "title": "Saved",
+        "description": "Your personal information has been updated.",
+        "error": "Failed to save your changes."
       }
     },
     "quotas": {

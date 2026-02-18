@@ -2,7 +2,7 @@ import { Policy } from "@athena/types";
 import { BadRequestException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { DataSource, Repository } from "typeorm";
+import { DataSource } from "typeorm";
 import { v4 as uuid } from "uuid";
 
 import { CreateProfileDto } from "./dto/create.dto";
@@ -14,9 +14,7 @@ import { AbilityService } from "../acl/ability.service";
 
 describe("ProfileService", () => {
   let service: ProfileService;
-  let repo: Repository<Profile>;
   let abilityService: AbilityService;
-  let outboxService: OutboxService;
 
   const mockOwnerId = uuid();
   const mockProfileId = uuid();
@@ -86,9 +84,7 @@ describe("ProfileService", () => {
     }).compile();
 
     service = module.get<ProfileService>(ProfileService);
-    repo = module.get<Repository<Profile>>(getRepositoryToken(Profile));
     abilityService = module.get<AbilityService>(AbilityService);
-    outboxService = module.get<OutboxService>(OutboxService);
 
     jest.clearAllMocks();
   });

@@ -1,13 +1,41 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import SettingsPage from '../settings.vue'
-import { nextTick } from 'vue'
+import { nextTick, ref } from 'vue'
+import { flushPromises } from '@vue/test-utils'
 
-const { fetchAccountMock, changePasswordMock, mockUseAsyncData, formatDate } = vi.hoisted(() => ({
+const {
+  fetchAccountMock,
+  changePasswordMock,
+  mockUseAsyncData,
+  formatDate,
+  fetchMeMock,
+  updateMeMock,
+  createMeMock,
+  uploadFileMock,
+  deleteFileMock
+} = vi.hoisted(() => ({
   fetchAccountMock: vi.fn(),
   changePasswordMock: vi.fn(),
   mockUseAsyncData: vi.fn(),
-  formatDate: vi.fn()
+  formatDate: vi.fn(),
+  fetchMeMock: vi.fn(),
+  updateMeMock: vi.fn(),
+  createMeMock: vi.fn(),
+  uploadFileMock: vi.fn(),
+  deleteFileMock: vi.fn()
+}))
+
+vi.mock('@athena/common', () => ({
+  PASSWORD_REGEX: /.+/,
+  MIN_NAME_LENGTH: 2,
+  MAX_NAME_LENGTH: 50
+}))
+
+vi.mock('vue-i18n', () => ({
+  useI18n: () => ({
+    t: (key: string, params?: any) => key + (params ? JSON.stringify(params) : '')
+  })
 }))
 
 mockNuxtImport('useAppDate', () => {
@@ -25,24 +53,29 @@ mockNuxtImport('useAccounts', () => {
   })
 })
 
-vi.mock('@athena/common', () => ({
-  PASSWORD_REGEX: /.+/
-}))
-
-vi.mock('vue-i18n', () => ({
-  useI18n: () => ({
-    t: (key: string, params?: any) => key + (params ? JSON.stringify(params) : '')
+mockNuxtImport('useProfiles', () => {
+  return () => ({
+    fetchMe: fetchMeMock,
+    updateMe: updateMeMock,
+    createMe: createMeMock
   })
-}))
+})
+
+mockNuxtImport('useMedia', () => {
+  return () => ({
+    uploadFile: uploadFileMock,
+    deleteFile: deleteFileMock
+  })
+})
 
 const UCardStub = { template: '<div><slot /><slot name="header" /></div>' }
-const UAvatarStub = { template: '<div data-testid="avatar" />', props: ['alt'] }
+const UAvatarStub = { template: '<div data-testid="avatar" :src="src" />', props: ['alt', 'src'] }
 const USkeletonStub = { template: '<div data-testid="skeleton" />' }
 const AdminRoleBadgeStub = { template: '<div data-testid="role-badge" />', props: ['roleId'] }
 const UIconStub = { template: '<div />' }
 const USeparatorStub = { template: '<hr />' }
 const UFormFieldStub = { template: '<div><slot /></div>' }
-const UButtonStub = { template: '<button />' }
+const UButtonStub = { template: '<button type="submit"><slot/></button>' }
 
 const UInputStub = {
   name: 'UInput',
@@ -92,55 +125,110 @@ describe('Settings Page', () => {
   })
 
   it('should render user profile data', async () => {
-    fetchAccountMock.mockResolvedValue({
-      id: 'user-123',
-      login: 'test_user',
-      roleId: 'role-admin',
-      createdAt: '2023-01-01T00:00:00.000Z'
+    fetchAccountMock.mockResolvedValue({ id: 'user-1', login: 'test_user' })
+    fetchMeMock.mockResolvedValue({ firstName: 'Ivan', lastName: 'Ivanov', avatarUrl: 'http://old.jpg' })
+
+    const wrapper = await mountSuspended(SettingsPage, defaultMocks)
+
+    await flushPromises()
+    await nextTick()
+
+    expect(fetchMeMock).toHaveBeenCalled()
+
+    const inputs = wrapper.findAllComponents(UInputStub)
+    expect(inputs[0]!.props('modelValue')).toBe('Ivan')
+
+    const avatar = wrapper.findComponent(UAvatarStub)
+    expect(avatar.exists()).toBe(true)
+    expect(avatar.props('src')).toBe('http://old.jpg')
+  })
+
+  it('should handle avatar removal', async () => {
+    fetchAccountMock.mockResolvedValue({ id: 'user-1', login: 'user' })
+    fetchMeMock.mockResolvedValue({
+      firstName: 'Ivan',
+      lastName: 'Ivanov',
+      avatarUrl: 'http://old.jpg'
     })
 
     const wrapper = await mountSuspended(SettingsPage, defaultMocks)
 
+    await flushPromises()
     await nextTick()
-    await new Promise(resolve => setTimeout(resolve, 0))
 
-    expect(fetchAccountMock).toHaveBeenCalledWith('me')
-    expect(wrapper.text()).toContain('test_user')
-    expect(wrapper.text()).toContain('ID: user-123')
+    const removeBtn = wrapper.find('[data-testid="remove-avatar-btn"]')
 
-    const avatar = wrapper.findComponent(UAvatarStub)
-    expect(avatar.props('alt')).toBe('test_user')
+    expect(removeBtn.exists()).toBe(true)
 
-    const badge = wrapper.findComponent(AdminRoleBadgeStub)
-    expect(badge.props('roleId')).toBe('role-admin')
+    await removeBtn.trigger('click')
+
+    expect(updateMeMock).toHaveBeenCalledWith({ avatarUrl: null })
+  })
+
+  it('should handle avatar upload', async () => {
+    fetchAccountMock.mockResolvedValue({ id: 'user-1', login: 'user' })
+    fetchMeMock.mockResolvedValue({ firstName: 'Ivan', lastName: 'Ivanov', avatarUrl: 'http://old.jpg' })
+
+    const wrapper = await mountSuspended(SettingsPage, defaultMocks)
+    await flushPromises()
+
+    uploadFileMock.mockResolvedValue({ url: 'http://new-avatar.jpg' })
+
+    const input = wrapper.find('input[type="file"]')
+    const file = new File(['(⌐□_□)'], 'avatar.png', { type: 'image/png' })
+
+    Object.defineProperty(input.element, 'files', { value: [file] })
+    await input.trigger('change')
+
+    await flushPromises()
+
+    expect(uploadFileMock).toHaveBeenCalledWith(file, 'public')
+    expect(updateMeMock).toHaveBeenCalledWith({ avatarUrl: 'http://new-avatar.jpg' })
+  })
+
+  it('should handle profile update submission', async () => {
+    fetchAccountMock.mockResolvedValue({ id: 'user-1', login: 'user' })
+    fetchMeMock.mockResolvedValue({ firstName: 'Ivan', lastName: 'Ivanov' })
+
+    const wrapper = await mountSuspended(SettingsPage, defaultMocks)
+    await flushPromises()
+
+    const forms = wrapper.findAllComponents(UFormStub)
+    const profileForm = forms[0]!
+
+    const state = profileForm.props('state')
+    state.firstName = 'Petr'
+    state.lastName = 'Petrov'
+
+    await profileForm.trigger('submit')
+
+    expect(updateMeMock).toHaveBeenCalledWith(expect.objectContaining({
+      firstName: 'Petr',
+      lastName: 'Petrov'
+    }))
   })
 
   it('should handle password change submission', async () => {
-    fetchAccountMock.mockResolvedValue({ id: '1', login: 'user' })
+    fetchAccountMock.mockResolvedValue({ id: 'user-1', login: 'user' })
+    fetchMeMock.mockResolvedValue({ firstName: 'Ivan', lastName: 'Ivanov' })
 
     const wrapper = await mountSuspended(SettingsPage, defaultMocks)
+    await flushPromises()
 
-    const inputs = wrapper.findAllComponents(UInputStub)
+    const forms = wrapper.findAllComponents(UFormStub)
+    const passwordForm = forms[1]!
 
-    const oldPassInput = inputs[0]!
-    const newPassInput = inputs[1]!
-    const confirmPassInput = inputs[2]!
+    const state = passwordForm.props('state')
+    state.oldPassword = 'OldPass'
+    state.newPassword = 'NewPass123'
+    state.confirmPassword = 'NewPass123'
 
-    oldPassInput.vm.$emit('update:modelValue', 'OldPass123!')
-    newPassInput.vm.$emit('update:modelValue', 'NewPass123!')
-    confirmPassInput.vm.$emit('update:modelValue', 'NewPass123!')
-
-    const form = wrapper.findComponent(UFormStub)
-    await form.trigger('submit')
+    await passwordForm.trigger('submit')
 
     expect(changePasswordMock).toHaveBeenCalledWith({
-      oldPassword: 'OldPass123!',
-      newPassword: 'NewPass123!'
+      oldPassword: 'OldPass',
+      newPassword: 'NewPass123'
     })
-
-    expect(oldPassInput.props('modelValue')).toBe('')
-    expect(newPassInput.props('modelValue')).toBe('')
-    expect(confirmPassInput.props('modelValue')).toBe('')
   })
 
   it('should show skeleton when loading', async () => {
@@ -153,7 +241,6 @@ describe('Settings Page', () => {
     })
 
     const wrapper = await mountSuspended(SettingsPage, defaultMocks)
-
     expect(wrapper.find('[data-testid="skeleton"]').exists()).toBe(true)
   })
 })

@@ -6,28 +6,28 @@ export type InstructorViewDocument = HydratedDocument<InstructorView>;
 @Schema({ collection: "instructor_views", timestamps: true })
 export class InstructorView {
   @Prop({ required: true, index: true, unique: true })
-  instructorId: string;
+  instructorId!: string;
 
   @Prop({ required: true, index: true, unique: true })
-  ownerId: string;
+  ownerId!: string;
 
   @Prop({ default: "" })
-  firstName: string;
+  firstName!: string;
 
   @Prop({ default: "" })
-  lastName: string;
+  lastName!: string;
 
   @Prop({ default: "" })
-  patronymic: string;
+  patronymic!: string;
 
   @Prop({ required: false })
   avatarUrl?: string;
 
   @Prop({ default: "" })
-  title: string;
+  title!: string;
 
   @Prop({ default: "" })
-  bio: string;
+  bio!: string;
 }
 
 export const InstructorViewSchema = SchemaFactory.createForClass(InstructorView);
