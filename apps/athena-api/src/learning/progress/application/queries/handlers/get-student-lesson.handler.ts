@@ -2,9 +2,9 @@ import { BlockRequiredAction, BlockType, CodeBlockContent, GradingStatus, QuizBl
 import { Inject, NotFoundException, Logger } from "@nestjs/common";
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { plainToInstance } from "class-transformer";
-import { BlockView } from "src/content/lesson/schemas/lesson-view.schema";
 
 import { ContentService } from "../../../../../content/content.service";
+import { BlockView } from "../../../../../content/lesson/schemas/lesson-view.schema";
 import { PROGRESS_REPOSITORY, type IProgressRepository } from "../../../domain/repository/progress.repository";
 import { StudentProgress } from "../../../domain/student-progress.model";
 import { StudentLessonViewDto } from "../../dto/student-lesson-view.dto";

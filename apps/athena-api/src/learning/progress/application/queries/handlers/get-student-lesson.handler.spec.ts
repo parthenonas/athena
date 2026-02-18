@@ -136,13 +136,13 @@ describe("GetStudentLessonHandler", () => {
 
     const result = await handler.execute(QUERY);
 
-    const codeBlock = result.blocks.find((b: any) => b.blockId === "code-block");
+    const codeBlock = result.blocks.find((b: any) => b.blockId === "code-block")!;
     expect(codeBlock.content.testCasesCode).toBeUndefined();
     expect(codeBlock.content.outputData).toBeUndefined();
     expect(codeBlock.content.taskText).toBe("Write a loop");
 
-    const quizBlock = result.blocks.find((b: any) => b.blockId === "quiz-block");
-    const question = quizBlock.content.questions[0];
+    const quizBlock = result.blocks.find((b: any) => b.blockId === "quiz-block") as any;
+    const question = quizBlock.content.questions[0]!;
     expect(question.correctAnswerText).toBeUndefined();
     expect(question.options[0].isCorrect).toBeUndefined();
     expect(question.options[1].isCorrect).toBeUndefined();
