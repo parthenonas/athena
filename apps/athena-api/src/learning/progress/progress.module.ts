@@ -12,6 +12,7 @@ import { BlockCompletedHandler } from "./application/events/handlers/block-compl
 import { CourseCompletedHandler } from "./application/events/handlers/course-completed.handler";
 import { LessonCompletedHandler } from "./application/events/handlers/lesson-completed.handler";
 import { ProgressInitializedHandler } from "./application/events/handlers/progress-initialized.handler";
+import { GetStudentLessonHandler } from "./application/queries/handlers/get-student-lesson.handler";
 import { GetStudentProgressHandler } from "./application/queries/handlers/get-student-progress.handler";
 import { ProgressSagas } from "./application/sagas/progress.saga";
 import { PROGRESS_REPOSITORY } from "./domain/repository/progress.repository";
@@ -52,6 +53,7 @@ import { GradingListener } from "./presentation/grading.listener";
     LessonCompletedHandler,
     GetStudentProgressHandler,
     GetStudentDashboardHandler,
+    GetStudentLessonHandler,
     GradeBlockHandler,
     ProgressEventListener,
     ProgressSagas,

@@ -34,23 +34,6 @@ export interface TextBlockContent {
   json: Record<string, unknown>;
 }
 
-export interface VideoBlockContent {
-  fileId: string;
-  url: string;
-  mimeType?: string;
-  size?: number;
-  duration?: number;
-}
-
-export interface ImageBlockContent {
-  fileId: string;
-  url: string;
-  mimeType?: string;
-  caption?: string;
-  width?: number;
-  height?: number;
-}
-
 export interface CodeBlockContent {
   language: ProgrammingLanguage;
   taskText: TextBlockContent;

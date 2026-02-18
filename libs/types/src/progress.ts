@@ -1,4 +1,4 @@
-import { ProgrammingLanguage } from "./block";
+import { ProgrammingLanguage, BlockType, BlockRequiredAction } from "./block";
 
 export enum ProgressStatus {
   NOT_STARTED = "NOT_STARTED",
@@ -43,4 +43,30 @@ export interface StudentCourseProgress {
   currentScore: number;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface BlockProgressState {
+  status: GradingStatus;
+  score: number;
+  feedback?: string;
+  submittedAt?: Date;
+}
+
+export interface SanitizedBlockView {
+  blockId: string;
+  type: BlockType;
+  orderIndex: number;
+  requiredAction: BlockRequiredAction;
+  content: Record<string, unknown>;
+  progress: BlockProgressState | null;
+}
+
+export interface StudentLessonView {
+  lessonId: string;
+  courseId: string;
+  title: string;
+  goals?: string | null;
+  totalBlocks: number;
+  visibleBlocksCount: number;
+  blocks: SanitizedBlockView[];
 }
