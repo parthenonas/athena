@@ -409,9 +409,12 @@
       "title": "Course Manager",
       "subtitle": "Create, manage, and organize your educational content.",
       "create": "Create Course",
+      "sync": "Sync content",
       "builder": "Open Builder",
       "delete-title": "Delete Course?",
       "delete-confirm": "Are you sure? This action cannot be undone and will delete all lessons within this course.",
+      "sync-title": "Sync courses?",
+      "sync-confirm": "Are you sure? This will forcefully rebuild the display data from the main database to fix any missing content. It might take a few moments.",
       "columns": {
         "title": "Title",
         "created-at": "Created At",
@@ -737,7 +740,8 @@
       "create-error": "Failed to create lesson",
       "update-error": "Failed to update lesson",
       "delete-error": "Failed to delete lesson",
-      "fetch-error": "Failed to fetch lessons"
+      "fetch-error": "Failed to fetch lessons",
+      "sync-error": "Failed to sync lessons"
     },
     "instructors": {
       "created": "Instructor profile created",
