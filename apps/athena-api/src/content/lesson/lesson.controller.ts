@@ -125,4 +125,15 @@ export class LessonController {
     const appliedPolicies = req.appliedPolicies || [];
     await this.service.softDelete(id, userId, appliedPolicies);
   }
+
+  /**
+   * POST /lessons/sync
+   * Rebuilds Mongo projections from Postgres. Admin only.
+   */
+  @Post("sync")
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission(Permission.ADMIN)
+  async syncReadModels() {
+    return this.service.syncReadModels();
+  }
 }

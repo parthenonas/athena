@@ -44,9 +44,11 @@ const mockQueryBuilder = {
   where: jest.fn().mockReturnThis(),
   andWhere: jest.fn().mockReturnThis(),
   orderBy: jest.fn().mockReturnThis(),
+  addOrderBy: jest.fn().mockReturnThis(),
   skip: jest.fn().mockReturnThis(),
   take: jest.fn().mockReturnThis(),
   getManyAndCount: jest.fn(),
+  getMany: jest.fn(),
   getRawOne: jest.fn(),
 };
 
@@ -82,6 +84,8 @@ describe("LessonService", () => {
       findOne: jest.fn().mockReturnThis(),
       lean: jest.fn().mockReturnThis(),
       exec: jest.fn(),
+      deleteMany: jest.fn().mockReturnThis(),
+      insertMany: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -325,6 +329,71 @@ describe("LessonService", () => {
 
       await expect(service.softDelete(LESSON_ID, USER_ID)).rejects.toThrow(NotFoundException);
       expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
+    });
+  });
+
+  describe("syncReadModels", () => {
+    it("should rebuild mongo projections in batches", async () => {
+      const mockLessonWithBlocks = {
+        id: LESSON_ID,
+        courseId: COURSE_ID,
+        title: "Test Sync Lesson",
+        goals: null,
+        order: 1,
+        isDraft: false,
+        blocks: [
+          {
+            id: "block-1",
+            type: "text",
+            content: { text: "hello" },
+            orderIndex: 1024,
+            requiredAction: "view",
+          },
+        ],
+      };
+
+      mockQueryBuilder.getMany.mockResolvedValueOnce([mockLessonWithBlocks]).mockResolvedValueOnce([]);
+
+      lessonViewModel.exec.mockResolvedValueOnce(true);
+
+      const result = await service.syncReadModels();
+
+      expect(lessonViewModel.deleteMany).toHaveBeenCalledWith({});
+
+      expect(mockQueryBuilder.take).toHaveBeenCalledWith(100);
+      expect(mockQueryBuilder.addOrderBy).toHaveBeenCalledWith("block.orderIndex", "ASC");
+
+      expect(lessonViewModel.insertMany).toHaveBeenCalledWith([
+        {
+          lessonId: LESSON_ID,
+          courseId: COURSE_ID,
+          title: "Test Sync Lesson",
+          goals: null,
+          order: 1,
+          isDraft: false,
+          blocks: [
+            {
+              blockId: "block-1",
+              type: "text",
+              content: { text: "hello" },
+              orderIndex: 1024,
+              requiredAction: "view",
+            },
+          ],
+        },
+      ]);
+
+      expect(result).toEqual({ synced: 1 });
+    });
+
+    it("should return synced 0 if no lessons found", async () => {
+      mockQueryBuilder.getMany.mockResolvedValueOnce([]);
+
+      const result = await service.syncReadModels();
+
+      expect(lessonViewModel.deleteMany).toHaveBeenCalledWith({});
+      expect(lessonViewModel.insertMany).not.toHaveBeenCalled();
+      expect(result).toEqual({ synced: 0 });
     });
   });
 });

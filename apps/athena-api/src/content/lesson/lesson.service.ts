@@ -342,4 +342,64 @@ export class LessonService extends BaseService<Lesson> {
   private handleLessonConstraintError(_: QueryFailedError): never {
     throw new BadRequestException("Failed to persist lesson");
   }
+
+  /**
+   * ADMIN ONLY: Rebuilds the MongoDB Read Models from PostgreSQL source of truth.
+   * Uses Cursor Pagination (Batching) to prevent Out-Of-Memory (OOM) errors on large datasets.
+   */
+  async syncReadModels(): Promise<{ synced: number }> {
+    this.logger.log("Starting forced MongoDB Projection Rebuild from PostgreSQL in batches...");
+
+    await this.lessonViewModel.deleteMany({}).exec();
+
+    let syncedCount = 0;
+    let lastId: string | null = null;
+    const BATCH_SIZE = 100;
+
+    while (true) {
+      const qb = this.repo
+        .createQueryBuilder("lesson")
+        .leftJoinAndSelect("lesson.blocks", "block")
+        .orderBy("lesson.id", "ASC")
+        .addOrderBy("block.orderIndex", "ASC")
+        .take(BATCH_SIZE);
+
+      if (lastId) {
+        qb.where("lesson.id > :lastId", { lastId });
+      }
+
+      const lessons = await qb.getMany();
+
+      if (lessons.length === 0) {
+        break;
+      }
+
+      const documentsToInsert = lessons.map(lesson => ({
+        lessonId: lesson.id,
+        courseId: lesson.courseId,
+        title: lesson.title,
+        goals: lesson.goals ?? null,
+        order: lesson.order,
+        isDraft: lesson.isDraft,
+        blocks: lesson.blocks.map(block => ({
+          blockId: block.id,
+          type: block.type,
+          content: block.content,
+          orderIndex: block.orderIndex,
+          requiredAction: block.requiredAction,
+        })),
+      }));
+
+      await this.lessonViewModel.insertMany(documentsToInsert);
+
+      syncedCount += lessons.length;
+      lastId = lessons[lessons.length - 1].id;
+
+      this.logger.debug(`Synced ${syncedCount} lessons...`);
+    }
+
+    this.logger.log(`Successfully synced a total of ${syncedCount} lessons to MongoDB Read Model.`);
+
+    return { synced: syncedCount };
+  }
 }

@@ -49,6 +49,7 @@ describe("LessonController", () => {
             create: jest.fn(),
             update: jest.fn(),
             softDelete: jest.fn(),
+            syncReadModels: jest.fn(),
           },
         },
         {
@@ -166,6 +167,17 @@ describe("LessonController", () => {
       await controller.softDelete(LESSON_ID, USER_ID, req);
 
       expect(service.softDelete).toHaveBeenCalledWith(LESSON_ID, USER_ID, policies);
+    });
+  });
+
+  describe("syncReadModels", () => {
+    it("should call syncReadModels service method and return synced count", async () => {
+      service.syncReadModels.mockResolvedValue({ synced: 42 });
+
+      const result = await controller.syncReadModels();
+
+      expect(service.syncReadModels).toHaveBeenCalled();
+      expect(result).toEqual({ synced: 42 });
     });
   });
 });
