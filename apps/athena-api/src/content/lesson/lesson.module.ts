@@ -8,6 +8,7 @@ import { Lesson } from "./entities/lesson.entity";
 import { LessonController } from "./lesson.controller";
 import { LessonService } from "./lesson.service";
 import { OutboxModule } from "../../outbox";
+import { ContentViewListener } from "./listeners/content-view.listener";
 import { LessonView, LessonViewSchema } from "./schemas/lesson-view.schema";
 import { Block } from "../block/entities/block.entity";
 import { Course } from "../course/entities/course.entity";
@@ -20,7 +21,7 @@ import { Course } from "../course/entities/course.entity";
     JwtModule,
     OutboxModule,
   ],
-  providers: [LessonService, JwtService],
+  providers: [LessonService, JwtService, ContentViewListener],
   exports: [LessonService],
   controllers: [LessonController],
 })

@@ -1,5 +1,11 @@
 {
   "blocks": {
+    "actions": {
+      "view": "View content",
+      "interact": "Click button",
+      "submit": "Submit answer",
+      "pass": "Pass check"
+    },
     "type": {
       "text": "Text",
       "code": "Code",
