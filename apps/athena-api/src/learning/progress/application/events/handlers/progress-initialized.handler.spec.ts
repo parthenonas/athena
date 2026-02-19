@@ -1,3 +1,4 @@
+import { ProgressStatus } from "@athena/types";
 import { getModelToken } from "@nestjs/mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
@@ -89,12 +90,12 @@ describe("ProgressInitializedHandler (Projection)", () => {
           lessons: {
             "lesson-1": {
               title: "Intro to Node",
-              status: "IN_PROGRESS",
+              status: ProgressStatus.IN_PROGRESS,
               completedBlocks: {},
             },
             "lesson-2": {
               title: "Streams & Buffers",
-              status: "LOCKED",
+              status: ProgressStatus.LOCKED,
               completedBlocks: {},
             },
           },

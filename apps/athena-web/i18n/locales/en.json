@@ -280,7 +280,19 @@
       }
     },
     "learn": {
-      "lesson": "Lesson"
+      "lesson": "Lesson",
+      "no-courses": "You are not enrolled in any courses yet.",
+      "progress": "Progress",
+      "total-score": "Total Score",
+      "start": "Start Course",
+      "continue": "Continue",
+      "review": "Review Course",
+      "loading-course": "Loading your course...",
+      "loading": "Loading...",
+      "lesson-goals": "Lesson Goals",
+      "lesson-completed-title": "Great Job!",
+      "lesson-completed-desc": "You've successfully completed this lesson. Keep it up to finish the course!",
+      "back-to-dashboard": "Back to Dashboard"
     },
     "placeholders": {
       "dashboard": {
@@ -655,6 +667,11 @@
     "open": "Open",
     "closed": "Closed"
   },
+  "course-statuses": {
+    "not-started": "Not Started",
+    "in-progress": "In Progress",
+    "completed": "Completed"
+  },
   "toasts": {
     "roles": {
       "created": {
@@ -790,7 +807,8 @@
       "lesson-error": "Failed to load the lesson. It might be locked or unavailable.",
       "view-error": "Failed to save your reading progress. Check your connection.",
       "submission-sent": "Your solution has been submitted for grading.",
-      "submission-error": "Failed to submit your solution. Please try again."
+      "submission-error": "Failed to submit your solution. Please try again.",
+      "course-load-error": "Failed to load course progress. Please try again."
     }
   }
 }

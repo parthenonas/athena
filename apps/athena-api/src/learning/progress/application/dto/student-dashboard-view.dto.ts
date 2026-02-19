@@ -11,7 +11,7 @@ export class StudentDashboardLessonViewDto implements StudentDashboardLessonView
    * The current status of the lesson (e.g., "LOCKED", "IN_PROGRESS", "COMPLETED").
    */
   @Expose()
-  status!: string;
+  status!: ProgressStatus;
 
   /**
    * The title of the lesson.

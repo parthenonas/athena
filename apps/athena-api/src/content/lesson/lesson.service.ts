@@ -189,7 +189,7 @@ export class LessonService extends BaseService<Lesson> {
   async findAllInternal(courseId: string): Promise<Lesson[]> {
     this.logger.debug(`findAllInternal() | courseId=${courseId}`);
 
-    return await this.repo.find({ where: { courseId } });
+    return await this.repo.find({ where: { courseId }, order: { order: "ASC" } });
   }
 
   /**

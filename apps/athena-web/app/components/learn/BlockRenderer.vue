@@ -14,7 +14,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'viewed', blockId: string): void
-  (e: 'submit', blockId: string, payload: any): void
+  (e: 'submit', blockId: string, payload: unknown): void
   (e: 'run', blockId: string, code: string): void
 }>()
 
@@ -31,7 +31,7 @@ if (props.block.requiredAction === BlockRequiredAction.VIEW && !isCompleted.valu
         stop()
       }
     },
-    { threshold: 0.5 }
+    { threshold: 0 }
   )
 }
 
@@ -42,7 +42,7 @@ const handleInteract = () => {
 
 <template>
   <div
-    ref="targetRef"
+
     class="w-full py-6 group relative"
   >
     <div
@@ -83,6 +83,12 @@ const handleInteract = () => {
     </div>
 
     <div
+      v-if="block.requiredAction === BlockRequiredAction.VIEW"
+      ref="targetRef"
+      class="h-px w-full opacity-0 pointer-events-none mt-4"
+    />
+
+    <div
       v-if="block.requiredAction === BlockRequiredAction.INTERACT"
       class="mt-8 flex justify-center"
     >
@@ -93,7 +99,7 @@ const handleInteract = () => {
         :icon="isCompleted ? 'i-lucide-check' : 'i-lucide-arrow-down'"
         :label="isCompleted ? $t('common.completed') : $t('pages.learn.continue')"
         :disabled="isCompleted"
-        class="w-full sm:w-auto min-w-[200px]"
+        class="w-full sm:w-auto min-w-50"
         @click="handleInteract"
       />
     </div>

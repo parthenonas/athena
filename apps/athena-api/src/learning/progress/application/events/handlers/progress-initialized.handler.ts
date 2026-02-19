@@ -1,4 +1,4 @@
-import { StudentDashboardLessonView } from "@athena/types";
+import { ProgressStatus, StudentDashboardLessonView } from "@athena/types";
 import { Logger } from "@nestjs/common";
 import { EventsHandler, IEventHandler } from "@nestjs/cqrs";
 import { InjectModel } from "@nestjs/mongoose";
@@ -55,11 +55,13 @@ export class ProgressInitializedHandler implements IEventHandler<ProgressInitial
       return;
     }
 
+    const sortedLessons = lessons.sort((a, b) => a.order - b.order);
+
     const lessonsProjection: Record<string, StudentDashboardLessonView> = {};
-    lessons.forEach((lesson, index) => {
+    sortedLessons.forEach((lesson, index) => {
       lessonsProjection[lesson.id] = {
         title: lesson.title,
-        status: index === 0 ? "IN_PROGRESS" : "LOCKED",
+        status: index === 0 ? ProgressStatus.IN_PROGRESS : ProgressStatus.LOCKED,
         completedBlocks: {},
       };
     });
