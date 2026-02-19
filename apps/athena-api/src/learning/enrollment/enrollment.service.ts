@@ -191,7 +191,7 @@ export class EnrollmentService extends BaseService<Enrollment> {
    * Deletes an enrollment.
    */
   async delete(id: string, ownerId: string, appliedPolicies: Policy[] = []): Promise<void> {
-    const enrollment = await this.repo.findOne({ where: { id } });
+    const enrollment = await this.repo.findOne({ where: { id }, relations: ["cohort"] });
     if (!enrollment) throw new NotFoundException("Enrollment not found");
 
     for (const policy of appliedPolicies) {
@@ -200,11 +200,32 @@ export class EnrollmentService extends BaseService<Enrollment> {
       }
     }
 
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      await this.repo.remove(enrollment);
+      const manager = queryRunner.manager;
+
+      await manager.remove(Enrollment, enrollment);
+
+      const event = {
+        id: enrollment.id,
+        userId: enrollment.ownerId,
+        cohortId: enrollment.cohortId,
+        courseId: enrollment.cohort.courseId,
+      };
+
+      await this.outboxService.save(manager, AthenaEvent.ENROLLMENT_DELETED, event);
+
+      await queryRunner.commitTransaction();
+      this.logger.log(`Enrollment deleted and event staged | id=${id}`);
     } catch (err: unknown) {
+      await queryRunner.rollbackTransaction();
       this.logger.error(`delete() | ${(err as Error).message}`, (err as Error).stack);
       throw new BadRequestException("Failed to delete enrollment");
+    } finally {
+      await queryRunner.release();
     }
   }
 }
