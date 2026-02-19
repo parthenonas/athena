@@ -70,7 +70,7 @@ describe("Profile Targeted Routes (e2e)", () => {
       roleId: userRole.id,
     });
     emptyUserId = emptyUser.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

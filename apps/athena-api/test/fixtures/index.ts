@@ -11,6 +11,7 @@ import { v4 as uuid } from "uuid";
 import { Block } from "../../src/content/block/entities/block.entity";
 import { Course } from "../../src/content/course/entities/course.entity";
 import { Lesson } from "../../src/content/lesson/entities/lesson.entity";
+import { LessonView } from "../../src/content/lesson/schemas/lesson-view.schema";
 import { IdentityService } from "../../src/identity";
 import { Profile } from "../../src/identity/profile/entities/profile.entity";
 import { Cohort } from "../../src/learning/cohort/entities/cohort.entity";
@@ -30,6 +31,7 @@ export class TestFixtures {
   private readonly scheduleRepo: Repository<Schedule>;
   private readonly profileRepo: Repository<Profile>;
   private readonly instructorViewModel: Model<InstructorView>;
+  private readonly lessonViewModel: Model<LessonView>;
   private readonly commandBus: CommandBus;
 
   constructor(
@@ -46,6 +48,7 @@ export class TestFixtures {
     this.scheduleRepo = this.app.get(getRepositoryToken(Schedule));
     this.profileRepo = this.app.get(getRepositoryToken(Profile));
     this.instructorViewModel = this.app.get(getModelToken(InstructorView.name));
+    this.lessonViewModel = this.app.get(getModelToken(LessonView.name));
     this.commandBus = this.app.get(CommandBus);
   }
 
@@ -58,6 +61,10 @@ export class TestFixtures {
 
     if (this.instructorViewModel) {
       await this.instructorViewModel.deleteMany({});
+    }
+
+    if (this.lessonViewModel) {
+      await this.lessonViewModel.deleteMany({});
     }
   }
 
@@ -231,5 +238,20 @@ export class TestFixtures {
 
     const entity = this.scheduleRepo.create({ ...defaultData, ...args });
     return this.scheduleRepo.save(entity);
+  }
+
+  async createLessonView(args: Partial<LessonView> = {}): Promise<LessonView | null> {
+    if (!this.lessonViewModel) return null;
+
+    const defaultData = {
+      lessonId: args.lessonId || uuid(),
+      courseId: args.courseId || uuid(),
+      title: "Test Lesson View",
+      order: 1,
+      isDraft: true,
+      blocks: [],
+    };
+
+    return this.lessonViewModel.create({ ...defaultData, ...args });
   }
 }

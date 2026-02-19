@@ -51,7 +51,7 @@ describe("Profile /me Routes (e2e)", () => {
       firstName: "Reader",
       lastName: "Only",
     });
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

@@ -9,6 +9,7 @@ import { CompleteBlockSyncCommand } from "../application/commands/complete-block
 import { SubmitAssignmentCommand } from "../application/commands/submit-assignment.command";
 import { StudentSubmissionDto } from "../application/dto/student-submission.dto";
 import { GetStudentDashboardQuery } from "../application/queries/get-student-dashboard.query";
+import { GetStudentLessonQuery } from "../application/queries/get-student-lesson.query";
 import { GetStudentProgressQuery } from "../application/queries/get-student-progress.query";
 
 const mockCommandBus = {
@@ -95,6 +96,18 @@ describe("ProgressController", () => {
       const result = await controller.getMyProgress(COURSE_ID, USER_ID);
 
       expect(mockQueryBus.execute).toHaveBeenCalledWith(new GetStudentProgressQuery(USER_ID, COURSE_ID));
+      expect(result).toEqual(mockResult);
+    });
+  });
+
+  describe("getLesson (GET /:courseId/lesson/:lessonId)", () => {
+    it("should execute GetStudentLessonQuery", async () => {
+      const mockResult = { courseId: COURSE_ID };
+      mockQueryBus.execute.mockResolvedValue(mockResult);
+
+      const result = await controller.getLesson(COURSE_ID, LESSON_ID, USER_ID);
+
+      expect(mockQueryBus.execute).toHaveBeenCalledWith(new GetStudentLessonQuery(USER_ID, COURSE_ID, LESSON_ID));
       expect(result).toEqual(mockResult);
     });
   });

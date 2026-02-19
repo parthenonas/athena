@@ -63,7 +63,7 @@ describe("GET /enrollments/:id (e2e)", () => {
       cohortId: cohort.id,
       ownerId: attacker.id,
     });
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

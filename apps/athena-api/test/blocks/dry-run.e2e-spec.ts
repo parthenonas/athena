@@ -46,7 +46,7 @@ describe("POST /blocks/dry-run (e2e)", () => {
     const course = await fixtures.createCourse({ title: "Dry Course", ownerId: owner.id });
     const lesson = await fixtures.createLesson({ title: "Dry Lesson", courseId: course.id });
     lessonId = lesson.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

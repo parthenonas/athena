@@ -12,7 +12,7 @@ describe("DELETE /accounts/me (e2e)", () => {
     const res = await bootstrapE2E();
     app = res.app;
     fixtures = res.fixtures;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

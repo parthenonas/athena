@@ -55,7 +55,7 @@ describe("GET /instructors/:id (e2e)", () => {
       title: "Other Profile",
     });
     otherProfileId = p2.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

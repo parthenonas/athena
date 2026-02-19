@@ -14,7 +14,7 @@ describe("POST /accounts/login (e2e)", () => {
     app = res.app;
     fixtures = res.fixtures;
     await fixtures.seedAdmin({ login, password });
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

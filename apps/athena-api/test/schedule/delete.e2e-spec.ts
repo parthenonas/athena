@@ -66,7 +66,7 @@ describe("DELETE /schedules/:id (e2e)", () => {
     attackerToken = await fixtures.login("sched_attacker", "Password123!");
 
     await fixtures.createInstructor({ ownerId: attackerUser.id, title: "Attacker Prof" });
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

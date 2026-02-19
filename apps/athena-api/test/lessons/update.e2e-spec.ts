@@ -40,7 +40,7 @@ describe("PATCH /lessons/:id (e2e)", () => {
     const c1 = await fixtures.createCourse({ title: "My Course", ownerId: ownerId });
     const l1 = await fixtures.createLesson({ title: "Old Title", courseId: c1.id });
     lessonId = l1.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

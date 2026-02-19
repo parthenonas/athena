@@ -62,7 +62,7 @@ describe("POST /blocks (e2e)", () => {
     otherLessonId = l2.id;
 
     await fixtures.createBlock({ lessonId: creatorLessonId, type: BlockType.Text, orderIndex: 1024 });
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

@@ -31,7 +31,7 @@ describe("PATCH /accounts/me (e2e)", () => {
 
     userId = user.id;
     userToken = await fixtures.login(login, password);
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

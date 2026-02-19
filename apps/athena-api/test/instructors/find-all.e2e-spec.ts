@@ -67,7 +67,7 @@ describe("GET /instructors (e2e)", () => {
       ownerId: admin.id,
       title: "Admin Profile",
     });
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

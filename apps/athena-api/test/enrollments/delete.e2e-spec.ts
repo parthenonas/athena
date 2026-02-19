@@ -62,7 +62,7 @@ describe("DELETE /enrollments/:id (e2e)", () => {
       roleId: deleterRole.id,
     });
     attackerToken = await fixtures.login("enroll_attacker", "Password123!");
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

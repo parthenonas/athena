@@ -45,9 +45,11 @@ describe("LessonController", () => {
           useValue: {
             findAll: jest.fn(),
             findOne: jest.fn(),
+            findOneView: jest.fn(),
             create: jest.fn(),
             update: jest.fn(),
             softDelete: jest.fn(),
+            syncReadModels: jest.fn(),
           },
         },
         {
@@ -112,6 +114,21 @@ describe("LessonController", () => {
     });
   });
 
+  describe("findOneView", () => {
+    it("should return the aggregated lesson view from MongoDB", async () => {
+      const policies = [Policy.OWN_ONLY];
+      const req = { appliedPolicies: policies } as unknown as Request;
+
+      const mockLessonView = { lessonId: LESSON_ID, blocks: [] } as any;
+      service.findOneView.mockResolvedValue(mockLessonView);
+
+      const result = await controller.findOneView(LESSON_ID, USER_ID, req);
+
+      expect(service.findOneView).toHaveBeenCalledWith(LESSON_ID, USER_ID, policies);
+      expect(result).toEqual(mockLessonView);
+    });
+  });
+
   describe("create", () => {
     it("should create a lesson (no policies needed from request)", async () => {
       const dto: CreateLessonDto = { title: "New", courseId: COURSE_ID };
@@ -150,6 +167,17 @@ describe("LessonController", () => {
       await controller.softDelete(LESSON_ID, USER_ID, req);
 
       expect(service.softDelete).toHaveBeenCalledWith(LESSON_ID, USER_ID, policies);
+    });
+  });
+
+  describe("syncReadModels", () => {
+    it("should call syncReadModels service method and return synced count", async () => {
+      service.syncReadModels.mockResolvedValue({ synced: 42 });
+
+      const result = await controller.syncReadModels();
+
+      expect(service.syncReadModels).toHaveBeenCalled();
+      expect(result).toEqual({ synced: 42 });
     });
   });
 });

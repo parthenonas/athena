@@ -31,7 +31,7 @@ export class ProfileUpdatedListener {
     );
 
     if (result.matchedCount > 0) {
-      this.logger.log(`[InstructorView] Updated profile for ownerId: ${event.ownerId}`);
+      this.logger.log(`Updated profile for ownerId: ${event.ownerId}`);
     }
   }
 }

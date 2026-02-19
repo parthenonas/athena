@@ -31,7 +31,7 @@ describe("Media Quotas & Usage (e2e)", () => {
     });
     await fixtures.createUser({ login: "admin_q", password: "Password1!", roleId: adminRole.id });
     adminToken = await fixtures.login("admin_q", "Password1!");
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

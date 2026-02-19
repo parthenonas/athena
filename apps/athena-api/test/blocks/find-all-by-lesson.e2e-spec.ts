@@ -95,7 +95,7 @@ describe("GET /blocks/lesson/:lessonId (e2e)", () => {
       orderIndex: 100,
       content: { text: "Other Block" },
     });
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

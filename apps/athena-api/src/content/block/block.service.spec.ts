@@ -2,13 +2,15 @@ import { BlockRequiredAction, BlockType, CodeExecutionMode, Policy, ProgrammingL
 import { BadRequestException, ForbiddenException, NotFoundException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 import { getRepositoryToken } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, DataSource } from "typeorm";
 
 import { BlockService } from "./block.service";
 import { CreateBlockDto } from "./dto/create.dto";
 import { ReorderBlockDto, UpdateBlockDto } from "./dto/update.dto";
 import { Block } from "./entities/block.entity";
 import { IdentityService } from "../../identity";
+import { OutboxService } from "../../outbox";
+import { AthenaEvent } from "../../shared/events/types";
 import { SubmissionQueueService } from "../../submission-queue";
 import { BlockDryRunDto } from "./dto/dry-run.dto";
 import { Course } from "../course/entities/course.entity";
@@ -51,20 +53,36 @@ describe("BlockService", () => {
   let lessonRepo: jest.Mocked<Repository<Lesson>>;
   let identityService: jest.Mocked<IdentityService>;
   let submissionQueue: jest.Mocked<SubmissionQueueService>;
+  let outboxService: jest.Mocked<OutboxService>;
+
+  let mockEntityManager: any;
+  let mockQueryRunner: any;
 
   beforeEach(async () => {
+    mockEntityManager = {
+      findOne: jest.fn(),
+      create: jest.fn(),
+      save: jest.fn(),
+      remove: jest.fn(),
+    };
+
+    mockQueryRunner = {
+      connect: jest.fn(),
+      startTransaction: jest.fn(),
+      commitTransaction: jest.fn(),
+      rollbackTransaction: jest.fn(),
+      release: jest.fn(),
+      manager: mockEntityManager,
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BlockService,
         {
           provide: getRepositoryToken(Block),
           useValue: {
-            create: jest.fn(),
-            save: jest.fn(),
             find: jest.fn(),
             findOne: jest.fn(),
-            delete: jest.fn(),
-            remove: jest.fn(),
           },
         },
         {
@@ -75,15 +93,19 @@ describe("BlockService", () => {
         },
         {
           provide: IdentityService,
-          useValue: {
-            checkAbility: jest.fn(),
-          },
+          useValue: { checkAbility: jest.fn() },
         },
         {
           provide: SubmissionQueueService,
-          useValue: {
-            sendForExecution: jest.fn(),
-          },
+          useValue: { sendForExecution: jest.fn() },
+        },
+        {
+          provide: OutboxService,
+          useValue: { save: jest.fn() },
+        },
+        {
+          provide: DataSource,
+          useValue: { createQueryRunner: jest.fn().mockReturnValue(mockQueryRunner) },
         },
       ],
     }).compile();
@@ -93,6 +115,7 @@ describe("BlockService", () => {
     lessonRepo = module.get(getRepositoryToken(Lesson));
     identityService = module.get(IdentityService);
     submissionQueue = module.get(SubmissionQueueService);
+    outboxService = module.get(OutboxService);
 
     jest.clearAllMocks();
   });
@@ -104,44 +127,46 @@ describe("BlockService", () => {
       content: { json: { foo: "bar" } },
     };
 
-    it("should create a block successfully (Owner) with auto-order", async () => {
-      lessonRepo.findOne.mockResolvedValue(mockLesson);
-      blockRepo.findOne.mockResolvedValue(null);
-      blockRepo.create.mockReturnValue({ ...mockBlock, orderIndex: 1024 } as Block);
-      blockRepo.save.mockResolvedValue({ ...mockBlock, orderIndex: 1024 } as Block);
+    it("should create a block successfully (Owner) with auto-order and emit event", async () => {
+      mockEntityManager.findOne.mockResolvedValueOnce(mockLesson).mockResolvedValueOnce(null);
+      mockEntityManager.create.mockReturnValue({ ...mockBlock, orderIndex: 1024 } as Block);
+      mockEntityManager.save.mockResolvedValue({ ...mockBlock, orderIndex: 1024 } as Block);
 
       const result = await service.create(createDto, USER_ID);
 
-      expect(lessonRepo.findOne).toHaveBeenCalledWith({ where: { id: LESSON_ID }, relations: ["course"] });
-      expect(blockRepo.create).toHaveBeenCalledWith(expect.objectContaining({ orderIndex: 1024 }));
+      expect(mockEntityManager.findOne).toHaveBeenCalledWith(Lesson, expect.anything());
+      expect(mockEntityManager.create).toHaveBeenCalledWith(Block, expect.objectContaining({ orderIndex: 1024 }));
+      expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
+      expect(outboxService.save).toHaveBeenCalledWith(mockEntityManager, AthenaEvent.BLOCK_CREATED, expect.any(Object));
       expect(result.id).toBe(BLOCK_ID);
     });
 
     it("should calculate correct order index if blocks exist", async () => {
-      lessonRepo.findOne.mockResolvedValue(mockLesson);
-      blockRepo.findOne.mockResolvedValue({ orderIndex: 2048 } as Block);
+      mockEntityManager.findOne.mockResolvedValueOnce(mockLesson).mockResolvedValueOnce({ orderIndex: 2048 } as Block);
 
-      blockRepo.create.mockImplementation(dto => dto as Block);
-      blockRepo.save.mockImplementation(ent => Promise.resolve({ ...ent, id: "new-id" } as Block));
+      mockEntityManager.create.mockImplementation((_, dto) => dto as Block);
+      mockEntityManager.save.mockImplementation((_, ent) => Promise.resolve({ ...ent, id: "new-id" } as Block));
 
       const result = await service.create(createDto, USER_ID);
       expect(result.orderIndex).toBe(3072);
     });
 
     it("should throw NotFoundException if lesson not found", async () => {
-      lessonRepo.findOne.mockResolvedValue(null);
+      mockEntityManager.findOne.mockResolvedValueOnce(null);
       await expect(service.create(createDto, USER_ID)).rejects.toThrow(NotFoundException);
+      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
     });
 
     it("should throw ForbiddenException if user is NOT the course owner", async () => {
       const otherLesson = { ...mockLesson, course: { ...mockCourse, ownerId: OTHER_USER_ID } } as Lesson;
-      lessonRepo.findOne.mockResolvedValue(otherLesson);
+      mockEntityManager.findOne.mockResolvedValueOnce(otherLesson);
 
       await expect(service.create(createDto, USER_ID)).rejects.toThrow(ForbiddenException);
+      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
     });
 
     it("should throw BadRequestException on Invalid Content Schema (Polymorphism)", async () => {
-      lessonRepo.findOne.mockResolvedValue(mockLesson);
+      mockEntityManager.findOne.mockResolvedValueOnce(mockLesson);
 
       const invalidDto: CreateBlockDto = {
         lessonId: LESSON_ID,
@@ -150,6 +175,7 @@ describe("BlockService", () => {
       };
 
       await expect(service.create(invalidDto, USER_ID)).rejects.toThrow(BadRequestException);
+      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
     });
   });
 
@@ -202,19 +228,21 @@ describe("BlockService", () => {
       content: { json: { new: "content" } },
     };
 
-    it("should update block if allowed and content valid", async () => {
-      blockRepo.findOne.mockResolvedValue(mockBlock);
+    it("should update block if allowed and content valid, and emit event", async () => {
+      mockEntityManager.findOne.mockResolvedValue(mockBlock);
       identityService.checkAbility.mockReturnValue(true);
-      blockRepo.save.mockImplementation(ent => Promise.resolve(ent as any));
+      mockEntityManager.save.mockImplementation((_, ent) => Promise.resolve(ent));
 
       const result = await service.update(BLOCK_ID, updateDto, USER_ID, [Policy.OWN_ONLY]);
 
-      expect(blockRepo.save).toHaveBeenCalled();
+      expect(mockEntityManager.save).toHaveBeenCalledWith(Block, expect.anything());
+      expect(outboxService.save).toHaveBeenCalledWith(mockEntityManager, AthenaEvent.BLOCK_UPDATED, expect.any(Object));
+      expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
       expect(result.content).toEqual(updateDto.content);
     });
 
     it("should throw BadRequestException if switching type to Code with invalid content", async () => {
-      blockRepo.findOne.mockResolvedValue(mockBlock);
+      mockEntityManager.findOne.mockResolvedValue(mockBlock);
       identityService.checkAbility.mockReturnValue(true);
 
       const badUpdateDto: UpdateBlockDto = {
@@ -223,12 +251,13 @@ describe("BlockService", () => {
       };
 
       await expect(service.update(BLOCK_ID, badUpdateDto, USER_ID)).rejects.toThrow(BadRequestException);
+      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
     });
 
     it("should allow switching type to Code with VALID content", async () => {
-      blockRepo.findOne.mockResolvedValue(mockBlock);
+      mockEntityManager.findOne.mockResolvedValue(mockBlock);
       identityService.checkAbility.mockReturnValue(true);
-      blockRepo.save.mockImplementation(ent => Promise.resolve(ent as any));
+      mockEntityManager.save.mockImplementation((_, ent) => Promise.resolve(ent));
 
       const validCodeUpdate: UpdateBlockDto = {
         type: BlockType.Code,
@@ -245,29 +274,35 @@ describe("BlockService", () => {
     });
 
     it("should throw ForbiddenException if ACL fails", async () => {
-      blockRepo.findOne.mockResolvedValue(mockBlock);
+      mockEntityManager.findOne.mockResolvedValue(mockBlock);
       identityService.checkAbility.mockReturnValue(false);
 
       await expect(service.update(BLOCK_ID, updateDto, USER_ID, [Policy.OWN_ONLY])).rejects.toThrow(ForbiddenException);
+      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
     });
   });
 
   describe("reorder", () => {
     const reorderDto: ReorderBlockDto = { newOrderIndex: 1500.5 };
 
-    it("should update order index if allowed", async () => {
-      blockRepo.findOne.mockResolvedValue(mockBlock);
+    it("should update order index if allowed and emit event", async () => {
+      mockEntityManager.findOne.mockResolvedValue(mockBlock);
       identityService.checkAbility.mockReturnValue(true);
-      blockRepo.save.mockImplementation(ent => Promise.resolve(ent as Block));
+      mockEntityManager.save.mockImplementation((_, ent) => Promise.resolve(ent as Block));
 
       const result = await service.reorder(BLOCK_ID, reorderDto, USER_ID, [Policy.OWN_ONLY]);
 
       expect(result.orderIndex).toBe(1500.5);
-      expect(blockRepo.save).toHaveBeenCalled();
+      expect(mockEntityManager.save).toHaveBeenCalledWith(Block, expect.anything());
+      expect(outboxService.save).toHaveBeenCalledWith(
+        mockEntityManager,
+        AthenaEvent.BLOCK_REORDERED,
+        expect.any(Object),
+      );
     });
 
     it("should throw ForbiddenException if ACL fails", async () => {
-      blockRepo.findOne.mockResolvedValue(mockBlock);
+      mockEntityManager.findOne.mockResolvedValue(mockBlock);
       identityService.checkAbility.mockReturnValue(false);
 
       await expect(service.reorder(BLOCK_ID, reorderDto, USER_ID, [Policy.OWN_ONLY])).rejects.toThrow(
@@ -277,21 +312,23 @@ describe("BlockService", () => {
   });
 
   describe("remove", () => {
-    it("should remove block if allowed", async () => {
-      blockRepo.findOne.mockResolvedValue(mockBlock);
+    it("should remove block if allowed and emit event", async () => {
+      mockEntityManager.findOne.mockResolvedValue(mockBlock);
       identityService.checkAbility.mockReturnValue(true);
-      blockRepo.remove.mockResolvedValue(mockBlock);
 
       await service.remove(BLOCK_ID, USER_ID, [Policy.OWN_ONLY]);
 
-      expect(blockRepo.remove).toHaveBeenCalledWith(mockBlock);
+      expect(mockEntityManager.remove).toHaveBeenCalledWith(Block, mockBlock);
+      expect(outboxService.save).toHaveBeenCalledWith(mockEntityManager, AthenaEvent.BLOCK_DELETED, expect.any(Object));
+      expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
     });
 
     it("should throw ForbiddenException if ACL fails", async () => {
-      blockRepo.findOne.mockResolvedValue(mockBlock);
+      mockEntityManager.findOne.mockResolvedValue(mockBlock);
       identityService.checkAbility.mockReturnValue(false);
 
       await expect(service.remove(BLOCK_ID, USER_ID, [Policy.OWN_ONLY])).rejects.toThrow(ForbiddenException);
+      expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
     });
   });
 

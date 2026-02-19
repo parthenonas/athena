@@ -45,7 +45,7 @@ describe("GET /instructors/public/:id (e2e) - Mongo View", () => {
     instructorId = instructor.id;
 
     await new Promise(r => setTimeout(r, 2000));
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

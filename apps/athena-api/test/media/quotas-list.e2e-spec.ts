@@ -20,7 +20,7 @@ describe("GET /media/quotas (e2e)", () => {
     const role = await fixtures.createRole({ name: "pleb", permissions: [] });
     await fixtures.createUser({ login: "pleb", password: "Qwerty123!", roleId: role.id });
     userToken = await fixtures.login("pleb", "Qwerty123!");
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

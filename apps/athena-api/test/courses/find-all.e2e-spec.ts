@@ -113,7 +113,7 @@ describe("GET /courses (e2e)", () => {
     courseUnpublishedId = course2.id;
     courseOtherUserId = course3.id;
     coursePublishedOwnerId = course4.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

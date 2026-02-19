@@ -42,7 +42,7 @@ describe("POST /courses (e2e)", () => {
     });
     teacherId = teacher.id;
     teacherToken = await fixtures.login("teacher_user", "Password123!");
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

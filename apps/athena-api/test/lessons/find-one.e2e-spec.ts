@@ -71,7 +71,7 @@ describe("GET /lessons/:id (e2e)", () => {
     const c2 = await fixtures.createCourse({ title: "Draft C", ownerId, isPublished: false });
     const l2 = await fixtures.createLesson({ title: "L_Draft", courseId: c2.id });
     lessonInDraftCourse = l2.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

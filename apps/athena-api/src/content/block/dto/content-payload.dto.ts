@@ -1,6 +1,5 @@
 import {
   CodeBlockContent,
-  ImageBlockContent,
   ProgrammingLanguage,
   QuizBlockContent,
   QuizOption,
@@ -9,7 +8,6 @@ import {
   SurveyQuestion,
   SurveyQuestionType,
   TextBlockContent,
-  VideoBlockContent,
   CodeExecutionMode,
   SurveyBlockContent,
   SurveyOption,
@@ -25,7 +23,6 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  IsUrl,
   IsUUID,
   Max,
   Min,
@@ -47,97 +44,6 @@ export class TextBlockContentDto implements TextBlockContent {
 }
 
 /**
- * @class VideoBlockContentDto
- * @description Payload for video content, typically stored in S3/MinIO.
- */
-export class VideoBlockContentDto implements VideoBlockContent {
-  /**
-   * The internal UUID of the file record in the `files` table.
-   * Used to maintain referential integrity (prevent GC from deleting the file).
-   */
-  @IsUUID()
-  @IsNotEmpty()
-  fileId!: string;
-
-  /**
-   * The public or presigned URL to stream the video.
-   */
-  @IsUrl()
-  @IsNotEmpty()
-  url!: string;
-
-  /**
-   * MIME type of the video file (e.g., 'video/mp4').
-   */
-  @IsOptional()
-  @IsString()
-  mimeType?: string;
-
-  /**
-   * File size in bytes.
-   */
-  @IsOptional()
-  @IsNumber()
-  size?: number;
-
-  /**
-   * Duration of the video in seconds.
-   */
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  duration?: number;
-}
-
-/**
- * @class ImageBlockContentDto
- * @description Payload for image content.
- */
-export class ImageBlockContentDto implements ImageBlockContent {
-  /**
-   * The internal UUID of the file record.
-   */
-  @IsUUID()
-  @IsNotEmpty()
-  fileId!: string;
-
-  /**
-   * The public URL to display the image.
-   */
-  @IsUrl()
-  @IsNotEmpty()
-  url!: string;
-
-  /**
-   * MIME type (e.g., 'image/jpeg', 'image/png').
-   */
-  @IsOptional()
-  @IsString()
-  mimeType?: string;
-
-  /**
-   * Optional caption text displayed below the image.
-   */
-  @IsOptional()
-  @IsString()
-  caption?: string;
-
-  /**
-   * Intrinsic width of the image (to prevent layout shifts).
-   */
-  @IsOptional()
-  @IsNumber()
-  width?: number;
-
-  /**
-   * Intrinsic height of the image.
-   */
-  @IsOptional()
-  @IsNumber()
-  height?: number;
-}
-
-/**
  * @class CodeBlockContentDto
  * @description Payload for executable code snippets/exercises.
  */
@@ -152,7 +58,7 @@ export class CodeBlockContentDto implements CodeBlockContent {
    * The task text.
    */
   @IsObject()
-  taskText: TextBlockContentDto;
+  taskText!: TextBlockContentDto;
 
   /**
    * The boilerplate code visible to the student when they start.

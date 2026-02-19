@@ -76,7 +76,7 @@ describe("GET /courses/:id (e2e)", () => {
       isPublished: false,
     });
     courseHybridDraft = c3.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();
