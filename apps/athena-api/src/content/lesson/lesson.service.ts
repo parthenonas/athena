@@ -168,7 +168,7 @@ export class LessonService extends BaseService<Lesson> {
    * sensitive data (correct answers, tests) before sending to the client.
    */
   async findOneInternal(lessonId: string): Promise<LessonView> {
-    this.logger.debug(`getLessonViewInternal() | lessonId=${lessonId}`);
+    this.logger.debug(`findOneInternal() | lessonId=${lessonId}`);
 
     const view = await this.lessonViewModel.findOne({ lessonId }).lean().exec();
 
@@ -178,6 +178,18 @@ export class LessonService extends BaseService<Lesson> {
     }
 
     return view;
+  }
+
+  /**
+   * INTERNAL API: Fetch raw LessonViews for other modules.
+   * NO ACL CHECKS HERE.
+   * The calling module (e.g., Learning) is responsible for stripping
+   * sensitive data (correct answers, tests) before sending to the client.
+   */
+  async findAllInternal(courseId: string): Promise<Lesson[]> {
+    this.logger.debug(`findAllInternal() | courseId=${courseId}`);
+
+    return await this.repo.find({ where: { courseId } });
   }
 
   /**

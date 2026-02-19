@@ -70,3 +70,23 @@ export interface StudentLessonView {
   visibleBlocksCount: number;
   blocks: SanitizedBlockView[];
 }
+
+export interface StudentDashboardLessonView {
+  status: string;
+  title: string;
+  completedBlocks: Record<string, number>;
+}
+
+export interface StudentDashboardView {
+  studentId: string;
+  courseId: string;
+  courseTitle: string;
+  courseCoverUrl?: string;
+  cohortName: string;
+  instructorName: string;
+  progressPercentage: number;
+  totalScore: number;
+  status: ProgressStatus;
+  lessons: Record<string, StudentDashboardLessonView>;
+  recentBadges: string[];
+}

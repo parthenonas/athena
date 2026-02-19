@@ -29,9 +29,7 @@ const localBlocks = computed({
 
 const blockTypes = computed(() => [
   { label: t('blocks.type.text'), icon: 'i-lucide-align-left', type: BlockType.Text },
-  { label: t('blocks.type.code'), icon: 'i-lucide-code', type: BlockType.Code },
-  { label: t('blocks.type.video'), icon: 'i-lucide-video', type: BlockType.Video },
-  { label: t('blocks.type.image'), icon: 'i-lucide-image', type: BlockType.Image }
+  { label: t('blocks.type.code'), icon: 'i-lucide-code', type: BlockType.Code }
 ])
 
 const addBlockItems = computed(() => [
@@ -47,8 +45,6 @@ const onBackgroundClick = () => {
     emit('update:activeBlockId', null)
   }
 }
-
-watch(props.blocks, newVal => console.log(newVal))
 </script>
 
 <template>

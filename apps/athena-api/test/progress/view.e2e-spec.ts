@@ -33,7 +33,7 @@ describe("POST /progress/.../view (e2e)", () => {
     const lesson = await fixtures.createLesson({ courseId: course.id, title: "Intro" });
     const block = await fixtures.createBlock({
       lessonId: lesson.id,
-      type: "video",
+      type: "text",
       content: { url: "http://..." },
     });
 

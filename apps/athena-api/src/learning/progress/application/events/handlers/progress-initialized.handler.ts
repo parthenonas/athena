@@ -1,3 +1,4 @@
+import { StudentDashboardLessonView } from "@athena/types";
 import { Logger } from "@nestjs/common";
 import { EventsHandler, IEventHandler } from "@nestjs/cqrs";
 import { InjectModel } from "@nestjs/mongoose";
@@ -47,10 +48,21 @@ export class ProgressInitializedHandler implements IEventHandler<ProgressInitial
       relations: ["cohort", "cohort.instructor"],
     });
 
+    const lessons = await this.contentService.getLessonsByCourseId(event.courseId);
+
     if (!enrollment || !course) {
       this.logger.error(`Data mismatch for projection: ${event.progressId}. Missing Course or Enrollment.`);
       return;
     }
+
+    const lessonsProjection: Record<string, StudentDashboardLessonView> = {};
+    lessons.forEach((lesson, index) => {
+      lessonsProjection[lesson.id] = {
+        title: lesson.title,
+        status: index === 0 ? "IN_PROGRESS" : "LOCKED",
+        completedBlocks: {},
+      };
+    });
 
     const instructorName = enrollment.cohort.instructor?.title
       ? `${enrollment.cohort.instructor.title} ${enrollment.cohort.instructor.ownerId}`
@@ -70,7 +82,7 @@ export class ProgressInitializedHandler implements IEventHandler<ProgressInitial
         },
 
         $setOnInsert: {
-          lessons: {},
+          lessons: lessonsProjection,
           createdAt: new Date(),
         },
       },

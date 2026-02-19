@@ -14,6 +14,7 @@ const mockDashboardModel = {
 
 const mockContentService = {
   getCourseById: jest.fn(),
+  getLessonsByCourseId: jest.fn(),
 };
 
 const mockEnrollmentRepo = {
@@ -46,6 +47,11 @@ describe("ProgressInitializedHandler (Projection)", () => {
       title: "Advanced Node.js",
     });
 
+    mockContentService.getLessonsByCourseId.mockResolvedValue([
+      { id: "lesson-1", title: "Intro to Node" },
+      { id: "lesson-2", title: "Streams & Buffers" },
+    ]);
+
     mockEnrollmentRepo.findOne.mockResolvedValue({
       id: "enrollment-1",
       cohort: {
@@ -70,7 +76,6 @@ describe("ProgressInitializedHandler (Projection)", () => {
 
     expect(mockDashboardModel.updateOne).toHaveBeenCalledWith(
       { studentId: EVENT.studentId, courseId: EVENT.courseId },
-
       {
         $set: {
           courseTitle: "Advanced Node.js",
@@ -81,11 +86,21 @@ describe("ProgressInitializedHandler (Projection)", () => {
           updatedAt: expect.any(Date),
         },
         $setOnInsert: {
-          lessons: {},
+          lessons: {
+            "lesson-1": {
+              title: "Intro to Node",
+              status: "IN_PROGRESS",
+              completedBlocks: {},
+            },
+            "lesson-2": {
+              title: "Streams & Buffers",
+              status: "LOCKED",
+              completedBlocks: {},
+            },
+          },
           createdAt: expect.any(Date),
         },
       },
-
       { upsert: true },
     );
   });

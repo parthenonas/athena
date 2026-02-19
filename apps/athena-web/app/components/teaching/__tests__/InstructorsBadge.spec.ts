@@ -112,8 +112,6 @@ describe('InstructorBadge', () => {
     const btn = wrapper.find('[data-testid="button"]')
     expect(btn.exists()).toBe(true)
 
-    console.log(wrapper.text())
-
     const text = wrapper.text()
     expect(text).toContain('John Wick')
     expect(text).toContain('Baba Yaga')

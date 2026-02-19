@@ -1,9 +1,11 @@
 import { NotFoundException } from "@nestjs/common";
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { InjectModel } from "@nestjs/mongoose";
+import { plainToInstance } from "class-transformer";
 import { Model } from "mongoose";
 
 import { StudentDashboard } from "../../../infrastructure/persistence/mongo/schemas/student-dashboard.schema";
+import { StudentDashboardViewDto } from "../../dto/student-dashboard-view.dto";
 import { GetStudentProgressQuery } from "../get-student-progress.query";
 
 /**
@@ -27,7 +29,7 @@ export class GetStudentProgressHandler implements IQueryHandler<GetStudentProgre
     private readonly dashboardModel: Model<StudentDashboard>,
   ) {}
 
-  async execute(query: GetStudentProgressQuery): Promise<StudentDashboard> {
+  async execute(query: GetStudentProgressQuery): Promise<StudentDashboardViewDto> {
     const { userId, courseId } = query;
 
     const dashboard = await this.dashboardModel.findOne({ studentId: userId, courseId: courseId }).lean();
@@ -36,6 +38,6 @@ export class GetStudentProgressHandler implements IQueryHandler<GetStudentProgre
       throw new NotFoundException("Progress not found");
     }
 
-    return dashboard;
+    return plainToInstance(StudentDashboardViewDto, dashboard, { excludeExtraneousValues: false });
   }
 }

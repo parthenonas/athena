@@ -96,6 +96,11 @@
     "video": "Video"
   },
   "components": {
+    "learn": {
+      "block-renderer": {
+        "unknown-type": "Unknown content type: {type}"
+      }
+    },
     "common": {
       "file-uploader": {
         "title": "Upload File",
@@ -273,6 +278,9 @@
         "settings": "Settings",
         "logout": "Logout"
       }
+    },
+    "learn": {
+      "lesson": "Lesson"
     },
     "placeholders": {
       "dashboard": {
@@ -775,6 +783,14 @@
       "update-error": "Failed to update schedule",
       "delete-error": "Failed to remove schedule",
       "fetch-error": "Failed to fetch schedule"
+    },
+    "learning": {
+      "dashboard-error": "Failed to load your learning dashboard. Please try again.",
+      "progress-error": "Failed to load course progress.",
+      "lesson-error": "Failed to load the lesson. It might be locked or unavailable.",
+      "view-error": "Failed to save your reading progress. Check your connection.",
+      "submission-sent": "Your solution has been submitted for grading.",
+      "submission-error": "Failed to submit your solution. Please try again."
     }
   }
 }
