@@ -4,6 +4,7 @@ export enum AthenaEvent {
   ROLE_DELETED = "role.deleted",
   SUBMISSION_COMPLETED = "submission.completed",
   ENROLLMENT_CREATED = "enrollment.created",
+  ENROLLMENT_DELETED = "ENROLLMENT_DELETED",
   PROFILE_UPDATED = "profile.updated",
   LESSON_CREATED = "lesson.created",
   LESSON_UPDATED = "lesson.updated",
@@ -23,6 +24,13 @@ export interface RoleDeletedEvent {
 }
 
 export interface EnrollmentCreatedEvent {
+  id: string;
+  userId: string;
+  cohortId: string;
+  courseId: string;
+}
+
+export interface EnrollmentDeletedEvent {
   id: string;
   userId: string;
   cohortId: string;

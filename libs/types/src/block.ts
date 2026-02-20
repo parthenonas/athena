@@ -1,7 +1,5 @@
 export enum BlockType {
   Text = "text",
-  Video = "video",
-  Image = "image",
   Code = "code",
   Quiz = "quiz",
   Survey = "survey",

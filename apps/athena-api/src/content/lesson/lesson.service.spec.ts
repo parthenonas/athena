@@ -95,6 +95,7 @@ describe("LessonService", () => {
           provide: getRepositoryToken(Lesson),
           useValue: {
             findOne: jest.fn(),
+            find: jest.fn(),
             createQueryBuilder: jest.fn(() => mockQueryBuilder),
           },
         },
@@ -220,6 +221,33 @@ describe("LessonService", () => {
 
       expect(lessonViewModel.findOne).toHaveBeenCalledWith({ lessonId: LESSON_ID });
       expect(result).toEqual(viewData);
+    });
+  });
+
+  describe("findAllInternal", () => {
+    it("should return all lessons for a given course without ACL", async () => {
+      const lessons = [mockLesson, { ...mockLesson, id: "lesson-2", title: "Second Lesson" }];
+      lessonRepo.find.mockResolvedValue(lessons);
+
+      const result = await service.findAllInternal(COURSE_ID);
+
+      expect(lessonRepo.find).toHaveBeenCalledWith({
+        where: { courseId: COURSE_ID },
+        order: { order: "ASC" },
+      });
+      expect(result).toEqual(lessons);
+    });
+
+    it("should return an empty array if no lessons are found", async () => {
+      lessonRepo.find.mockResolvedValue([]);
+
+      const result = await service.findAllInternal("empty-course");
+
+      expect(lessonRepo.find).toHaveBeenCalledWith({
+        where: { courseId: "empty-course" },
+        order: { order: "ASC" },
+      });
+      expect(result).toEqual([]);
     });
   });
 

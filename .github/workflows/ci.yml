@@ -55,8 +55,11 @@ jobs:
       - name: Build libs:types
         run: npm --workspace libs/types run build
 
-      - name: Audit
-        run: npm audit --audit-level=high
+      # TODO: Return  audit when ESLint will merge this PR и update ajv to v8:
+      # https://github.com/eslint/eslint/pull/20523
+      # add "minimatch": "^10.2.1" and "ajv": "^8.18.0" to overrides in package.json
+      # - name: Audit
+      #   run: npm audit --omit=dev --audit-level=hight
 
       - name: Lint API
         run: npm --workspace apps/athena-api run lint

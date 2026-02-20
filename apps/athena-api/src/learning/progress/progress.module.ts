@@ -5,6 +5,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { SubmissionQueueModule } from "../../submission-queue";
+import { DeleteProgressHandler } from "./application/commands/handlers/delete-progress.handler";
 import { GradeBlockHandler } from "./application/commands/handlers/grade-block.handler";
 import { InitializeProgressHandler } from "./application/commands/handlers/initialize-progress.handler";
 import { SubmitAssignmentHandler } from "./application/commands/handlers/submit-assignment.handler";
@@ -45,6 +46,7 @@ import { GradingListener } from "./presentation/grading.listener";
       useClass: TypeOrmProgressRepository,
     },
     InitializeProgressHandler,
+    DeleteProgressHandler,
     SubmitAssignmentHandler,
     CompleteBlockSyncHandler,
     ProgressInitializedHandler,

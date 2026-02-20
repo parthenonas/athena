@@ -117,6 +117,8 @@ export class StudentProgress extends AggregateRoot {
 
     const currentLessonStatus = this._lessons[lessonId].status;
 
+    const progressPercentage = this.calculatePercentage(totalLessonsInCourse, totalBlocksInLesson, lessonId);
+
     this.apply(
       new BlockCompletedEvent(
         this.id,
@@ -128,6 +130,7 @@ export class StudentProgress extends AggregateRoot {
         this._currentScore,
         currentLessonStatus,
         this._status,
+        progressPercentage,
       ),
     );
 
@@ -188,6 +191,8 @@ export class StudentProgress extends AggregateRoot {
 
     const currentLessonStatus = this._lessons[lessonId].status;
 
+    const progressPercentage = this.calculatePercentage(totalLessonsInCourse, totalBlocksInLesson, lessonId);
+
     this.apply(
       new BlockCompletedEvent(
         this.id,
@@ -199,6 +204,7 @@ export class StudentProgress extends AggregateRoot {
         this._currentScore,
         currentLessonStatus,
         this._status,
+        progressPercentage,
       ),
     );
 
@@ -282,6 +288,31 @@ export class StudentProgress extends AggregateRoot {
 
   private updateTimestamp(): void {
     this._updatedAt = new Date();
+  }
+
+  private calculatePercentage(
+    totalLessonsInCourse: number,
+    currentLessonTotalBlocks: number,
+    currentLessonId: string,
+  ): number {
+    if (totalLessonsInCourse === 0) return 0;
+
+    let completedLessons = 0;
+    let partialLessonProgress = 0;
+
+    for (const [id, lesson] of Object.entries(this._lessons)) {
+      if (lesson.status === ProgressStatus.COMPLETED) {
+        completedLessons++;
+      } else if (id === currentLessonId && currentLessonTotalBlocks > 0) {
+        const gradedBlocks = Object.values(lesson.completedBlocks).filter(
+          b => b.status === GradingStatus.GRADED,
+        ).length;
+        partialLessonProgress = gradedBlocks / currentLessonTotalBlocks;
+      }
+    }
+
+    const percentage = ((completedLessons + partialLessonProgress) / totalLessonsInCourse) * 100;
+    return Math.min(100, Math.round(percentage));
   }
 
   // --- Getters ---

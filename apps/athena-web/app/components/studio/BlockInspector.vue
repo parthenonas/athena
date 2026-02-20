@@ -25,8 +25,6 @@ const settingsComponent = computed(() => {
 
 const settingsIcon = computed(() => {
   switch (props.block.type) {
-    case BlockType.Video: return 'i-lucide-video'
-    case BlockType.Image: return 'i-lucide-image'
     case BlockType.Code: return 'i-lucide-code'
     case BlockType.Text: return 'i-lucide-align-left'
     default: return 'i-lucide-box'

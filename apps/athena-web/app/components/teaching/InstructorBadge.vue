@@ -16,8 +16,6 @@ const { data: instructor, status } = await useAsyncData(
     dedupe: 'defer'
   }
 )
-
-console.log('fuck')
 </script>
 
 <template>

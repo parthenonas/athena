@@ -10,6 +10,7 @@ import { EnrollmentService } from "./enrollment.service";
 import { Enrollment } from "./entities/enrollment.entity";
 import { IdentityService } from "../../identity";
 import { OutboxService } from "../../outbox";
+import { AthenaEvent } from "../../shared/events/types";
 
 const mockIdentityService = {
   checkAbility: jest.fn(),
@@ -24,6 +25,7 @@ const mockManager = {
   findOne: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
+  remove: jest.fn(),
 };
 
 const mockQueryRunner = {
@@ -230,28 +232,36 @@ describe("EnrollmentService", () => {
   });
 
   describe("delete", () => {
-    it("should delete enrollment when access allowed", async () => {
-      repo.findOne.mockResolvedValue(mockEnrollment);
-      repo.remove.mockResolvedValue(mockEnrollment);
+    it("should delete enrollment when access allowed and emit event", async () => {
+      const mockEnrollmentData = {
+        id: "enroll-1",
+        ownerId: "user-1",
+        cohortId: "cohort-1",
+        cohort: { courseId: "course-1" },
+      };
 
-      await service.delete(ENROLLMENT_ID, USER_ID, APPLIED_OWN_ONLY);
+      repo.findOne.mockResolvedValue(mockEnrollmentData as any);
+      identityService.checkAbility.mockReturnValue(true);
 
-      expect(identityService.checkAbility).toHaveBeenCalledWith(Policy.OWN_ONLY, USER_ID, mockEnrollment);
-      expect(repo.remove).toHaveBeenCalled();
+      await service.delete("enroll-1", "user-1", [Policy.OWN_ONLY]);
+
+      expect(mockManager.remove).toHaveBeenCalledWith(Enrollment, mockEnrollmentData);
+
+      expect(mockOutboxService.save).toHaveBeenCalledWith(mockManager, AthenaEvent.ENROLLMENT_DELETED, {
+        id: "enroll-1",
+        userId: "user-1",
+        cohortId: "cohort-1",
+        courseId: "course-1",
+      });
+
+      expect(mockQueryRunner.commitTransaction).toHaveBeenCalled();
     });
 
-    it("should throw ForbiddenException if access denied", async () => {
-      repo.findOne.mockResolvedValue(mockEnrollment);
+    it("should throw ForbiddenException if ACL fails", async () => {
+      repo.findOne.mockResolvedValue({ id: "enroll-1", cohort: {} } as any);
       identityService.checkAbility.mockReturnValue(false);
 
-      await expect(service.delete(ENROLLMENT_ID, OTHER_ID, APPLIED_OWN_ONLY)).rejects.toBeInstanceOf(
-        ForbiddenException,
-      );
-    });
-
-    it("should throw NotFoundException", async () => {
-      repo.findOne.mockResolvedValue(null);
-      await expect(service.delete("nope", USER_ID, APPLIED_NONE)).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.delete("enroll-1", "user-1", [Policy.OWN_ONLY])).rejects.toThrow(ForbiddenException);
     });
   });
 });

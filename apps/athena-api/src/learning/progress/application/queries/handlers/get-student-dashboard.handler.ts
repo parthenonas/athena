@@ -1,8 +1,10 @@
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { InjectModel } from "@nestjs/mongoose";
+import { plainToInstance } from "class-transformer";
 import { Model } from "mongoose";
 
 import { StudentDashboard } from "../../../infrastructure/persistence/mongo/schemas/student-dashboard.schema";
+import { StudentDashboardViewDto } from "../../dto/student-dashboard-view.dto";
 import { GetStudentDashboardQuery } from "../get-student-dashboard.query";
 
 /**
@@ -26,7 +28,8 @@ export class GetStudentDashboardHandler implements IQueryHandler<GetStudentDashb
     private readonly dashboardModel: Model<StudentDashboard>,
   ) {}
 
-  async execute(query: GetStudentDashboardQuery): Promise<StudentDashboard[]> {
-    return this.dashboardModel.find({ studentId: query.studentId }).sort({ updatedAt: -1 }).lean().exec();
+  async execute(query: GetStudentDashboardQuery): Promise<StudentDashboardViewDto[]> {
+    const result = await this.dashboardModel.find({ studentId: query.studentId }).sort({ updatedAt: -1 }).lean().exec();
+    return plainToInstance(StudentDashboardViewDto, result, { excludeExtraneousValues: false });
   }
 }
