@@ -64,8 +64,6 @@
   "overrides": {
     "fast-xml-parser": "^5.3.4",
     "lodash": "^4.17.21",
-    "@nestjs/config": "^4.0.2",
-    "minimatch": "^10.2.1",
-    "ajv": "^8.18.0"
+    "@nestjs/config": "^4.0.2"
   }
 }
