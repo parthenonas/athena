@@ -62,4 +62,11 @@ export class TypeOrmProgressRepository implements IProgressRepository {
     if (!entity) return null;
     return ProgressMapper.toDomain(entity);
   }
+
+  /**
+   * Deletes a progress record by its UUID.
+   */
+  async deleteByEnrollmentId(enrollmentId: string): Promise<void> {
+    await this.repo.delete({ enrollmentId });
+  }
 }

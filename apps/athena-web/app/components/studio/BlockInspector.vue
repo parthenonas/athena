@@ -25,8 +25,6 @@ const settingsComponent = computed(() => {
 
 const settingsIcon = computed(() => {
   switch (props.block.type) {
-    case BlockType.Video: return 'i-lucide-video'
-    case BlockType.Image: return 'i-lucide-image'
     case BlockType.Code: return 'i-lucide-code'
     case BlockType.Text: return 'i-lucide-align-left'
     default: return 'i-lucide-box'
@@ -34,10 +32,10 @@ const settingsIcon = computed(() => {
 })
 
 const actionOptions = computed(() => [
-  { label: t('enums.action.view'), value: BlockRequiredAction.VIEW },
-  { label: t('enums.action.interact'), value: BlockRequiredAction.INTERACT },
-  { label: t('enums.action.submit'), value: BlockRequiredAction.SUBMIT },
-  { label: t('enums.action.pass'), value: BlockRequiredAction.PASS }
+  { label: t('blocks.actions.view'), id: BlockRequiredAction.VIEW },
+  { label: t('blocks.actions.interact'), id: BlockRequiredAction.INTERACT },
+  { label: t('blocks.actions.submit'), id: BlockRequiredAction.SUBMIT },
+  { label: t('blocks.actions.pass'), id: BlockRequiredAction.PASS }
 ])
 
 const updateContent = (keyOrPayload: string | Record<string, unknown>, value?: unknown) => {
@@ -87,9 +85,8 @@ const updateRoot = (key: keyof BlockResponse, value: unknown) => {
         <UFormField :label="$t('pages.studio.builder.inspector.required-action')">
           <USelectMenu
             :model-value="block.requiredAction"
-            :options="actionOptions"
-            value-attribute="value"
-            option-attribute="label"
+            :items="actionOptions"
+            value-key="id"
             class="w-full"
             @update:model-value="val => updateRoot('requiredAction', val)"
           />

@@ -43,6 +43,7 @@ export class BlockCompletedHandler implements IEventHandler<BlockCompletedEvent>
           [lessonStatusPath]: event.lessonStatus,
           totalScore: event.courseScore,
           status: event.courseStatus,
+          progressPercentage: event.progressPercentage,
           updatedAt: new Date(),
         },
       },

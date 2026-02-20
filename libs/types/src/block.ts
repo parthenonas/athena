@@ -1,7 +1,5 @@
 export enum BlockType {
   Text = "text",
-  Video = "video",
-  Image = "image",
   Code = "code",
   Quiz = "quiz",
   Survey = "survey",
@@ -32,23 +30,6 @@ export enum SurveyQuestionType {
 
 export interface TextBlockContent {
   json: Record<string, unknown>;
-}
-
-export interface VideoBlockContent {
-  fileId: string;
-  url: string;
-  mimeType?: string;
-  size?: number;
-  duration?: number;
-}
-
-export interface ImageBlockContent {
-  fileId: string;
-  url: string;
-  mimeType?: string;
-  caption?: string;
-  width?: number;
-  height?: number;
 }
 
 export interface CodeBlockContent {

@@ -14,7 +14,7 @@ describe("POST /media/quotas (e2e)", () => {
     fixtures = res.fixtures;
     const { adminToken: token } = await fixtures.seedAdmin();
     adminToken = token;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

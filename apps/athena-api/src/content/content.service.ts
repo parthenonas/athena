@@ -7,12 +7,16 @@ import { CodeBlockContentDto } from "./block/dto/content-payload.dto";
 import { CourseService } from "./course/course.service";
 import { CreateCourseDto } from "./course/dto/create.dto";
 import { ReadCourseDto } from "./course/dto/read.dto";
+import { Lesson } from "./lesson/entities/lesson.entity";
+import { LessonService } from "./lesson/lesson.service";
+import { LessonView } from "./lesson/schemas/lesson-view.schema";
 
 @Injectable()
 export class ContentService {
   constructor(
     private readonly courseService: CourseService,
     private readonly blockService: BlockService,
+    private readonly lessonService: LessonService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -63,5 +67,13 @@ export class ContentService {
       totalBlocksInLesson: +row.blocksCount || 0,
       totalLessonsInCourse: +row.lessonsCount || 0,
     };
+  }
+
+  getLessonViewInternal(lessonId: string): Promise<LessonView> {
+    return this.lessonService.findOneInternal(lessonId);
+  }
+
+  getLessonsByCourseId(courseId: string): Promise<Lesson[]> {
+    return this.lessonService.findAllInternal(courseId);
   }
 }

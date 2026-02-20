@@ -56,34 +56,40 @@ The project is under active development and not production-ready yet.
 
 ### Prerequisites
 - Node.js 20+
-- Docker & Docker Compose
+- Docker & Docker Compose (See [installation manual](https://docs.docker.com/engine/install/))
 
 ### Installation
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/parthenonas/athena.git
    cd athena
    ```
 
 2. **Install dependencies:**
+
     ```bash
     npm install
     ```
 
 3. **Setup Environment: Copy `.env.example` to `.env`**
+
     ```bash
+    cp .env.example .env
     cp apps/athena-api/.env.example apps/athena-api/.env
     cp apps/athena-runner/.env.example apps/athena-runner/.env
     cp apps/athena-web/.env.example apps/athena-web/.env
     ```
 
 4. **Start Infrastructure (DB, Redis):**
+
     ```bash
-    docker-compose -f docker-compose.infra.yml up -d
+    docker compose -f docker-compose.infra.yml up -d
     ```
 
 5. **Build Shared Libs:**
+
     ```bash
     npm run build:types
     npm run build:common
@@ -92,7 +98,13 @@ The project is under active development and not production-ready yet.
 
 ## Development
 
-Run services in separate terminals:
+Migrate databases if needed:
+
+```bash
+npm run migration:run
+```
+
+Then run services in separate terminals:
 
 ```bash
 # Start backend (API):
@@ -105,6 +117,29 @@ npm run dev:runner
 npm run dev:web
 ```
 
+### Troubleshooting `ENOSPC` Error
+
+> **Note for macOS and Windows users:**  
+> This issue is specific to **Linux** systems. If you are using macOS or Windows, you can ignore this step as these operating systems handle file watching differently.
+
+If you encounter the error `ENOSPC: System limit for number of file watchers reached` after `npm run dev:web`, it means your Linux system has hit its inotify limit. This is common in large web projects.
+
+To fix this, increase the watcher limit using one of the following methods:
+
+1. Temporary fix (resets after reboot):
+
+    ```bash
+    sudo sysctl fs.inotify.max_user_watches=524288
+    sudo sysctl -p
+    ```
+
+2. Permanent fix:
+
+    Run the following command to persist the setting:
+
+    ```bash
+    echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+    ```
 
 ## Testing
 

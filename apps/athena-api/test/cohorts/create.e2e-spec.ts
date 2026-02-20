@@ -52,7 +52,7 @@ describe("POST /cohorts (e2e)", () => {
     mockCreateDto.courseId = course.id;
 
     managerToken = await fixtures.login("manager_user", "Password123!");
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

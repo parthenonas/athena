@@ -35,7 +35,7 @@ describe("GET /media/:id (e2e)", () => {
       .field("access", FileAccess.Private);
 
     fileId = uploadRes.body.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

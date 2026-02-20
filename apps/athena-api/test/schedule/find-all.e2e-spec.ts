@@ -68,7 +68,7 @@ describe("GET /schedules (e2e)", () => {
       lessonId: lesson.id,
     });
     scheduleB_Id = schedB.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

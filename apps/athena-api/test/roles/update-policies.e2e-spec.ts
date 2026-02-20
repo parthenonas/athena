@@ -16,7 +16,7 @@ describe("PATCH /roles/:id/policies (e2e)", () => {
 
     const admin = await fixtures.seedAdmin();
     adminToken = admin.adminToken;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

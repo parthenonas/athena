@@ -1,5 +1,11 @@
 {
   "blocks": {
+    "actions": {
+      "view": "View content",
+      "interact": "Click button",
+      "submit": "Submit answer",
+      "pass": "Pass check"
+    },
     "type": {
       "text": "Text",
       "code": "Code",
@@ -90,6 +96,11 @@
     "video": "Video"
   },
   "components": {
+    "learn": {
+      "block-renderer": {
+        "unknown-type": "Unknown content type: {type}"
+      }
+    },
     "common": {
       "file-uploader": {
         "title": "Upload File",
@@ -211,6 +222,13 @@
       "confirm-password": "Confirm New Password",
       "change-password-btn": "Update Password",
       "password-changed": "Password changed successfully",
+      "profile-title": "Profile",
+      "first-name": "First name",
+      "last-name": "Last name",
+      "patronymic": "Patronymic",
+      "save-profile-btn": "Save Profile",
+      "remove-avatar": "Remove photo",
+      "upload-avatar": "Upload photo",
       "errors": {
         "old-password-required": "Please enter your current password",
         "passwords-mismatch": "Passwords do not match"
@@ -260,6 +278,21 @@
         "settings": "Settings",
         "logout": "Logout"
       }
+    },
+    "learn": {
+      "lesson": "Lesson",
+      "no-courses": "You are not enrolled in any courses yet.",
+      "progress": "Progress",
+      "total-score": "Total Score",
+      "start": "Start Course",
+      "continue": "Continue",
+      "review": "Review Course",
+      "loading-course": "Loading your course...",
+      "loading": "Loading...",
+      "lesson-goals": "Lesson Goals",
+      "lesson-completed-title": "Great Job!",
+      "lesson-completed-desc": "You've successfully completed this lesson. Keep it up to finish the course!",
+      "back-to-dashboard": "Back to Dashboard"
     },
     "placeholders": {
       "dashboard": {
@@ -396,9 +429,12 @@
       "title": "Course Manager",
       "subtitle": "Create, manage, and organize your educational content.",
       "create": "Create Course",
+      "sync": "Sync content",
       "builder": "Open Builder",
       "delete-title": "Delete Course?",
       "delete-confirm": "Are you sure? This action cannot be undone and will delete all lessons within this course.",
+      "sync-title": "Sync courses?",
+      "sync-confirm": "Are you sure? This will forcefully rebuild the display data from the main database to fix any missing content. It might take a few moments.",
       "columns": {
         "title": "Title",
         "created-at": "Created At",
@@ -631,6 +667,11 @@
     "open": "Open",
     "closed": "Closed"
   },
+  "course-statuses": {
+    "not-started": "Not Started",
+    "in-progress": "In Progress",
+    "completed": "Completed"
+  },
   "toasts": {
     "roles": {
       "created": {
@@ -691,6 +732,16 @@
         "title": "Profile updated",
         "description": "Profile details have been successfully saved.",
         "error": "Failed to update profile"
+      },
+      "me-created": {
+        "title": "Welcome!",
+        "description": "Your profile has been set up successfully.",
+        "error": "Failed to set up your profile."
+      },
+      "me-updated": {
+        "title": "Saved",
+        "description": "Your personal information has been updated.",
+        "error": "Failed to save your changes."
       }
     },
     "quotas": {
@@ -714,7 +765,8 @@
       "create-error": "Failed to create lesson",
       "update-error": "Failed to update lesson",
       "delete-error": "Failed to delete lesson",
-      "fetch-error": "Failed to fetch lessons"
+      "fetch-error": "Failed to fetch lessons",
+      "sync-error": "Failed to sync lessons"
     },
     "instructors": {
       "created": "Instructor profile created",
@@ -748,6 +800,15 @@
       "update-error": "Failed to update schedule",
       "delete-error": "Failed to remove schedule",
       "fetch-error": "Failed to fetch schedule"
+    },
+    "learning": {
+      "dashboard-error": "Failed to load your learning dashboard. Please try again.",
+      "progress-error": "Failed to load course progress.",
+      "lesson-error": "Failed to load the lesson. It might be locked or unavailable.",
+      "view-error": "Failed to save your reading progress. Check your connection.",
+      "submission-sent": "Your solution has been submitted for grading.",
+      "submission-error": "Failed to submit your solution. Please try again.",
+      "course-load-error": "Failed to load course progress. Please try again."
     }
   }
 }

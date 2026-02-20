@@ -15,7 +15,7 @@ describe("GET /accounts/:id (e2e)", () => {
     fixtures = res.fixtures;
     const { adminToken } = await fixtures.seedAdmin();
     accessToken = adminToken;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

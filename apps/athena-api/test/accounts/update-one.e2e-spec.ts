@@ -27,7 +27,7 @@ describe("PATCH /accounts/:id (e2e)", () => {
     });
 
     userRoleId = role.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

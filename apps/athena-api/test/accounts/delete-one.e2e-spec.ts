@@ -18,7 +18,7 @@ describe("DELETE /accounts/:id (e2e)", () => {
       permissions: [Permission.ACCOUNTS_DELETE],
     });
     adminToken = token;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

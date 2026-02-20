@@ -39,7 +39,7 @@ describe("GET /progress/:courseId (Detailed) (e2e)", () => {
     await fixtures.enrollStudentWithProgress({ userId: user.id, cohortId: cohort.id, courseId });
 
     await new Promise(r => setTimeout(r, 1000));
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

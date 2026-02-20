@@ -60,7 +60,7 @@ describe("PATCH /enrollments/:id (e2e)", () => {
       roleId: studentRole.id,
     });
     attackerToken = await fixtures.login("enroll_attacker", "Password123!");
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

@@ -10,6 +10,7 @@ import { ProgressMapper } from "../mappers/progress.mapper";
 const mockRepo = {
   save: jest.fn(),
   findOne: jest.fn(),
+  delete: jest.fn(),
 };
 
 const mockDomainObject = { id: "dom-1" } as unknown as StudentProgress;
@@ -68,6 +69,27 @@ describe("TypeOrmProgressRepository", () => {
     });
   });
 
+  describe("findById", () => {
+    it("should return Domain Object if entity found", async () => {
+      mockRepo.findOne.mockResolvedValue(mockOrmEntity);
+      const mapSpy = jest.spyOn(ProgressMapper, "toDomain").mockReturnValue(mockDomainObject);
+
+      const result = await repository.findById("prog-1");
+
+      expect(typeOrmRepo.findOne).toHaveBeenCalledWith({ where: { id: "prog-1" } });
+      expect(mapSpy).toHaveBeenCalledWith(mockOrmEntity);
+      expect(result).toBe(mockDomainObject);
+    });
+
+    it("should return null if not found", async () => {
+      mockRepo.findOne.mockResolvedValue(null);
+
+      const result = await repository.findById("prog-1");
+
+      expect(result).toBeNull();
+    });
+  });
+
   describe("findByUserAndCourse", () => {
     it("should return Domain Object if entity found", async () => {
       mockRepo.findOne.mockResolvedValue(mockOrmEntity);
@@ -86,6 +108,16 @@ describe("TypeOrmProgressRepository", () => {
       const result = await repository.findByUserAndCourse("u1", "c1");
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe("deleteByEnrollmentId", () => {
+    it("should call delete on repo with correct enrollmentId", async () => {
+      mockRepo.delete.mockResolvedValue({ affected: 1 });
+
+      await repository.deleteByEnrollmentId("enroll-123");
+
+      expect(typeOrmRepo.delete).toHaveBeenCalledWith({ enrollmentId: "enroll-123" });
     });
   });
 });

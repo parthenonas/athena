@@ -48,5 +48,6 @@ export class BlockCompletedEvent {
      * The status of the course *after* this block was completed.
      */
     public readonly courseStatus: ProgressStatus,
+    public readonly progressPercentage: number,
   ) {}
 }

@@ -37,7 +37,7 @@ export class CreateProfileDto implements CreateProfileRequest {
    * Link to avatar (Optional).
    */
   @IsOptional()
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   avatarUrl?: string;
 
   /**

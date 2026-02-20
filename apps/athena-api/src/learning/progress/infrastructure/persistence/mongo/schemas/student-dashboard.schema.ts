@@ -8,8 +8,9 @@ export type StudentDashboardDocument = HydratedDocument<StudentDashboard>;
  * Nested schema for lesson summary in dashboard.
  */
 export class DashboardLessonData {
-  status: string;
-  completedBlocks: Record<string, number>;
+  status!: string;
+  title!: string;
+  completedBlocks!: Record<string, number>;
 }
 
 /**
@@ -25,41 +26,41 @@ export class DashboardLessonData {
 @Schema({ collection: "student_dashboards", timestamps: true })
 export class StudentDashboard {
   @Prop({ required: true, index: true })
-  studentId: string;
+  studentId!: string;
 
   @Prop({ required: true })
-  courseId: string;
+  courseId!: string;
 
   @Prop({ required: true })
-  courseTitle: string;
+  courseTitle!: string;
 
   @Prop({ required: false })
   courseCoverUrl?: string;
 
   @Prop({ required: true })
-  cohortName: string;
+  cohortName!: string;
 
   @Prop({ required: true })
-  instructorName: string;
+  instructorName!: string;
 
   @Prop({ default: 0 })
-  progressPercentage: number;
+  progressPercentage!: number;
 
   @Prop({ default: 0 })
-  totalScore: number;
+  totalScore!: number;
 
   @Prop({ type: String, enum: ProgressStatus, default: ProgressStatus.IN_PROGRESS })
-  status: ProgressStatus;
+  status!: ProgressStatus;
 
   /**
    * Flat map of lesson statuses.
    * Allows the frontend to render the course map quickly.
    */
   @Prop({ type: Object, default: {} })
-  lessons: Record<string, DashboardLessonData>;
+  lessons!: Record<string, DashboardLessonData>;
 
   @Prop([String])
-  recentBadges: string[];
+  recentBadges!: string[];
 }
 
 export const StudentDashboardSchema = SchemaFactory.createForClass(StudentDashboard);

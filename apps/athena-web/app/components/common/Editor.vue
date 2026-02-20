@@ -15,13 +15,8 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const EMPTY_DOCUMENT = { type: 'doc', content: [{ type: 'paragraph' }] }
 
-// --- 1. РАЗРЫВ ПЕТЛИ (Fix content wipe) ---
-// Инициализируем локальный стейт ОДИН раз.
-// Мы не слушаем props.modelValue во время редактирования, чтобы не сбивать Tiptap.
-// Компонент пересоздается при смене блока (key=id в родителе), так что данные всегда свежие.
 const localContent = ref(props.modelValue || EMPTY_DOCUMENT)
 
-// Эмитим изменения наверх, но не обновляем localContent из пропсов
 watch(localContent, (val) => {
   emit('update:modelValue', val)
   emit('change')
@@ -100,7 +95,6 @@ const suggestionItems = computed<EditorSuggestionMenuItem[][]>(() => [
   ]
 ])
 
-// --- 2. УПРАВЛЕНИЕ READ-ONLY (Manual Sync) ---
 const editorRef = ref()
 
 const syncEditableState = () => {
@@ -113,13 +107,10 @@ const syncEditableState = () => {
   }
 }
 
-// Следим за пропом
 watch(() => props.readOnly, syncEditableState)
 
-// Синхронизируем при появлении редактора (важно для инита)
 watch(() => editorRef.value?.editor, (val) => {
   if (val) {
-    // nextTick чтобы дать Tiptap продышаться
     nextTick(syncEditableState)
   }
 })

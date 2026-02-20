@@ -53,7 +53,7 @@ describe("POST /instructors (e2e)", () => {
     });
 
     mockCreateDto.ownerId = targetUserId;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

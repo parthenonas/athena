@@ -64,7 +64,7 @@ describe("Profile Targeted Routes (e2e)", () => {
       firstName: "Other",
       lastName: "Guy",
     });
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

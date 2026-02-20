@@ -10,6 +10,7 @@ import { CompleteBlockSyncCommand } from "../application/commands/complete-block
 import { SubmitAssignmentCommand } from "../application/commands/submit-assignment.command";
 import { StudentSubmissionDto } from "../application/dto/student-submission.dto";
 import { GetStudentDashboardQuery } from "../application/queries/get-student-dashboard.query";
+import { GetStudentLessonQuery } from "../application/queries/get-student-lesson.query";
 import { GetStudentProgressQuery } from "../application/queries/get-student-progress.query";
 
 /**
@@ -88,5 +89,18 @@ export class ProgressController {
   @RequirePermission(Permission.ENROLLMENTS_READ)
   async getMyProgress(@Param("courseId") courseId: string, @CurrentUser("sub") userId: string) {
     return this.queryBus.execute(new GetStudentProgressQuery(userId, courseId));
+  }
+
+  /**
+   * Fetches the detailed map of a specific course (Lessons, Blocks, Statuses).
+   */
+  @Get(":courseId/lesson/:lessonId")
+  @RequirePermission(Permission.ENROLLMENTS_READ)
+  async getLesson(
+    @Param("courseId") courseId: string,
+    @Param("lessonId") lessonId: string,
+    @CurrentUser("sub") userId: string,
+  ) {
+    return this.queryBus.execute(new GetStudentLessonQuery(userId, courseId, lessonId));
   }
 }

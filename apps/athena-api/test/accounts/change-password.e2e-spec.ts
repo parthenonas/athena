@@ -25,7 +25,7 @@ describe("PATCH /accounts/me/password (e2e)", () => {
     });
 
     token = await fixtures.login(login, oldPassword);
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);

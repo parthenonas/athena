@@ -317,6 +317,23 @@ export const useStudio = () => {
     })
   }
 
+  const syncContent = async () => {
+    try {
+      const data = await $api('/api/lessons/sync', {
+        method: 'POST'
+      })
+      return data
+    } catch (error: unknown) {
+      console.error(error)
+      toast.add({
+        title: t('common.error'),
+        description: t('toasts.lessons.sync-error'),
+        color: 'error'
+      })
+      throw error
+    }
+  }
+
   return {
     fetchCourses,
     fetchCourse,
@@ -333,6 +350,7 @@ export const useStudio = () => {
     updateBlock,
     deleteBlock,
     reorderBlock,
-    runBlockCode
+    runBlockCode,
+    syncContent
   }
 }

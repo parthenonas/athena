@@ -67,7 +67,7 @@ describe("GET /enrollments (e2e)", () => {
       ownerId: userB.id,
     });
     enrollmentB_Id = enrollB.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

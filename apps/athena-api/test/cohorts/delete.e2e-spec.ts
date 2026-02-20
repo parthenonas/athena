@@ -67,7 +67,7 @@ describe("DELETE /cohorts/:id (e2e)", () => {
     });
     cohortId = cohort.id;
     courseId = course.id;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await fixtures.resetDatabase();

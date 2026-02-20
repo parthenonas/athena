@@ -34,4 +34,9 @@ export interface IProgressRepository {
    * Finds a progress record by the composite key of User + Course.
    */
   findByUserAndCourse(userId: string, courseId: string): Promise<StudentProgress | null>;
+
+  /**
+   * Deletes a progress record by its UUID.
+   */
+  deleteByEnrollmentId(enrollmentId: string): Promise<void>;
 }

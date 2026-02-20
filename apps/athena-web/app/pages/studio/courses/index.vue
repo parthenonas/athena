@@ -7,7 +7,7 @@ definePageMeta({
 })
 
 const { t } = useI18n()
-const { fetchCourses, deleteCourse } = useStudio()
+const { fetchCourses, deleteCourse, syncContent } = useStudio()
 const router = useRouter()
 
 const search = ref('')
@@ -75,6 +75,23 @@ const onConfirmDelete = async () => {
   }
 }
 
+const isSyncOpen = ref(false)
+const syncLoading = ref(false)
+
+const openSync = () => {
+  isSyncOpen.value = true
+}
+
+const onConfirmSync = async () => {
+  syncLoading.value = true
+  try {
+    await syncContent()
+    isSyncOpen.value = false
+  } finally {
+    syncLoading.value = false
+  }
+}
+
 const openBuilder = (course: CourseResponse) => {
   router.push(`/studio/courses/${course.id}`)
 }
@@ -82,7 +99,7 @@ const openBuilder = (course: CourseResponse) => {
 
 <template>
   <div class="p-4 space-y-4">
-    <div class="flex justify-between items-center">
+    <div class="flex justify-between items-center gap-2">
       <div>
         <h1 class="text-2xl font-display font-bold text-gray-900 dark:text-white">
           {{ $t('pages.courses.title') }}
@@ -91,6 +108,13 @@ const openBuilder = (course: CourseResponse) => {
           {{ $t('pages.courses.subtitle') }}
         </p>
       </div>
+      <UButton
+        icon="i-lucide-plus"
+        :label="$t('pages.courses.sync')"
+        color="error"
+        variant="solid"
+        @click="openSync"
+      />
       <UButton
         icon="i-lucide-plus"
         :label="$t('pages.courses.create')"
@@ -217,6 +241,15 @@ const openBuilder = (course: CourseResponse) => {
       :description="$t('pages.courses.delete-confirm')"
       :loading="deleteLoading"
       @confirm="onConfirmDelete"
+    />
+
+    <ConfirmModal
+      v-model:open="isSyncOpen"
+      danger
+      :title="$t('pages.courses.sync-title')"
+      :description="$t('pages.courses.sync-confirm')"
+      :loading="syncLoading"
+      @confirm="onConfirmSync"
     />
   </div>
 </template>

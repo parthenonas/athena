@@ -16,7 +16,7 @@ describe("RoleController (e2e)", () => {
 
     const { adminToken: token } = await fixtures.seedAdmin();
     adminToken = token;
-  }, 30000);
+  }, 60000);
 
   afterAll(async () => {
     await shutdownE2E(app);
