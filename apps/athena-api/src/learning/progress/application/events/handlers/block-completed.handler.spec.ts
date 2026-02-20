@@ -23,6 +23,7 @@ describe("BlockCompletedHandler (Projection)", () => {
     500,
     ProgressStatus.COMPLETED,
     ProgressStatus.IN_PROGRESS,
+    100,
   );
 
   beforeEach(async () => {
@@ -56,6 +57,7 @@ describe("BlockCompletedHandler (Projection)", () => {
 
           totalScore: EVENT.courseScore,
           status: EVENT.courseStatus,
+          progressPercentage: EVENT.progressPercentage,
           updatedAt: expect.any(Date),
         },
       },

@@ -207,14 +207,14 @@ export class EnrollmentService extends BaseService<Enrollment> {
     try {
       const manager = queryRunner.manager;
 
-      await manager.remove(Enrollment, enrollment);
-
       const event = {
         id: enrollment.id,
         userId: enrollment.ownerId,
         cohortId: enrollment.cohortId,
         courseId: enrollment.cohort.courseId,
       };
+
+      await manager.remove(Enrollment, enrollment);
 
       await this.outboxService.save(manager, AthenaEvent.ENROLLMENT_DELETED, event);
 

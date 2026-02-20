@@ -14,7 +14,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'viewed', blockId: string): void
-  (e: 'submit', blockId: string, payload: unknown): void
+  (e: 'submit', blockId: string, payload: { code: string }): void
   (e: 'run', blockId: string, code: string): void
 }>()
 

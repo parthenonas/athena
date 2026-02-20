@@ -31,7 +31,7 @@ export class DeleteProgressHandler implements ICommandHandler<DeleteProgressComm
 
     this.logger.log(`Initializing progress for enrollment ${enrollmentId}`);
 
-    await this.repo.delete({ enrollmentId });
+    await this.repo.deleteByEnrollmentId(enrollmentId);
 
     await this.dashboardModel.deleteOne({
       studentId,

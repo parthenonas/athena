@@ -233,6 +233,7 @@ describe("LessonService", () => {
 
       expect(lessonRepo.find).toHaveBeenCalledWith({
         where: { courseId: COURSE_ID },
+        order: { order: "ASC" },
       });
       expect(result).toEqual(lessons);
     });
@@ -244,6 +245,7 @@ describe("LessonService", () => {
 
       expect(lessonRepo.find).toHaveBeenCalledWith({
         where: { courseId: "empty-course" },
+        order: { order: "ASC" },
       });
       expect(result).toEqual([]);
     });

@@ -56,7 +56,7 @@ describe('BlockRenderer.vue', () => {
     }
 
     const wrapper = mount(BlockRenderer, {
-      props: { block },
+      props: { block: block as any },
       global: globalMountOptions
     })
 
@@ -73,7 +73,7 @@ describe('BlockRenderer.vue', () => {
     }
 
     const wrapper = mount(BlockRenderer, {
-      props: { block },
+      props: { block: block as any },
       global: globalMountOptions
     })
 
@@ -90,7 +90,7 @@ describe('BlockRenderer.vue', () => {
     }
 
     const wrapper = mount(BlockRenderer, {
-      props: { block },
+      props: { block: block as any },
       global: globalMountOptions
     })
 
@@ -108,7 +108,7 @@ describe('BlockRenderer.vue', () => {
     }
 
     const wrapper = mount(BlockRenderer, {
-      props: { block },
+      props: { block: block as any },
       global: globalMountOptions
     })
 
@@ -130,7 +130,7 @@ describe('BlockRenderer.vue', () => {
     }
 
     mount(BlockRenderer, {
-      props: { block },
+      props: { block: block as any },
       global: globalMountOptions
     })
 
@@ -147,7 +147,7 @@ describe('BlockRenderer.vue', () => {
     }
 
     const wrapper = mount(BlockRenderer, {
-      props: { block },
+      props: { block: block as any },
       global: globalMountOptions
     })
 
@@ -170,7 +170,7 @@ describe('BlockRenderer.vue', () => {
     }
 
     const wrapper = mount(BlockRenderer, {
-      props: { block },
+      props: { block: block as any },
       global: globalMountOptions
     })
 
@@ -188,7 +188,7 @@ describe('BlockRenderer.vue', () => {
     }
 
     const wrapper = mount(BlockRenderer, {
-      props: { block },
+      props: { block: block as any },
       global: globalMountOptions
     })
 

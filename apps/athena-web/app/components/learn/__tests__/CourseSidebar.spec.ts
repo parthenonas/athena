@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import CourseSidebar from '../CourseSidebar.vue'
-import type { StudentDashboardResponse } from '~/composables/useLearning'
-import { ProgressStatus } from '@athena/types'
+import { ProgressStatus, type StudentDashboardView } from '@athena/types'
 
 const UIconStub = {
   name: 'UIcon',
@@ -26,7 +25,7 @@ const globalMountOptions = {
 }
 
 describe('CourseSidebar.vue', () => {
-  const mockProgress: StudentDashboardResponse = {
+  const mockProgress: StudentDashboardView = {
     studentId: 's1',
     courseId: 'c1',
     courseTitle: 'Test Course',
@@ -37,9 +36,9 @@ describe('CourseSidebar.vue', () => {
     status: ProgressStatus.IN_PROGRESS,
     recentBadges: [],
     lessons: {
-      'lesson-1': { status: 'COMPLETED', completedBlocks: {} },
-      'lesson-2': { status: 'IN_PROGRESS', completedBlocks: {} },
-      'lesson-3': { status: 'LOCKED', completedBlocks: {} }
+      'lesson-1': { status: 'COMPLETED', completedBlocks: {}, title: 'lesson-1' },
+      'lesson-2': { status: 'IN_PROGRESS', completedBlocks: {}, title: 'lesson-2' },
+      'lesson-3': { status: 'LOCKED', completedBlocks: {}, title: 'lesson-3' }
     }
   }
 
