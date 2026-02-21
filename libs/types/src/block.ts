@@ -1,8 +1,8 @@
 export enum BlockType {
   Text = "text",
   Code = "code",
-  Quiz = "quiz",
-  Survey = "survey",
+  QuizQuestion = "quiz_question",
+  QuizExam = "quiz_exam",
 }
 
 export enum CodeExecutionMode {
@@ -21,13 +21,6 @@ export enum QuizQuestionType {
   Open = "open",
 }
 
-export enum SurveyQuestionType {
-  Rating = "rating",
-  Open = "open",
-  Single = "single",
-  Multiple = "multiple",
-}
-
 export interface TextBlockContent {
   json: Record<string, unknown>;
 }
@@ -42,39 +35,6 @@ export interface CodeBlockContent {
   testCasesCode?: string;
   timeLimit?: number;
   memoryLimit?: number;
-}
-
-export interface QuizOption {
-  id: string;
-  text: string;
-  isCorrect: boolean;
-}
-
-export interface QuizQuestion {
-  question: string;
-  type: QuizQuestionType;
-  options?: QuizOption[];
-  correctAnswerText?: string;
-}
-
-export interface QuizBlockContent {
-  questions: QuizQuestion[];
-  passPercentage: number;
-}
-
-export interface SurveyBlockContent {
-  questions: SurveyQuestion[];
-}
-
-export interface SurveyOption {
-  id: string;
-  text: string;
-}
-
-export interface SurveyQuestion {
-  question: string;
-  type: SurveyQuestionType;
-  options?: SurveyOption[];
 }
 
 export enum BlockRequiredAction {
@@ -117,14 +77,64 @@ export interface CodeBlockResponse extends BlockResponse {
   content: CodeBlockContent;
 }
 
-export interface QuizBlockResponse extends BlockResponse {
-  content: QuizBlockContent;
+export interface QuizOption {
+  id: string;
+  text: string;
+  isCorrect: boolean;
 }
 
-export interface SurveyBlockResponse extends BlockResponse {
-  content: SurveyBlockContent;
+export interface QuizQuestionContent {
+  question: TextBlockContent;
+  type: QuizQuestionType;
+  options?: QuizOption[];
+  correctAnswerText?: string;
+  explanation?: string;
+}
+
+export interface QuizExamContent {
+  title: string;
+  timeLimitMinutes?: number;
+  passPercentage: number;
+  source: {
+    tags: string[];
+    count: number;
+  };
+}
+
+export interface QuizQuestionBlockResponse extends BlockResponse {
+  content: QuizQuestionContent;
+}
+
+export interface QuizExamBlockResponse extends BlockResponse {
+  content: QuizExamContent;
+}
+
+export interface LibraryBlockResponse {
+  id: string;
+  ownerId: string;
+  type: BlockType;
+  tags: string[];
+  content: BlockContent;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateLibraryBlockRequest {
+  type: BlockType;
+  tags: string[];
+  content: BlockContent;
+}
+
+export type UpdateLibraryBlockRequest = Partial<CreateLibraryBlockRequest>;
+
+export interface FilterLibraryBlockRequest {
+  type?: BlockType;
+  tags?: string[];
+  search?: string;
+  page?: number;
+  limit?: number;
 }
 
 export type UpdateBlockRequest = Partial<CreateBlockRequest>;
 
-export type BlockContent = CodeBlockContent | TextBlockContent | QuizBlockContent | SurveyBlockContent;
+export type BlockContent = CodeBlockContent | TextBlockContent | QuizQuestionContent | QuizExamContent;

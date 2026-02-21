@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -64,7 +65,7 @@ export class LessonController {
   @Get(":id")
   @RequirePermission(Permission.LESSONS_READ)
   async findOne(
-    @Param("id") id: string,
+    @Param("id", new ParseUUIDPipe()) id: string,
     @CurrentUser("sub") userId: string,
     @Req() req: Request,
   ): Promise<ReadLessonDto> {
@@ -79,7 +80,11 @@ export class LessonController {
    */
   @Get(":id/view")
   @RequirePermission(Permission.LESSONS_READ)
-  async findOneView(@Param("id") id: string, @CurrentUser("sub") userId: string, @Req() req: Request) {
+  async findOneView(
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @CurrentUser("sub") userId: string,
+    @Req() req: Request,
+  ) {
     const appliedPolicies = req.appliedPolicies || [];
     return this.service.findOneView(id, userId, appliedPolicies);
   }
@@ -104,7 +109,7 @@ export class LessonController {
   @RequirePermission(Permission.LESSONS_UPDATE)
   @RequirePolicy(Policy.OWN_ONLY)
   async update(
-    @Param("id") id: string,
+    @Param("id", new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateLessonDto,
     @CurrentUser("sub") userId: string,
     @Req() req: Request,
@@ -121,7 +126,11 @@ export class LessonController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission(Permission.LESSONS_DELETE)
   @RequirePolicy(Policy.OWN_ONLY)
-  async softDelete(@Param("id") id: string, @CurrentUser("sub") userId: string, @Req() req: Request): Promise<void> {
+  async softDelete(
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @CurrentUser("sub") userId: string,
+    @Req() req: Request,
+  ): Promise<void> {
     const appliedPolicies = req.appliedPolicies || [];
     await this.service.softDelete(id, userId, appliedPolicies);
   }

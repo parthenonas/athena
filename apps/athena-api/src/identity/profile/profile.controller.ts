@@ -1,5 +1,5 @@
 import { Permission } from "@athena/types";
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Req, UseGuards } from "@nestjs/common";
 import type { Request } from "express";
 
 import { CreateProfileDto } from "./dto/create.dto";
@@ -80,7 +80,7 @@ export class ProfileController {
   @Get(":ownerId")
   @RequirePermission(Permission.PROFILES_READ)
   async getOne(
-    @Param("ownerId") ownerId: string,
+    @Param("ownerId", new ParseUUIDPipe()) ownerId: string,
     @CurrentUser("sub") userId: string,
     @Req() req: Request,
   ): Promise<Profile> {
@@ -97,7 +97,10 @@ export class ProfileController {
    */
   @Post(":ownerId")
   @RequirePermission(Permission.PROFILES_CREATE)
-  async create(@Param("ownerId") ownerId: string, @Body() dto: CreateProfileDto): Promise<Profile> {
+  async create(
+    @Param("ownerId", new ParseUUIDPipe()) ownerId: string,
+    @Body() dto: CreateProfileDto,
+  ): Promise<Profile> {
     return this.service.create(ownerId, dto);
   }
 
@@ -111,7 +114,7 @@ export class ProfileController {
   @Patch(":ownerId")
   @RequirePermission(Permission.PROFILES_UPDATE)
   async update(
-    @Param("ownerId") ownerId: string,
+    @Param("ownerId", new ParseUUIDPipe()) ownerId: string,
     @Body() dto: UpdateProfileDto,
     @CurrentUser("sub") userId: string,
     @Req() req: Request,

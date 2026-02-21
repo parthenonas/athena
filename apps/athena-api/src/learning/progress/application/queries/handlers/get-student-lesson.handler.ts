@@ -1,4 +1,4 @@
-import { BlockRequiredAction, BlockType, CodeBlockContent, GradingStatus, QuizBlockContent } from "@athena/types";
+import { BlockRequiredAction, BlockType, CodeBlockContent, GradingStatus, QuizQuestionContent } from "@athena/types";
 import { Inject, NotFoundException, Logger } from "@nestjs/common";
 import { IQueryHandler, QueryHandler } from "@nestjs/cqrs";
 import { plainToInstance } from "class-transformer";
@@ -96,30 +96,24 @@ export class GetStudentLessonHandler implements IQueryHandler<GetStudentLessonQu
       };
     }
 
-    if (type === BlockType.Quiz) {
-      const content = block.content as QuizBlockContent;
+    if (type === BlockType.QuizQuestion) {
+      const content = block.content as QuizQuestionContent;
 
-      const safeQuestions = content.questions.map(q => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { correctAnswerText, explanation, options, ...safeContent } = content;
+
+      const safeOptions = options?.map(opt => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { correctAnswerText, options, ...safeQuestion } = q;
-
-        const safeOptions = options?.map(opt => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { isCorrect, ...safeOption } = opt;
-          return safeOption;
-        });
-
-        return {
-          ...safeQuestion,
-          options: safeOptions,
-        };
+        const { isCorrect, ...safeOption } = opt;
+        return safeOption;
       });
 
       return {
         ...block,
         content: {
-          ...content,
-          questions: safeQuestions,
+          ...safeContent,
+
+          ...(safeOptions ? { options: safeOptions } : {}),
         },
       };
     }

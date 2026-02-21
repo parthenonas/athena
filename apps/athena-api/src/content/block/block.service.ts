@@ -1,14 +1,11 @@
-import { BlockContent, BlockRequiredAction, BlockType, Policy } from "@athena/types";
+import { BlockRequiredAction, Policy } from "@athena/types";
 import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { plainToInstance } from "class-transformer";
-import { validate } from "class-validator";
 import { DataSource, Repository } from "typeorm";
 import { v4 as uuid } from "uuid";
 
 import { OutboxService } from "../../outbox";
 import { SubmissionQueueService } from "../../submission-queue";
-import { CodeBlockContentDto, QuizContentDto, SurveyContentDto, TextBlockContentDto } from "./dto/content-payload.dto";
 import { CreateBlockDto } from "./dto/create.dto";
 import { BlockDryRunDto } from "./dto/dry-run.dto";
 import { ReadBlockDto } from "./dto/read.dto";
@@ -16,6 +13,7 @@ import { ReorderBlockDto, UpdateBlockDto } from "./dto/update.dto";
 import { Block } from "./entities/block.entity";
 import { BaseService } from "../../base/base.service";
 import { IdentityService } from "../../identity";
+import { validateBlockContentPayload } from "./utils/block-validator";
 import {
   AthenaEvent,
   BlockCreatedEvent,
@@ -31,7 +29,7 @@ import { Lesson } from "../lesson/entities/lesson.entity";
  * Business logic for managing Content Blocks within a Lesson.
  *
  * Responsibilities:
- * - CRUD for blocks (Text, Video, Code, Quiz, Survey, etc.)
+ * - CRUD for blocks
  * - Polymorphic content validation based on BlockType
  * - Managing order via double precision indexing
  * - ACL enforcement via IdentityService (cascading from Course)
@@ -75,7 +73,7 @@ export class BlockService extends BaseService<Block> {
       if (!lesson) throw new NotFoundException(`Lesson with ID ${dto.lessonId} not found`);
       if (lesson.course.ownerId !== userId) throw new ForbiddenException("You can only add blocks to your own courses");
 
-      await this.validateBlockContent(dto.type, dto.content);
+      await validateBlockContentPayload(dto.type, dto.content);
 
       let orderIndex = dto.orderIndex;
       if (orderIndex === undefined) {
@@ -220,7 +218,7 @@ export class BlockService extends BaseService<Block> {
       const targetContent = dto.content || block.content;
 
       if (dto.content || dto.type) {
-        await this.validateBlockContent(targetType, targetContent);
+        await validateBlockContentPayload(targetType, targetContent);
       }
 
       Object.assign(block, dto);
@@ -344,39 +342,6 @@ export class BlockService extends BaseService<Block> {
       throw new BadRequestException("Failed to delete block");
     } finally {
       await queryRunner.release();
-    }
-  }
-
-  /**
-   * Internal Helper: Polymorphic Content Validation.
-   */
-  private async validateBlockContent(type: BlockType, content: BlockContent): Promise<void> {
-    let dtoInstance: object;
-
-    switch (type) {
-      case BlockType.Text:
-        dtoInstance = plainToInstance(TextBlockContentDto, content);
-        break;
-      case BlockType.Code:
-        dtoInstance = plainToInstance(CodeBlockContentDto, content);
-        break;
-      case BlockType.Quiz:
-        dtoInstance = plainToInstance(QuizContentDto, content);
-        break;
-      case BlockType.Survey:
-        dtoInstance = plainToInstance(SurveyContentDto, content);
-        break;
-      default:
-        return;
-    }
-
-    const errors = await validate(dtoInstance);
-
-    if (errors.length > 0) {
-      const messages = errors.map(err => Object.values(err.constraints || {}).join(", ")).join("; ");
-
-      this.logger.warn(`Validation failed for block type ${type}: ${messages}`);
-      throw new BadRequestException(`Invalid content for block type ${type}: ${messages}`);
     }
   }
 

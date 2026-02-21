@@ -8,6 +8,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -71,7 +72,7 @@ export class RoleController {
   @Get(":id")
   @UseGuards(JwtAuthGuard, AclGuard)
   @RequirePermission(Permission.ADMIN)
-  async findOne(@Param("id") id: string): Promise<ReadRoleDto> {
+  async findOne(@Param("id", new ParseUUIDPipe()) id: string): Promise<ReadRoleDto> {
     return this.service.findById(id);
   }
 
@@ -98,7 +99,10 @@ export class RoleController {
   @Patch(":id")
   @UseGuards(JwtAuthGuard, AclGuard)
   @RequirePermission(Permission.ADMIN)
-  async update(@Param("id") id: string, @Body() dto: Partial<CreateRoleDto>): Promise<ReadRoleDto> {
+  async update(
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @Body() dto: Partial<CreateRoleDto>,
+  ): Promise<ReadRoleDto> {
     this.manualPoliciesCheck(dto.policies);
     return this.service.update(id, dto);
   }
@@ -131,7 +135,10 @@ export class RoleController {
   @Patch(":id/permissions")
   @UseGuards(JwtAuthGuard, AclGuard)
   @RequirePermission(Permission.ADMIN)
-  async updatePermissions(@Param("id") id: string, @Body() dto: UpdateRolePermissionsDto): Promise<ReadRoleDto> {
+  async updatePermissions(
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @Body() dto: UpdateRolePermissionsDto,
+  ): Promise<ReadRoleDto> {
     return this.service.updatePermissions(id, dto.permissions);
   }
 
@@ -146,7 +153,10 @@ export class RoleController {
   @Patch(":id/policies")
   @UseGuards(JwtAuthGuard, AclGuard)
   @RequirePermission(Permission.ADMIN)
-  async updatePolicies(@Param("id") id: string, @Body() dto: UpdateRolePoliciesDto): Promise<ReadRoleDto> {
+  async updatePolicies(
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @Body() dto: UpdateRolePoliciesDto,
+  ): Promise<ReadRoleDto> {
     this.manualPoliciesCheck(dto.policies);
     return this.service.updatePolicies(id, dto.policies);
   }

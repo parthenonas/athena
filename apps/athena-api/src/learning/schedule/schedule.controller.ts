@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -63,7 +64,7 @@ export class ScheduleController {
   @Get(":id")
   @RequirePermission(Permission.SCHEDULE_READ)
   async findOne(
-    @Param("id") id: string,
+    @Param("id", new ParseUUIDPipe()) id: string,
     @CurrentUser("sub") userId: string,
     @Req() req: Request,
   ): Promise<ReadScheduleDto> {
@@ -94,7 +95,7 @@ export class ScheduleController {
   @RequirePermission(Permission.SCHEDULE_UPDATE)
   @RequirePolicy(Policy.OWN_ONLY)
   async update(
-    @Param("id") id: string,
+    @Param("id", new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateScheduleDto,
     @CurrentUser("sub") userId: string,
     @Req() req: Request,
@@ -114,7 +115,11 @@ export class ScheduleController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission(Permission.SCHEDULE_DELETE)
   @RequirePolicy(Policy.OWN_ONLY)
-  async delete(@Param("id") id: string, @CurrentUser("sub") userId: string, @Req() req: Request): Promise<void> {
+  async delete(
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @CurrentUser("sub") userId: string,
+    @Req() req: Request,
+  ): Promise<void> {
     const appliedPolicies = req.appliedPolicies || [];
     await this.service.delete(id, userId, appliedPolicies);
   }

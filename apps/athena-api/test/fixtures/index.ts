@@ -9,6 +9,7 @@ import { DataSource, Repository } from "typeorm";
 import { v4 as uuid } from "uuid";
 
 import { Block } from "../../src/content/block/entities/block.entity";
+import { LibraryBlock } from "../../src/content/block/entities/library-block.entity";
 import { Course } from "../../src/content/course/entities/course.entity";
 import { Lesson } from "../../src/content/lesson/entities/lesson.entity";
 import { LessonView } from "../../src/content/lesson/schemas/lesson-view.schema";
@@ -32,6 +33,7 @@ export class TestFixtures {
   private readonly profileRepo: Repository<Profile>;
   private readonly instructorViewModel: Model<InstructorView>;
   private readonly lessonViewModel: Model<LessonView>;
+  private readonly libraryBlockRepo: Repository<LibraryBlock>;
   private readonly commandBus: CommandBus;
 
   constructor(
@@ -49,6 +51,7 @@ export class TestFixtures {
     this.profileRepo = this.app.get(getRepositoryToken(Profile));
     this.instructorViewModel = this.app.get(getModelToken(InstructorView.name));
     this.lessonViewModel = this.app.get(getModelToken(LessonView.name));
+    this.libraryBlockRepo = this.app.get(getRepositoryToken(LibraryBlock));
     this.commandBus = this.app.get(CommandBus);
   }
 
@@ -253,5 +256,17 @@ export class TestFixtures {
     };
 
     return this.lessonViewModel.create({ ...defaultData, ...args });
+  }
+
+  async createLibraryBlock(args: Partial<LibraryBlock> = {}): Promise<LibraryBlock> {
+    const defaultData = {
+      ownerId: uuid(),
+      type: BlockType.Text,
+      tags: [],
+      content: { json: { text: "Library template" } },
+    };
+
+    const entity = this.libraryBlockRepo.create({ ...defaultData, ...args });
+    return this.libraryBlockRepo.save(entity);
   }
 }

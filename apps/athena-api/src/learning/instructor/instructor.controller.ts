@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -72,7 +73,7 @@ export class InstructorController {
    * Reads from MongoDB Projection.
    */
   @Get("/public/:id")
-  async findOneView(@Param("id") id: string): Promise<ReadInstructorViewDto> {
+  async findOneView(@Param("id", new ParseUUIDPipe()) id: string): Promise<ReadInstructorViewDto> {
     return this.service.findOneView(id);
   }
 
@@ -85,7 +86,7 @@ export class InstructorController {
   @Get(":id")
   @RequirePermission(Permission.INSTRUCTORS_READ)
   async findOne(
-    @Param("id") id: string,
+    @Param("id", new ParseUUIDPipe()) id: string,
     @CurrentUser("sub") userId: string,
     @Req() req: Request,
   ): Promise<ReadInstructorDto> {
@@ -116,7 +117,7 @@ export class InstructorController {
   @RequirePermission(Permission.INSTRUCTORS_UPDATE)
   @RequirePolicy(Policy.OWN_ONLY)
   async update(
-    @Param("id") id: string,
+    @Param("id", new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateInstructorDto,
     @CurrentUser("sub") userId: string,
     @Req() req: Request,
@@ -135,7 +136,11 @@ export class InstructorController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission(Permission.INSTRUCTORS_DELETE)
   @RequirePolicy(Policy.OWN_ONLY)
-  async delete(@Param("id") id: string, @CurrentUser("sub") userId: string, @Req() req: Request): Promise<void> {
+  async delete(
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @CurrentUser("sub") userId: string,
+    @Req() req: Request,
+  ): Promise<void> {
     const appliedPolicies = req.appliedPolicies || [];
     await this.service.delete(id, userId, appliedPolicies);
   }

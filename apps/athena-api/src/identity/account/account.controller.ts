@@ -8,6 +8,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -116,7 +117,7 @@ export class AccountController {
   @Get(":id")
   @UseGuards(JwtAuthGuard, AclGuard)
   @RequirePermission(Permission.ACCOUNTS_READ)
-  async findOne(@Param("id") id: string) {
+  async findOne(@Param("id", new ParseUUIDPipe()) id: string) {
     return this.service.findOne(id);
   }
 
@@ -158,7 +159,7 @@ export class AccountController {
   @Patch(":id")
   @UseGuards(JwtAuthGuard, AclGuard)
   @RequirePermission(Permission.ACCOUNTS_UPDATE)
-  async update(@Param("id") id: string, @Body() dto: UpdateAccountDto) {
+  async update(@Param("id", new ParseUUIDPipe()) id: string, @Body() dto: UpdateAccountDto) {
     return this.service.update(id, dto);
   }
 
@@ -188,7 +189,7 @@ export class AccountController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard, AclGuard)
   @RequirePermission(Permission.ACCOUNTS_DELETE)
-  async delete(@Param("id") id: string) {
+  async delete(@Param("id", new ParseUUIDPipe()) id: string) {
     await this.service.softDelete(id);
   }
 

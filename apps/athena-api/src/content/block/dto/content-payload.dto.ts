@@ -1,20 +1,16 @@
 import {
   CodeBlockContent,
-  ProgrammingLanguage,
-  QuizBlockContent,
-  QuizOption,
-  QuizQuestion,
-  QuizQuestionType,
-  SurveyQuestion,
-  SurveyQuestionType,
-  TextBlockContent,
   CodeExecutionMode,
-  SurveyBlockContent,
-  SurveyOption,
+  ProgrammingLanguage,
+  QuizExamContent,
+  QuizOption,
+  QuizQuestionContent,
+  QuizQuestionType,
+  TextBlockContent,
 } from "@athena/types";
 import { Type } from "class-transformer";
 import {
-  ArrayMinSize,
+  IsArray,
   IsBoolean,
   IsEnum,
   IsInt,
@@ -58,6 +54,8 @@ export class CodeBlockContentDto implements CodeBlockContent {
    * The task text.
    */
   @IsObject()
+  @ValidateNested()
+  @Type(() => TextBlockContentDto)
   taskText!: TextBlockContentDto;
 
   /**
@@ -65,7 +63,7 @@ export class CodeBlockContentDto implements CodeBlockContent {
    */
   @IsOptional()
   @IsString()
-  initialCode!: string;
+  initialCode?: string;
 
   /**
    * Execution strategy.
@@ -125,7 +123,7 @@ export class CodeBlockContentDto implements CodeBlockContent {
 
 /**
  * @class QuizOptionDto
- * @description Represents a single answer choice in a quiz.
+ * @description Represents a single answer choice in a quiz question.
  */
 export class QuizOptionDto implements QuizOption {
   /**
@@ -150,16 +148,17 @@ export class QuizOptionDto implements QuizOption {
 }
 
 /**
- * @class QuizQuestionDto
- * @description A single question within a Quiz block.
+ * @class QuizQuestionContentDto
+ * @description Payload for a single quiz question block (quiz_question).
  */
-export class QuizQuestionDto implements QuizQuestion {
+export class QuizQuestionContentDto implements QuizQuestionContent {
   /**
    * The question text.
    */
-  @IsString()
-  @IsNotEmpty()
-  question!: string;
+  @IsObject()
+  @ValidateNested()
+  @Type(() => TextBlockContentDto)
+  question!: TextBlockContentDto;
 
   /**
    * Type of the question (Single choice, Multiple choice, Open text).
@@ -171,6 +170,7 @@ export class QuizQuestionDto implements QuizQuestion {
    * List of options. Required for Single/Multiple types.
    */
   @IsOptional()
+  @IsArray()
   @ValidateNested({ each: true })
   @Type(() => QuizOptionDto)
   options?: QuizOptionDto[];
@@ -181,20 +181,39 @@ export class QuizQuestionDto implements QuizQuestion {
   @IsOptional()
   @IsString()
   correctAnswerText?: string;
+
+  @IsOptional()
+  @IsString()
+  explanation?: string;
 }
 
 /**
- * @class QuizContentDto
- * @description Top-level payload for a Quiz Block. Can contain multiple questions.
+ * @class QuizExamSourceDto
+ * @description Configuration for where to pull questions from for an exam.
  */
-export class QuizContentDto implements QuizBlockContent {
-  /**
-   * List of questions in this quiz block.
-   */
-  @ArrayMinSize(1)
-  @ValidateNested({ each: true })
-  @Type(() => QuizQuestionDto)
-  questions!: QuizQuestionDto[];
+class QuizExamSourceDto {
+  @IsArray()
+  @IsString({ each: true })
+  tags!: string[];
+
+  @IsInt()
+  @Min(1)
+  count!: number;
+}
+
+/**
+ * @class QuizExamContentDto
+ * @description Configuration payload for generating a quiz attempt (quiz_exam).
+ */
+export class QuizExamContentDto implements QuizExamContent {
+  @IsString()
+  @IsNotEmpty()
+  title!: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  timeLimitMinutes?: number;
 
   /**
    * The percentage (0-100) required to pass this quiz.
@@ -203,61 +222,9 @@ export class QuizContentDto implements QuizBlockContent {
   @Min(0)
   @Max(100)
   passPercentage!: number;
-}
 
-/**
- * @class SurveyOptionDto
- * @description Represents an option for Single/Multiple choice survey questions.
- */
-export class SurveyOptionDto implements SurveyOption {
-  /**
-   * Unique ID of the option (generated on frontend usually).
-   */
-  @IsUUID()
-  id!: string;
-
-  /**
-   * Text of the option.
-   */
-  @IsString()
-  @IsNotEmpty()
-  text!: string;
-}
-
-/**
- * @class SurveyQuestionDto
- * @description Represents a question in a survey/feedback form.
- */
-export class SurveyQuestionDto implements SurveyQuestion {
-  /**
-   * The question text.
-   */
-  @IsString()
-  @IsNotEmpty()
-  question!: string;
-
-  /**
-   * Type of survey input (Rating stars, Open text, etc.).
-   */
-  @IsEnum(SurveyQuestionType)
-  type!: SurveyQuestionType;
-
-  /**
-   * Predefined options for Single/Multiple choice survey questions.
-   */
-  @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => SurveyOptionDto)
-  options?: SurveyOptionDto[];
-}
-
-/**
- * @class SurveyContentDto
- * @description Top-level payload for a Survey Block.
- */
-export class SurveyContentDto implements SurveyBlockContent {
-  @ArrayMinSize(1)
-  @ValidateNested({ each: true })
-  @Type(() => SurveyQuestionDto)
-  questions!: SurveyQuestionDto[];
+  @IsObject()
+  @ValidateNested()
+  @Type(() => QuizExamSourceDto)
+  source!: QuizExamSourceDto;
 }
