@@ -68,6 +68,11 @@ const studioItems = computed<NavigationMenuItem[]>(() => filterMenuByAcl([
     icon: 'i-lucide-graduation-cap',
     to: '/studio/grading',
     badge: '12'
+  },
+  {
+    label: t('pages.dashboard.library'),
+    icon: 'i-lucide-book-dashed',
+    to: '/studio/library'
   }
 ]))
 
