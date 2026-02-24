@@ -8,8 +8,18 @@ const toggleLang = () => {
 }
 
 const authStore = useAuthStore()
+const { can } = useAcl()
 
-const sharedItems = computed<NavigationMenuItem[]>(() => ([
+const filterMenuByAcl = (items: NavigationMenuItem[]): NavigationMenuItem[] => {
+  return items.filter((item) => {
+    if (!item.to) return true
+
+    const requiredPerm = getRequiredPermissionForPath(item.to.toString())
+    return requiredPerm ? can(requiredPerm) : true
+  })
+}
+
+const sharedItems = computed<NavigationMenuItem[]>(() => filterMenuByAcl([
   {
     label: t('pages.dashboard.dashboard'),
     icon: 'i-lucide-layout-dashboard',
@@ -17,7 +27,7 @@ const sharedItems = computed<NavigationMenuItem[]>(() => ([
   }
 ]))
 
-const studentItems = computed<NavigationMenuItem[]>(() => ([
+const studentItems = computed<NavigationMenuItem[]>(() => filterMenuByAcl([
   {
     label: t('pages.dashboard.my-learning'),
     icon: 'i-lucide-book-open',
@@ -42,7 +52,7 @@ const studentItems = computed<NavigationMenuItem[]>(() => ([
   }
 ]))
 
-const studioItems = computed<NavigationMenuItem[]>(() => ([
+const studioItems = computed<NavigationMenuItem[]>(() => filterMenuByAcl([
   {
     label: t('pages.dashboard.studio-overview'),
     icon: 'i-lucide-presentation',
@@ -61,7 +71,7 @@ const studioItems = computed<NavigationMenuItem[]>(() => ([
   }
 ]))
 
-const adminItems = computed<NavigationMenuItem[]>(() => ([
+const adminItems = computed<NavigationMenuItem[]>(() => filterMenuByAcl([
   {
     label: t('pages.dashboard.users'),
     icon: 'i-lucide-users',
@@ -84,7 +94,7 @@ const adminItems = computed<NavigationMenuItem[]>(() => ([
   }
 ]))
 
-const learningItems = computed<NavigationMenuItem[]>(() => ([
+const learningItems = computed<NavigationMenuItem[]>(() => filterMenuByAcl([
   {
     label: t('pages.dashboard.cohorts'),
     icon: 'i-lucide-users-2',

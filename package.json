@@ -59,7 +59,8 @@
   },
   "dependencies": {
     "@nestjs/mapped-types": "^2.1.0",
-    "cookie-parser": "^1.4.7"
+    "cookie-parser": "^1.4.7",
+    "jwt-decode": "^4.0.0"
   },
   "overrides": {
     "fast-xml-parser": "^5.3.4",
