@@ -14,7 +14,7 @@ export const ACL_ROUTE_MAP: { prefix: string, permission: Permission }[] = [
   { prefix: '/studio', permission: Permission.COURSES_READ },
 
   { prefix: '/teaching/cohorts', permission: Permission.COHORTS_READ },
-  { prefix: '/teaching/instructors', permission: Permission.INSTRUCTORS_READ }
+  { prefix: '/teaching/instructors', permission: Permission.INSTRUCTORS_READ },
   { prefix: '/teaching', permission: Permission.COHORTS_READ }
 ]
 
