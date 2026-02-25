@@ -1,6 +1,6 @@
 import { BlockType, FilterLibraryBlockRequest } from "@athena/types";
 import { Transform, Type } from "class-transformer";
-import { IsEnum, IsInt, IsOptional, IsString, Min } from "class-validator";
+import { IsEnum, IsIn, IsInt, IsOptional, IsString, Min } from "class-validator";
 
 /**
  * @class FilterLibraryBlockDto
@@ -45,4 +45,14 @@ export class FilterLibraryBlockDto implements FilterLibraryBlockRequest {
   @IsInt()
   @Min(1)
   limit: number = 20;
+
+  /** Sorting field. */
+  @IsOptional()
+  @IsIn(["type", "createdAt", "updatedAt"])
+  sortBy: "type" | "createdAt" | "updatedAt" = "createdAt";
+
+  /** Sorting direction. */
+  @IsOptional()
+  @IsIn(["ASC", "DESC", "asc", "desc"])
+  sortOrder: "ASC" | "DESC" | "asc" | "desc" = "DESC";
 }

@@ -72,7 +72,7 @@ export class BlockLibraryService extends BaseService<LibraryBlock> {
       qb.andWhere("lib.content::text ILIKE :search", { search: `%${dto.search}%` });
     }
 
-    qb.orderBy("lib.created_at", "DESC");
+    qb.orderBy(`a.${dto.sortBy}`, dto.sortOrder.toUpperCase() as "ASC" | "DESC");
     qb.skip((dto.page - 1) * dto.limit).take(dto.limit);
 
     const [items, total] = await qb.getManyAndCount();

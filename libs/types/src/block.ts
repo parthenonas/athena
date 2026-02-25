@@ -1,3 +1,5 @@
+import { SortOrder } from "./common";
+
 export enum BlockType {
   Text = "text",
   Code = "code",
@@ -131,8 +133,10 @@ export interface FilterLibraryBlockRequest {
   type?: BlockType;
   tags?: string[];
   search?: string;
-  page?: number;
-  limit?: number;
+  page: number;
+  limit: number;
+  sortBy: "type" | "createdAt" | "updatedAt";
+  sortOrder: SortOrder;
 }
 
 export type UpdateBlockRequest = Partial<CreateBlockRequest>;

@@ -115,6 +115,8 @@ describe("BlockLibraryService", () => {
         search: "keyword",
         page: 2,
         limit: 10,
+        sortBy: "createdAt",
+        sortOrder: "ASC",
       };
 
       mockQueryBuilder.getManyAndCount.mockResolvedValue([[mockLibraryBlock], 1]);

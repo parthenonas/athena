@@ -1,39 +1,60 @@
 <script setup lang="ts">
+import { z } from 'zod'
+import type { FormSubmitEvent } from '#ui/types'
 import { BlockType, Permission } from '@athena/types'
-import type { LibraryBlockResponse, FilterLibraryBlockRequest } from '@athena/types'
+import type { LibraryBlockResponse, FilterLibraryBlockRequest, TextBlockContent, QuizQuestionContent, CodeBlockContent } from '@athena/types'
 import type { TableColumn } from '@nuxt/ui'
 
 definePageMeta({
   layout: 'dashboard'
 })
 
+const router = useRouter()
 const { t } = useI18n()
 const { can } = useAcl()
 const { fetchLibraryBlocks, deleteLibraryBlock } = useStudio()
 
-const search = ref('')
+const schema = z.object({
+  search: z.string().optional(),
+  type: z.nativeEnum(BlockType).optional(),
+  tags: z.array(z.string()).default([])
+})
 
-const selectedType = ref<string | null>(null)
-const selectedTags = ref<string[]>([])
+type Schema = z.output<typeof schema>
+
+const searchState = reactive<Schema>({
+  search: '',
+  type: undefined,
+  tags: []
+})
 
 const filters = reactive<FilterLibraryBlockRequest>({
   page: 1,
   limit: 10,
-  search: '',
+  sortBy: 'createdAt',
+  sortOrder: 'ASC',
+  search: undefined,
   type: undefined,
   tags: undefined
 })
 
-watchDebounced(search, (val) => {
-  filters.search = val || undefined
+const onSubmit = (event: FormSubmitEvent<Schema>) => {
+  filters.search = event.data.search || undefined
+  filters.type = event.data.type || undefined
+  filters.tags = event.data.tags.length ? event.data.tags : undefined
   filters.page = 1
-}, { debounce: 500, maxWait: 1000 })
+}
 
-watch([selectedType, selectedTags], ([newType, newTags]) => {
-  filters.type = (newType as BlockType) || undefined
-  filters.tags = newTags.length > 0 ? newTags : undefined
+const onReset = () => {
+  searchState.search = ''
+  searchState.type = undefined
+  searchState.tags = []
+
+  filters.search = undefined
+  filters.type = undefined
+  filters.tags = undefined
   filters.page = 1
-})
+}
 
 const { data, status, refresh } = await fetchLibraryBlocks(filters)
 
@@ -49,30 +70,24 @@ const columns = computed<TableColumn<LibraryBlockResponse>[]>(() => [
   { id: 'actions', header: '' }
 ])
 
-const blockTypeOptions = [
-  { label: 'Text', value: BlockType.Text },
-  { label: 'Code', value: BlockType.Code },
-  { label: 'Quiz', value: BlockType.QuizQuestion }
-]
+const blockTypes = computed(() => [
+  { label: t('blocks.type.text'), id: BlockType.Text },
+  { label: t('blocks.type.code'), id: BlockType.Code }
+])
 
 const getPreviewText = (block: LibraryBlockResponse) => {
-  if (block.type === BlockType.Text) return block.content.json?.text || '...'
-  if (block.type === BlockType.QuizQuestion) return block.content.question?.json?.text || '...'
-  if (block.type === BlockType.Code) return block.content.taskText?.json?.text || '...'
+  if (block.type === BlockType.Text) return (block.content as TextBlockContent).json?.text || '...'
+  if (block.type === BlockType.QuizQuestion) return (block.content as QuizQuestionContent).question?.json?.text || '...'
+  if (block.type === BlockType.Code) return (block.content as CodeBlockContent).taskText?.json?.text || '...'
   return '...'
 }
 
-const isSlideoverOpen = ref(false)
-const selectedTemplate = ref<LibraryBlockResponse | null>(null)
-
 const openCreate = () => {
-  selectedTemplate.value = null
-  isSlideoverOpen.value = true
+  router.push('/studio/library/create')
 }
 
 const openEdit = (template: LibraryBlockResponse) => {
-  selectedTemplate.value = template
-  isSlideoverOpen.value = true
+  router.push(`/studio/library/${template.id}`)
 }
 
 const isDeleteOpen = ref(false)
@@ -119,43 +134,69 @@ const onConfirmDelete = async () => {
       />
     </div>
 
-    <div class="flex flex-col sm:flex-row gap-4">
-      <UInput
-        v-model="search"
-        icon="i-lucide-search"
-        :placeholder="$t('common.search')"
-        class="w-full sm:flex-1"
-      />
-
-      <USelectMenu
-        v-model="selectedType"
-        :options="blockTypeOptions"
-        value-attribute="value"
-        option-attribute="label"
-        :placeholder="$t('pages.library.filters.type')"
-        icon="i-lucide-filter"
-        class="w-full sm:w-48"
-        clearable
-      />
-
-      <USelectMenu
-        v-model="selectedTags"
-        multiple
-        creatable
-        searchable
-        :placeholder="$t('pages.library.filters.tags')"
-        icon="i-lucide-tags"
-        class="w-full sm:w-64"
+    <UForm
+      :schema="schema"
+      :state="searchState"
+      class="flex flex-col md:flex-row items-start gap-4"
+      @submit="onSubmit"
+    >
+      <UFormField
+        name="search"
+        class="w-full md:flex-1"
       >
-        <template #label>
-          <span
-            v-if="selectedTags.length"
-            class="truncate"
-          >{{ selectedTags.join(', ') }}</span>
-          <span v-else>{{ $t('pages.library.filters.tags') }}</span>
-        </template>
-      </USelectMenu>
-    </div>
+        <UInput
+          v-model="searchState.search"
+          icon="i-lucide-search"
+          :placeholder="$t('common.search')"
+          class="w-full"
+        />
+      </UFormField>
+
+      <UFormField
+        name="type"
+        class="w-full md:w-48"
+      >
+        <USelectMenu
+          v-model="searchState.type"
+          :items="blockTypes"
+          value-key="id"
+          :placeholder="$t('pages.library.filters.type')"
+          icon="i-lucide-filter"
+          class="w-full"
+          size="lg"
+          clearable
+        />
+      </UFormField>
+
+      <UFormField
+        name="tags"
+        class="w-full md:w-64"
+      >
+        <UInputTags
+          v-model="searchState.tags"
+          :placeholder="$t('pages.library.filters.tags')"
+          class="w-full"
+        />
+      </UFormField>
+
+      <div class="flex gap-2">
+        <UButton
+          type="submit"
+          icon="i-lucide-search"
+          color="primary"
+          variant="solid"
+          size="lg"
+          :loading="loading"
+        />
+        <UButton
+          icon="i-lucide-x"
+          color="neutral"
+          variant="soft"
+          size="lg"
+          @click="onReset"
+        />
+      </div>
+    </UForm>
 
     <UTable
       :data="templates"
@@ -240,12 +281,6 @@ const onConfirmDelete = async () => {
         :page-count="filters.limit"
       />
     </div>
-
-    <StudioLibrarySlideover
-      v-model="isSlideoverOpen"
-      :template="selectedTemplate"
-      @success="refresh"
-    />
 
     <ConfirmModal
       v-model:open="isDeleteOpen"

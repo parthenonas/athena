@@ -3,9 +3,10 @@ import { mountSuspended, mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { UDropdownMenu, UNavigationMenu } from '#components'
 import DashboardLayout from '../dashboard.vue'
 
-const { logoutMock, setLocaleMock } = vi.hoisted(() => ({
+const { logoutMock, setLocaleMock, canMock } = vi.hoisted(() => ({
   logoutMock: vi.fn(),
-  setLocaleMock: vi.fn()
+  setLocaleMock: vi.fn(),
+  canMock: vi.fn().mockReturnValue(true)
 }))
 
 const localeRef = ref('en')
@@ -31,10 +32,17 @@ mockNuxtImport('useI18n', () => {
   })
 })
 
+mockNuxtImport('useAcl', () => {
+  return () => ({
+    can: canMock
+  })
+})
+
 describe('Dashboard Layout', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     localeRef.value = 'en'
+    canMock.mockReturnValue(true)
   })
 
   it('should render all menu sections (Student, Studio, Admin)', async () => {
