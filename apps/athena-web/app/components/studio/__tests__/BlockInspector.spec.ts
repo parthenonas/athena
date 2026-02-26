@@ -3,6 +3,16 @@ import { mount } from '@vue/test-utils'
 import StudioBlockInspector from '../BlockInspector.vue'
 import { BlockType, BlockRequiredAction, type BlockResponse, type BlockContent } from '@athena/types'
 
+const { createLibraryBlockMock } = vi.hoisted(() => ({
+  createLibraryBlockMock: vi.fn()
+}))
+
+vi.mock('~/composables/useStudio', () => ({
+  useStudio: () => ({
+    createLibraryBlock: createLibraryBlockMock
+  })
+}))
+
 const InspectorStub = {
   template: '<div class="inspector-stub" @click="$emit(\'update\', { test: \'val\' })"></div>',
   props: ['content']
@@ -17,6 +27,13 @@ const UButtonStub = {
 const USelectMenuStub = {
   template: '<select :value="modelValue" @change="$emit(\'update:modelValue\', $event.target.value)"></select>',
   props: ['modelValue', 'options']
+}
+
+const StudioLibrarySaveModalStub = {
+  name: 'StudioLibrarySaveModal',
+  template: '<div data-testid="save-modal"></div>',
+  props: ['modelValue', 'loading'],
+  emits: ['update:modelValue', 'save']
 }
 
 const tMock = (key: string) => key
@@ -177,5 +194,41 @@ describe('StudioBlockInspector.vue', () => {
 
     expect(wrapper.emitted('delete')).toBeTruthy()
     expect(wrapper.emitted('delete')![0]).toEqual([baseBlock.id])
+  })
+
+  it('should open save modal when clicking "Save to Library"', async () => {
+    const wrapper = mount(StudioBlockInspector, {
+      props: { block: baseBlock },
+      global: globalMountOptions
+    })
+
+    const saveBtn = wrapper.findAllComponents(UButtonStub)
+      .find(b => b.props('label') === 'pages.studio.builder.inspector.save-template')
+
+    await saveBtn?.trigger('click')
+
+    const modal = wrapper.findComponent(StudioLibrarySaveModalStub)
+    expect(modal.props('modelValue')).toBe(true)
+  })
+
+  it('should call createLibraryBlock on modal save and close modal', async () => {
+    const wrapper = mount(StudioBlockInspector, {
+      props: { block: baseBlock },
+      global: globalMountOptions
+    }) as any
+
+    wrapper.vm.isSaveModalOpen = true
+    await wrapper.vm.$nextTick()
+
+    const modal = wrapper.findComponent(StudioLibrarySaveModalStub)
+    await modal.vm.$emit('save', ['sql', 'hard'])
+
+    expect(createLibraryBlockMock).toHaveBeenCalledWith({
+      type: baseBlock.type,
+      content: baseBlock.content,
+      tags: ['sql', 'hard']
+    })
+
+    expect(wrapper.vm.isSaveModalOpen).toBe(false)
   })
 })

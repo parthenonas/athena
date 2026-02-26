@@ -134,6 +134,11 @@
         "goals-label": "Learning Goals",
         "draft-label": "Save as Draft",
         "draft-help": "Students won't see this lesson until you publish it."
+      },
+      "library-save-modal": {
+        "title": "Saving block template",
+        "tags-label": "Tags",
+        "tags-placeholder": "Example: sql, practical"
       }
     },
     "admin": {
@@ -509,7 +514,8 @@
               "unit-test-title": "Edit Tests in Canvas",
               "unit-test-desc": "Switch to the 'Tests' tab in the main editor window to write your assertion code."
             }
-          }
+          },
+          "save-template": "Save to library"
         }
       }
     },
