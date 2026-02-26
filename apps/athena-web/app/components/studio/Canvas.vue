@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { VueDraggable, type SortableEvent } from 'vue-draggable-plus'
-import { BlockType, type BlockResponse, type CodeBlockResponse, type TextBlockResponse, type UpdateBlockRequest } from '@athena/types'
+import { BlockType, type BlockResponse, type CodeBlockResponse, type TextBlockResponse, type UpdateBlockRequest, type BlockContent } from '@athena/types'
 
 const props = defineProps<{
   blocks: BlockResponse[]
@@ -13,7 +13,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:blocks', value: BlockResponse[]): void
   (e: 'update:activeBlockId', id: string | null): void
-  (e: 'add', type: BlockType): void
+  (e: 'add', type: BlockType, prefilledContent?: BlockContent): void
   (e: 'update', id: string, payload: UpdateBlockRequest): void
   (e: 'delete', id: string): void
   (e: 'reorder', event: SortableEvent): void
@@ -21,6 +21,8 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+
+const isLibrarySlideoverOpen = ref(false)
 
 const localBlocks = computed({
   get: () => props.blocks,
@@ -33,11 +35,20 @@ const blockTypes = computed(() => [
 ])
 
 const addBlockItems = computed(() => [
+
   blockTypes.value.map(b => ({
     label: b.label,
     icon: b.icon,
     onSelect: () => emit('add', b.type)
-  }))
+  })),
+
+  [
+    {
+      label: t('pages.studio.builder.from-library'),
+      icon: 'i-lucide-library',
+      onSelect: () => { isLibrarySlideoverOpen.value = true }
+    }
+  ]
 ])
 
 const onBackgroundClick = () => {
@@ -168,5 +179,9 @@ const onBackgroundClick = () => {
         </div>
       </div>
     </div>
+    <StudioLibraryInsertSlideover
+      v-model="isLibrarySlideoverOpen"
+      @insert="(type, content) => emit('add', type, content)"
+    />
   </div>
 </template>

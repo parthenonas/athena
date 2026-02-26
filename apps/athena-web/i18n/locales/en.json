@@ -67,7 +67,8 @@
     "of": "of",
     "edit": "Edit",
     "drag": "Drag to reorder",
-    "or": "or"
+    "or": "or",
+    "insert": "Insert"
   },
   "editor": {
     "bold": "Bold",
@@ -136,9 +137,14 @@
         "draft-help": "Students won't see this lesson until you publish it."
       },
       "library-save-modal": {
-        "title": "Saving block template",
-        "tags-label": "Tags",
-        "tags-placeholder": "Example: sql, practical"
+        "title": "Save Block Template",
+        "tags-label": "Tags (press Enter)",
+        "tags-placeholder": "e.g., sql, practice"
+      },
+      "library-insert": {
+        "title": "Insert from Library",
+        "description": "Select a saved template or question",
+        "empty": "No templates found"
       }
     },
     "admin": {
@@ -516,7 +522,8 @@
             }
           },
           "save-template": "Save to library"
-        }
+        },
+        "from-library": "From Library"
       }
     },
     "teaching": {
