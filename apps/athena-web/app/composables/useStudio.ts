@@ -11,7 +11,11 @@ import type {
   BlockResponse,
   CreateBlockRequest,
   UpdateBlockRequest,
-  BlockDryRunRequest
+  BlockDryRunRequest,
+  FilterLibraryBlockRequest,
+  CreateLibraryBlockRequest,
+  UpdateLibraryBlockRequest,
+  LibraryBlockResponse
 } from '@athena/types'
 
 export const useStudio = () => {
@@ -334,6 +338,106 @@ export const useStudio = () => {
     }
   }
 
+  const fetchLibraryBlocks = (params: FilterLibraryBlockRequest) => {
+    return useApi<Pageable<LibraryBlockResponse>>('/api/blocks/library', {
+      method: 'GET',
+      params,
+      watch: [
+        () => params.page,
+        () => params.limit,
+        () => params.search,
+        () => params.type,
+        () => params.tags
+      ]
+    })
+  }
+
+  const fetchLibraryBlock = async (id: string) => {
+    return $api<LibraryBlockResponse>(`/api/blocks/library/${id}`, {
+      method: 'GET'
+    })
+  }
+
+  const createLibraryBlock = async (payload: CreateLibraryBlockRequest) => {
+    try {
+      const data = await $api<LibraryBlockResponse>('/api/blocks/library', {
+        method: 'POST',
+        body: payload
+      })
+
+      toast.add({
+        title: t('common.success'),
+        description: t('toasts.library.created'),
+        color: 'success',
+        icon: 'i-lucide-check-circle'
+      })
+      return data
+    } catch (error: unknown) {
+      console.error(error)
+      toast.add({
+        title: t('common.error'),
+        description: t('toasts.library.create-error'),
+        color: 'error',
+        icon: 'i-lucide-alert-circle'
+      })
+      throw error
+    }
+  }
+
+  const updateLibraryBlock = async (id: string, payload: UpdateLibraryBlockRequest, silent: boolean = false) => {
+    try {
+      const data = await $api<LibraryBlockResponse>(`/api/blocks/library/${id}`, {
+        method: 'PATCH',
+        body: payload
+      })
+
+      if (!silent) {
+        toast.add({
+          title: t('common.success'),
+          description: t('toasts.library.updated'),
+          color: 'success',
+          icon: 'i-lucide-check-circle'
+        })
+      }
+      return data
+    } catch (error: unknown) {
+      console.error(error)
+      if (!silent) {
+        toast.add({
+          title: t('common.error'),
+          description: t('toasts.library.update-error'),
+          color: 'error',
+          icon: 'i-lucide-alert-circle'
+        })
+      }
+      throw error
+    }
+  }
+
+  const deleteLibraryBlock = async (id: string) => {
+    try {
+      await $api(`/api/blocks/library/${id}`, {
+        method: 'DELETE'
+      })
+
+      toast.add({
+        title: t('common.success'),
+        description: t('toasts.library.deleted'),
+        color: 'success',
+        icon: 'i-lucide-trash-2'
+      })
+    } catch (error: unknown) {
+      console.error(error)
+      toast.add({
+        title: t('common.error'),
+        description: t('toasts.library.delete-error'),
+        color: 'error',
+        icon: 'i-lucide-alert-circle'
+      })
+      throw error
+    }
+  }
+
   return {
     fetchCourses,
     fetchCourse,
@@ -351,6 +455,11 @@ export const useStudio = () => {
     deleteBlock,
     reorderBlock,
     runBlockCode,
-    syncContent
+    syncContent,
+    fetchLibraryBlocks,
+    fetchLibraryBlock,
+    createLibraryBlock,
+    updateLibraryBlock,
+    deleteLibraryBlock
   }
 }

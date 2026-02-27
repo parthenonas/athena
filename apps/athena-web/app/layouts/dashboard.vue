@@ -7,9 +7,22 @@ const toggleLang = () => {
   setLocale(locale.value === 'ru' ? 'en' : 'ru')
 }
 
-const authStore = useAuthStore()
+const slots = useSlots()
+const hasRightSidebar = computed(() => !!slots.right)
 
-const sharedItems = computed<NavigationMenuItem[]>(() => ([
+const authStore = useAuthStore()
+const { can } = useAcl()
+
+const filterMenuByAcl = (items: NavigationMenuItem[]): NavigationMenuItem[] => {
+  return items.filter((item) => {
+    if (!item.to) return true
+
+    const requiredPerm = getRequiredPermissionForPath(item.to.toString())
+    return requiredPerm ? can(requiredPerm) : true
+  })
+}
+
+const sharedItems = computed<NavigationMenuItem[]>(() => filterMenuByAcl([
   {
     label: t('pages.dashboard.dashboard'),
     icon: 'i-lucide-layout-dashboard',
@@ -17,7 +30,7 @@ const sharedItems = computed<NavigationMenuItem[]>(() => ([
   }
 ]))
 
-const studentItems = computed<NavigationMenuItem[]>(() => ([
+const studentItems = computed<NavigationMenuItem[]>(() => filterMenuByAcl([
   {
     label: t('pages.dashboard.my-learning'),
     icon: 'i-lucide-book-open',
@@ -42,7 +55,7 @@ const studentItems = computed<NavigationMenuItem[]>(() => ([
   }
 ]))
 
-const studioItems = computed<NavigationMenuItem[]>(() => ([
+const studioItems = computed<NavigationMenuItem[]>(() => filterMenuByAcl([
   {
     label: t('pages.dashboard.studio-overview'),
     icon: 'i-lucide-presentation',
@@ -58,10 +71,15 @@ const studioItems = computed<NavigationMenuItem[]>(() => ([
     icon: 'i-lucide-graduation-cap',
     to: '/studio/grading',
     badge: '12'
+  },
+  {
+    label: t('pages.dashboard.library'),
+    icon: 'i-lucide-book-dashed',
+    to: '/studio/library'
   }
 ]))
 
-const adminItems = computed<NavigationMenuItem[]>(() => ([
+const adminItems = computed<NavigationMenuItem[]>(() => filterMenuByAcl([
   {
     label: t('pages.dashboard.users'),
     icon: 'i-lucide-users',
@@ -84,7 +102,7 @@ const adminItems = computed<NavigationMenuItem[]>(() => ([
   }
 ]))
 
-const learningItems = computed<NavigationMenuItem[]>(() => ([
+const learningItems = computed<NavigationMenuItem[]>(() => filterMenuByAcl([
   {
     label: t('pages.dashboard.cohorts'),
     icon: 'i-lucide-users-2',
@@ -287,10 +305,25 @@ const footerMenuItems = computed(() => [
       </template>
     </UDashboardSidebar>
 
-    <div class="flex flex-col items-start flex-1 min-w-0 overflow-auto">
-      <div class="w-full max-w-4xl">
-        <NuxtPage />
+    <UDashboardPanel>
+      <div
+        :class="hasRightSidebar ? 'flex flex-col flex-1 h-full min-h-0' : 'w-full max-w-4xl p-4'"
+      >
+        <slot />
       </div>
-    </div>
+    </UDashboardPanel>
+
+    <UDashboardSidebar
+      v-if="hasRightSidebar"
+      side="right"
+      resizable
+      collapsible
+      :min-size="20"
+      :default-size="25"
+      :max-size="40"
+      class="bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800"
+    >
+      <slot name="right" />
+    </UDashboardSidebar>
   </UDashboardGroup>
 </template>

@@ -197,7 +197,7 @@ describe('Lesson Studio Page', () => {
     expect(wrapper.findComponent(StudioLessonInspectorStub).exists()).toBe(false)
   })
 
-  it('should add a block', async () => {
+  it('should add a blank block', async () => {
     const wrapper = await mountSuspended(LessonStudioPage, defaultMocks)
 
     const canvas = wrapper.findComponent(StudioCanvasStub)
@@ -211,6 +211,22 @@ describe('Lesson Studio Page', () => {
     }))
 
     expect(fetchBlocksMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('should add a block with prefilled content from library', async () => {
+    const wrapper = await mountSuspended(LessonStudioPage, defaultMocks)
+    const canvas = wrapper.findComponent(StudioCanvasStub)
+
+    const prefilledContent = { json: { text: 'Template content' } }
+    canvas.vm.$emit('add', BlockType.Text, prefilledContent)
+
+    await flushPromises()
+
+    expect(createBlockMock).toHaveBeenCalledWith(expect.objectContaining({
+      lessonId: 'l1',
+      type: BlockType.Text,
+      content: prefilledContent
+    }))
   })
 
   it('should delete a block', async () => {

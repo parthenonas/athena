@@ -1,5 +1,5 @@
 import { Permission } from "@athena/types";
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, UseGuards } from "@nestjs/common";
 import { CommandBus, QueryBus } from "@nestjs/cqrs";
 
 import { JwtAuthGuard } from "../../../identity/account/guards/jwt.guard";
@@ -43,9 +43,9 @@ export class ProgressController {
   @HttpCode(HttpStatus.ACCEPTED)
   @RequirePermission(Permission.ENROLLMENTS_READ)
   async submitAssignment(
-    @Param("courseId") courseId: string,
-    @Param("lessonId") lessonId: string,
-    @Param("blockId") blockId: string,
+    @Param("courseId", new ParseUUIDPipe()) courseId: string,
+    @Param("lessonId", new ParseUUIDPipe()) lessonId: string,
+    @Param("blockId", new ParseUUIDPipe()) blockId: string,
     @Body() dto: StudentSubmissionDto,
     @CurrentUser("sub") userId: string,
   ): Promise<{ status: string }> {
@@ -61,9 +61,9 @@ export class ProgressController {
   @HttpCode(HttpStatus.OK)
   @RequirePermission(Permission.ENROLLMENTS_READ)
   async markAsViewed(
-    @Param("courseId") courseId: string,
-    @Param("lessonId") lessonId: string,
-    @Param("blockId") blockId: string,
+    @Param("courseId", new ParseUUIDPipe()) courseId: string,
+    @Param("lessonId", new ParseUUIDPipe()) lessonId: string,
+    @Param("blockId", new ParseUUIDPipe()) blockId: string,
     @CurrentUser("sub") userId: string,
   ): Promise<{ status: string; score: number }> {
     const score = 100;
@@ -87,7 +87,7 @@ export class ProgressController {
    */
   @Get(":courseId")
   @RequirePermission(Permission.ENROLLMENTS_READ)
-  async getMyProgress(@Param("courseId") courseId: string, @CurrentUser("sub") userId: string) {
+  async getMyProgress(@Param("courseId", new ParseUUIDPipe()) courseId: string, @CurrentUser("sub") userId: string) {
     return this.queryBus.execute(new GetStudentProgressQuery(userId, courseId));
   }
 
@@ -97,8 +97,8 @@ export class ProgressController {
   @Get(":courseId/lesson/:lessonId")
   @RequirePermission(Permission.ENROLLMENTS_READ)
   async getLesson(
-    @Param("courseId") courseId: string,
-    @Param("lessonId") lessonId: string,
+    @Param("courseId", new ParseUUIDPipe()) courseId: string,
+    @Param("lessonId", new ParseUUIDPipe()) lessonId: string,
     @CurrentUser("sub") userId: string,
   ) {
     return this.queryBus.execute(new GetStudentLessonQuery(userId, courseId, lessonId));

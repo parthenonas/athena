@@ -8,6 +8,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Post,
   Query,
   Req,
@@ -107,7 +108,7 @@ export class MediaController {
   @Get(":id")
   @RequirePermission(Permission.FILES_READ)
   async findOne(
-    @Param("id") id: string,
+    @Param("id", new ParseUUIDPipe()) id: string,
     @CurrentUser("sub") userId: string,
     @Req() req: Request,
   ): Promise<ReadFileDto> {
@@ -125,7 +126,7 @@ export class MediaController {
   @Get(":id/download")
   @RequirePermission(Permission.FILES_READ)
   async download(
-    @Param("id") id: string,
+    @Param("id", new ParseUUIDPipe()) id: string,
     @Res({ passthrough: true }) res: Response,
     @CurrentUser("sub") userId: string,
     @Req() req: Request,
@@ -185,7 +186,11 @@ export class MediaController {
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission(Permission.FILES_DELETE)
-  async delete(@Param("id") id: string, @CurrentUser("sub") userId: string, @Req() req: Request): Promise<void> {
+  async delete(
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @CurrentUser("sub") userId: string,
+    @Req() req: Request,
+  ): Promise<void> {
     const appliedPolicies = req.appliedPolicies || [];
     await this.service.delete(id, userId, appliedPolicies);
   }

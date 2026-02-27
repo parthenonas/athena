@@ -1,4 +1,4 @@
-import { Permission, ProgrammingLanguage, CodeExecutionMode, Policy } from "@athena/types";
+import { Permission, ProgrammingLanguage, CodeExecutionMode } from "@athena/types";
 import { INestApplication } from "@nestjs/common";
 import request from "supertest";
 
@@ -11,9 +11,8 @@ describe("POST /blocks/dry-run (e2e)", () => {
   let fixtures: any;
   let queueService: SubmissionQueueService;
 
-  let ownerToken: string;
-  let otherToken: string;
-  let lessonId: string;
+  let allowedToken: string;
+  let deniedToken: string;
 
   beforeAll(async () => {
     const res = await bootstrapE2E();
@@ -25,27 +24,30 @@ describe("POST /blocks/dry-run (e2e)", () => {
     await fixtures.resetDatabase();
     await fixtures.seedAdmin({ password: "Password123!" });
 
-    const ownerRole = await fixtures.createRole({
-      name: "dry_run_owner",
+    // Юзер С правами на запуск кода
+    const allowedRole = await fixtures.createRole({
+      name: "dry_run_allowed",
       permissions: [Permission.BLOCKS_EXECUTE],
-      policies: { [Permission.BLOCKS_EXECUTE]: [Policy.OWN_ONLY] },
     });
-    const owner = await fixtures.createUser({ login: "dry_owner", password: "Password123!", roleId: ownerRole.id });
-
-    ownerToken = await fixtures.login(owner.login, "Password123!");
-    if (!ownerToken) throw new Error("Failed to login owner!");
-
-    const otherRole = await fixtures.createRole({
-      name: "dry_run_other",
-      permissions: [Permission.BLOCKS_EXECUTE],
-      policies: { [Permission.BLOCKS_EXECUTE]: [Policy.OWN_ONLY] },
+    const allowedUser = await fixtures.createUser({
+      login: "dry_allowed",
+      password: "Password123!",
+      roleId: allowedRole.id,
     });
-    const other = await fixtures.createUser({ login: "dry_other", password: "Password123!", roleId: otherRole.id });
-    otherToken = await fixtures.login(other.login, "Password123!");
+    allowedToken = await fixtures.login(allowedUser.login, "Password123!");
+    if (!allowedToken) throw new Error("Failed to login allowed user!");
 
-    const course = await fixtures.createCourse({ title: "Dry Course", ownerId: owner.id });
-    const lesson = await fixtures.createLesson({ title: "Dry Lesson", courseId: course.id });
-    lessonId = lesson.id;
+    // Юзер БЕЗ прав на запуск кода
+    const deniedRole = await fixtures.createRole({
+      name: "dry_run_denied",
+      permissions: [], // Пустые права
+    });
+    const deniedUser = await fixtures.createUser({
+      login: "dry_denied",
+      password: "Password123!",
+      roleId: deniedRole.id,
+    });
+    deniedToken = await fixtures.login(deniedUser.login, "Password123!");
   }, 60000);
 
   afterAll(async () => {
@@ -57,7 +59,7 @@ describe("POST /blocks/dry-run (e2e)", () => {
     jest.clearAllMocks();
   });
 
-  it("should allow OWNER to initiate dry run", async () => {
+  it("should allow user with BLOCKS_EXECUTE to initiate dry run", async () => {
     const http = request(app.getHttpServer());
 
     const sendSpy = jest
@@ -65,7 +67,6 @@ describe("POST /blocks/dry-run (e2e)", () => {
       .mockResolvedValue({ submissionId: "test-uuid", status: "queued" });
 
     const dto: BlockDryRunDto = {
-      lessonId: lessonId,
       socketId: "socket-abc-123",
       blockId: "blockId",
       content: {
@@ -76,7 +77,7 @@ describe("POST /blocks/dry-run (e2e)", () => {
       },
     };
 
-    const res = await http.post("/blocks/dry-run").set("Authorization", `Bearer ${ownerToken}`).send(dto);
+    const res = await http.post("/blocks/dry-run").set("Authorization", `Bearer ${allowedToken}`).send(dto);
     expect(res.status).toBe(202);
 
     expect(sendSpy).toHaveBeenCalledWith(
@@ -88,12 +89,11 @@ describe("POST /blocks/dry-run (e2e)", () => {
     );
   });
 
-  it("should DENY access to someone else's lesson", async () => {
+  it("should DENY access if user lacks BLOCKS_EXECUTE permission", async () => {
     const http = request(app.getHttpServer());
     const sendSpy = jest.spyOn(queueService, "sendForExecution");
 
     const dto: BlockDryRunDto = {
-      lessonId: lessonId,
       socketId: "socket-hacker",
       blockId: "block-id",
       content: {
@@ -104,7 +104,7 @@ describe("POST /blocks/dry-run (e2e)", () => {
       },
     };
 
-    const res = await http.post("/blocks/dry-run").set("Authorization", `Bearer ${otherToken}`).send(dto);
+    const res = await http.post("/blocks/dry-run").set("Authorization", `Bearer ${deniedToken}`).send(dto);
 
     expect(res.status).toBe(403);
     expect(sendSpy).not.toHaveBeenCalled();
@@ -114,11 +114,10 @@ describe("POST /blocks/dry-run (e2e)", () => {
     const http = request(app.getHttpServer());
 
     const dto = {
-      lessonId: lessonId,
       content: { language: ProgrammingLanguage.Python, initialCode: "x=1", executionMode: CodeExecutionMode.IoCheck },
     };
 
-    const res = await http.post("/blocks/dry-run").set("Authorization", `Bearer ${ownerToken}`).send(dto);
+    const res = await http.post("/blocks/dry-run").set("Authorization", `Bearer ${allowedToken}`).send(dto);
 
     expect(res.status).toBe(400);
   });

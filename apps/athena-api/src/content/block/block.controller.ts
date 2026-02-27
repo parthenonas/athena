@@ -1,4 +1,4 @@
-import { Permission, Policy } from "@athena/types";
+import { Pageable, Permission, Policy } from "@athena/types";
 import {
   Body,
   Controller,
@@ -7,18 +7,25 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from "@nestjs/common";
 import type { Request } from "express";
 
+import { BlockLibraryService } from "./block.library.service";
 import { BlockService } from "./block.service";
 import { CreateBlockDto } from "./dto/create.dto";
+import { CreateLibraryBlockDto } from "./dto/create.library.dto";
 import { BlockDryRunDto } from "./dto/dry-run.dto";
+import { FilterLibraryBlockDto } from "./dto/filter.library.dto";
 import { ReadBlockDto } from "./dto/read.dto";
+import { ReadLibraryBlockDto } from "./dto/read.library.dto";
 import { ReorderBlockDto, UpdateBlockDto } from "./dto/update.dto";
+import { UpdateLibraryBlockDto } from "./dto/update.library.dto";
 import { JwtAuthGuard } from "../../identity/account/guards/jwt.guard";
 import { AclGuard } from "../../identity/acl/acl.guard";
 import { RequirePermission } from "../../identity/acl/decorators/require-permission.decorator";
@@ -38,7 +45,86 @@ import { CurrentUser } from "../../shared/decorators/current-user.decorator";
 @Controller("blocks")
 @UseGuards(JwtAuthGuard, AclGuard)
 export class BlockController {
-  constructor(private readonly service: BlockService) {}
+  constructor(
+    private readonly service: BlockService,
+    private readonly libraryService: BlockLibraryService,
+  ) {}
+
+  /**
+   * POST /blocks/library
+   * Saves a block into the user's template library.
+   */
+  @Post("library")
+  @RequirePermission(Permission.LESSONS_CREATE)
+  async createLibraryBlock(
+    @Body() dto: CreateLibraryBlockDto,
+    @CurrentUser("sub") userId: string,
+  ): Promise<ReadLibraryBlockDto> {
+    return this.libraryService.createLibraryBlock(dto, userId);
+  }
+
+  /**
+   * GET /blocks/library
+   * Searches the block library (with tags and pagination).
+   */
+  @Get("library")
+  @RequirePermission(Permission.LESSONS_READ)
+  async findLibraryBlocks(
+    @Query() dto: FilterLibraryBlockDto,
+    @CurrentUser("sub") userId: string,
+  ): Promise<Pageable<ReadLibraryBlockDto>> {
+    return this.libraryService.findLibraryBlocks(dto, userId);
+  }
+
+  /**
+   * GET /blocks/library/:id
+   * Gets a specific library block template.
+   */
+  @Get("library/:id")
+  @RequirePermission(Permission.LESSONS_READ)
+  @RequirePolicy(Policy.OWN_ONLY)
+  async findOneLibraryBlock(
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @CurrentUser("sub") userId: string,
+    @Req() req: Request,
+  ): Promise<ReadLibraryBlockDto> {
+    const appliedPolicies = req.appliedPolicies || [];
+    return this.libraryService.findOneLibraryBlock(id, userId, appliedPolicies);
+  }
+
+  /**
+   * PATCH /blocks/library/:id
+   * Updates a library block template.
+   */
+  @Patch("library/:id")
+  @RequirePermission(Permission.LESSONS_UPDATE)
+  @RequirePolicy(Policy.OWN_ONLY)
+  async updateLibraryBlock(
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @Body() dto: UpdateLibraryBlockDto,
+    @CurrentUser("sub") userId: string,
+    @Req() req: Request,
+  ): Promise<ReadLibraryBlockDto> {
+    const appliedPolicies = req.appliedPolicies || [];
+    return this.libraryService.updateLibraryBlock(id, dto, userId, appliedPolicies);
+  }
+
+  /**
+   * DELETE /blocks/library/:id
+   * Removes a block from the template library.
+   */
+  @Delete("library/:id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission(Permission.LESSONS_UPDATE)
+  @RequirePolicy(Policy.OWN_ONLY)
+  async removeLibraryBlock(
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @CurrentUser("sub") userId: string,
+    @Req() req: Request,
+  ): Promise<void> {
+    const appliedPolicies = req.appliedPolicies || [];
+    await this.libraryService.removeLibraryBlock(id, userId, appliedPolicies);
+  }
 
   /**
    * POST /blocks
@@ -58,7 +144,7 @@ export class BlockController {
   @Get("lesson/:lessonId")
   @RequirePermission(Permission.LESSONS_READ)
   async findAllByLesson(
-    @Param("lessonId") lessonId: string,
+    @Param("lessonId", new ParseUUIDPipe()) lessonId: string,
     @CurrentUser("sub") userId: string,
     @Req() req: Request,
   ): Promise<ReadBlockDto[]> {
@@ -73,7 +159,7 @@ export class BlockController {
   @Get(":id")
   @RequirePermission(Permission.LESSONS_READ)
   async findOne(
-    @Param("id") id: string,
+    @Param("id", new ParseUUIDPipe()) id: string,
     @CurrentUser("sub") userId: string,
     @Req() req: Request,
   ): Promise<ReadBlockDto> {
@@ -89,7 +175,7 @@ export class BlockController {
   @RequirePermission(Permission.LESSONS_UPDATE)
   @RequirePolicy(Policy.OWN_ONLY)
   async update(
-    @Param("id") id: string,
+    @Param("id", new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateBlockDto,
     @CurrentUser("sub") userId: string,
     @Req() req: Request,
@@ -107,7 +193,7 @@ export class BlockController {
   @RequirePermission(Permission.LESSONS_UPDATE)
   @RequirePolicy(Policy.OWN_ONLY)
   async reorder(
-    @Param("id") id: string,
+    @Param("id", new ParseUUIDPipe()) id: string,
     @Body() dto: ReorderBlockDto,
     @CurrentUser("sub") userId: string,
     @Req() req: Request,
@@ -124,7 +210,11 @@ export class BlockController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission(Permission.LESSONS_UPDATE)
   @RequirePolicy(Policy.OWN_ONLY)
-  async remove(@Param("id") id: string, @CurrentUser("sub") userId: string, @Req() req: Request): Promise<void> {
+  async remove(
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @CurrentUser("sub") userId: string,
+    @Req() req: Request,
+  ): Promise<void> {
     const appliedPolicies = req.appliedPolicies || [];
     await this.service.remove(id, userId, appliedPolicies);
   }
@@ -139,9 +229,7 @@ export class BlockController {
   @Post("dry-run")
   @HttpCode(HttpStatus.ACCEPTED)
   @RequirePermission(Permission.BLOCKS_EXECUTE)
-  @RequirePolicy(Policy.OWN_ONLY)
-  async dryRun(@Body() dto: BlockDryRunDto, @CurrentUser("sub") userId: string, @Req() req: Request): Promise<void> {
-    const appliedPolicies = req.appliedPolicies || [];
-    return this.service.dryRun(dto, userId, appliedPolicies);
+  async dryRun(@Body() dto: BlockDryRunDto, @CurrentUser("sub") userId: string): Promise<void> {
+    return this.service.dryRun(dto, userId);
   }
 }

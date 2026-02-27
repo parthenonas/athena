@@ -41,6 +41,13 @@ const UButtonStub = {
   props: ['label', 'icon']
 }
 
+const StudioLibraryInsertSlideoverStub = {
+  name: 'StudioLibraryInsertSlideover',
+  template: '<div data-testid="library-slideover"></div>',
+  props: ['modelValue'],
+  emits: ['update:modelValue', 'insert']
+}
+
 const tMock = (key: string) => key
 vi.mock('vue-i18n', () => ({
   useI18n: () => ({ t: tMock })
@@ -165,7 +172,7 @@ describe('StudioCanvas.vue', () => {
     expect(wrapper.emitted('update:activeBlockId')![0]).toEqual([null])
   })
 
-  it('should emit "add" with correct type when selecting from dropdown', () => {
+  it('should emit "add" with correct type when selecting a standard block from dropdown', () => {
     const wrapper = mount(StudioCanvas, {
       props: { blocks: [], activeBlockId: null },
       global: globalMountOptions
@@ -175,13 +182,46 @@ describe('StudioCanvas.vue', () => {
     const items = dropdown.props('items') as any[][]
 
     const codeItem = items[0]!.find((i: any) => i.label === 'blocks.type.code')
-
     expect(codeItem).toBeDefined()
 
     codeItem.onSelect()
 
     expect(wrapper.emitted('add')).toBeTruthy()
     expect(wrapper.emitted('add')![0]).toEqual([BlockType.Code])
+  })
+
+  it('should open library slideover when selecting "From Library" from dropdown', async () => {
+    const wrapper = mount(StudioCanvas, {
+      props: { blocks: [], activeBlockId: null },
+      global: globalMountOptions
+    })
+
+    const dropdown = wrapper.findComponent(UDropdownMenuStub)
+    const items = dropdown.props('items') as any[][]
+
+    const libraryItem = items[1]![0]
+    expect(libraryItem.label).toBe('pages.studio.builder.from-library')
+
+    libraryItem.onSelect()
+    await wrapper.vm.$nextTick()
+
+    const slideover = wrapper.findComponent(StudioLibraryInsertSlideoverStub)
+    expect(slideover.props('modelValue')).toBe(true)
+  })
+
+  it('should emit "add" with type and prefilled content when slideover emits "insert"', async () => {
+    const wrapper = mount(StudioCanvas, {
+      props: { blocks: [], activeBlockId: null },
+      global: globalMountOptions
+    })
+
+    const slideover = wrapper.findComponent(StudioLibraryInsertSlideoverStub)
+
+    const fakeContent = { json: { text: 'library content' } }
+    slideover.vm.$emit('insert', BlockType.Text, fakeContent)
+
+    expect(wrapper.emitted('add')).toBeTruthy()
+    expect(wrapper.emitted('add')![0]).toEqual([BlockType.Text, fakeContent])
   })
 
   it('should emit "reorder" when drag ends', () => {

@@ -1,20 +1,33 @@
-import { BlockRequiredAction, BlockType, CodeExecutionMode, Policy, ProgrammingLanguage } from "@athena/types";
+import {
+  BlockRequiredAction,
+  BlockType,
+  CodeExecutionMode,
+  Pageable,
+  Policy,
+  ProgrammingLanguage,
+} from "@athena/types";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
 import { Request } from "express";
 
 import { BlockController } from "./block.controller";
+import { BlockLibraryService } from "./block.library.service";
 import { BlockService } from "./block.service";
 import { CreateBlockDto } from "./dto/create.dto";
+import { CreateLibraryBlockDto } from "./dto/create.library.dto";
 import { BlockDryRunDto } from "./dto/dry-run.dto";
+import { FilterLibraryBlockDto } from "./dto/filter.library.dto";
 import { ReadBlockDto } from "./dto/read.dto";
+import { ReadLibraryBlockDto } from "./dto/read.library.dto";
 import { ReorderBlockDto, UpdateBlockDto } from "./dto/update.dto";
+import { UpdateLibraryBlockDto } from "./dto/update.library.dto";
 import { AclGuard, JwtAuthGuard } from "../../identity";
 
 const USER_ID = "user-uuid";
 const LESSON_ID = "lesson-uuid";
 const BLOCK_ID = "block-uuid";
+const LIBRARY_BLOCK_ID = "library-block-uuid";
 
 const mockReadBlock: ReadBlockDto = {
   id: BLOCK_ID,
@@ -27,9 +40,20 @@ const mockReadBlock: ReadBlockDto = {
   updatedAt: new Date(),
 };
 
+const mockReadLibraryBlock: ReadLibraryBlockDto = {
+  id: LIBRARY_BLOCK_ID,
+  ownerId: USER_ID,
+  type: BlockType.Text,
+  tags: ["theory"],
+  content: { json: { type: "doc" } },
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
+
 describe("BlockController", () => {
   let controller: BlockController;
   let service: jest.Mocked<BlockService>;
+  let libraryService: jest.Mocked<BlockLibraryService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -48,6 +72,16 @@ describe("BlockController", () => {
           },
         },
         {
+          provide: BlockLibraryService,
+          useValue: {
+            createLibraryBlock: jest.fn(),
+            findLibraryBlocks: jest.fn(),
+            findOneLibraryBlock: jest.fn(),
+            updateLibraryBlock: jest.fn(),
+            removeLibraryBlock: jest.fn(),
+          },
+        },
+        {
           provide: JwtAuthGuard,
           useValue: { canActivate: jest.fn(() => true) },
         },
@@ -62,6 +96,7 @@ describe("BlockController", () => {
 
     controller = module.get<BlockController>(BlockController);
     service = module.get(BlockService);
+    libraryService = module.get(BlockLibraryService);
   });
 
   it("should be defined", () => {
@@ -168,7 +203,6 @@ describe("BlockController", () => {
 
   describe("dryRun", () => {
     const dryRunDto: BlockDryRunDto = {
-      lessonId: LESSON_ID,
       socketId: "socket-abc-123",
       blockId: "block-123",
       content: {
@@ -179,25 +213,98 @@ describe("BlockController", () => {
       },
     };
 
-    it("should call dryRun service method with extracted policies", async () => {
+    it("should call dryRun service method without policies", async () => {
+      service.dryRun.mockResolvedValue(undefined);
+
+      await controller.dryRun(dryRunDto, USER_ID);
+
+      expect(service.dryRun).toHaveBeenCalledWith(dryRunDto, USER_ID);
+    });
+  });
+
+  describe("createLibraryBlock", () => {
+    it("should create a library block", async () => {
+      const dto: CreateLibraryBlockDto = {
+        type: BlockType.Text,
+        tags: ["theory"],
+        content: { json: { text: "hello" } },
+      };
+
+      libraryService.createLibraryBlock.mockResolvedValue(mockReadLibraryBlock);
+
+      const result = await controller.createLibraryBlock(dto, USER_ID);
+
+      expect(libraryService.createLibraryBlock).toHaveBeenCalledWith(dto, USER_ID);
+      expect(result).toEqual(mockReadLibraryBlock);
+    });
+  });
+
+  describe("findLibraryBlocks", () => {
+    it("should find library blocks with pagination", async () => {
+      const dto: FilterLibraryBlockDto = { page: 1, limit: 10 } as any;
+      const expectedResponse: Pageable<ReadLibraryBlockDto> = {
+        data: [mockReadLibraryBlock],
+        meta: { total: 1, page: 1, limit: 10, pages: 1 },
+      };
+
+      libraryService.findLibraryBlocks.mockResolvedValue(expectedResponse);
+
+      const result = await controller.findLibraryBlocks(dto, USER_ID);
+
+      expect(libraryService.findLibraryBlocks).toHaveBeenCalledWith(dto, USER_ID);
+      expect(result).toEqual(expectedResponse);
+    });
+  });
+
+  describe("findOneLibraryBlock", () => {
+    it("should return a single library block and extract policies", async () => {
       const policies = [Policy.OWN_ONLY];
       const req = { appliedPolicies: policies } as unknown as Request;
 
-      service.dryRun.mockResolvedValue(undefined);
+      libraryService.findOneLibraryBlock.mockResolvedValue(mockReadLibraryBlock);
 
-      await controller.dryRun(dryRunDto, USER_ID, req);
+      const result = await controller.findOneLibraryBlock(LIBRARY_BLOCK_ID, USER_ID, req);
 
-      expect(service.dryRun).toHaveBeenCalledWith(dryRunDto, USER_ID, policies);
+      expect(libraryService.findOneLibraryBlock).toHaveBeenCalledWith(LIBRARY_BLOCK_ID, USER_ID, policies);
+      expect(result).toEqual(mockReadLibraryBlock);
     });
 
-    it("should default appliedPolicies to empty array", async () => {
+    it("should default appliedPolicies to empty array if undefined", async () => {
       const req = {} as Request;
 
-      service.dryRun.mockResolvedValue(undefined);
+      libraryService.findOneLibraryBlock.mockResolvedValue(mockReadLibraryBlock);
 
-      await controller.dryRun(dryRunDto, USER_ID, req);
+      await controller.findOneLibraryBlock(LIBRARY_BLOCK_ID, USER_ID, req);
 
-      expect(service.dryRun).toHaveBeenCalledWith(dryRunDto, USER_ID, []);
+      expect(libraryService.findOneLibraryBlock).toHaveBeenCalledWith(LIBRARY_BLOCK_ID, USER_ID, []);
+    });
+  });
+
+  describe("updateLibraryBlock", () => {
+    it("should update library block passing policies", async () => {
+      const dto: UpdateLibraryBlockDto = { content: { json: { updated: "yes" } } };
+      const policies = [Policy.OWN_ONLY];
+      const req = { appliedPolicies: policies } as unknown as Request;
+
+      libraryService.updateLibraryBlock.mockResolvedValue({ ...mockReadLibraryBlock, content: dto.content as any });
+
+      const result = await controller.updateLibraryBlock(LIBRARY_BLOCK_ID, dto, USER_ID, req);
+
+      expect(libraryService.updateLibraryBlock).toHaveBeenCalledWith(LIBRARY_BLOCK_ID, dto, USER_ID, policies);
+      expect(result.content).toEqual(dto.content);
+    });
+  });
+
+  describe("removeLibraryBlock", () => {
+    it("should remove library block passing policies", async () => {
+      const policies = [Policy.OWN_ONLY];
+      const req = { appliedPolicies: policies } as unknown as Request;
+
+      libraryService.removeLibraryBlock.mockResolvedValue(undefined);
+
+      await controller.removeLibraryBlock(LIBRARY_BLOCK_ID, USER_ID, req);
+
+      expect(libraryService.removeLibraryBlock).toHaveBeenCalledWith(LIBRARY_BLOCK_ID, USER_ID, policies);
     });
   });
 });

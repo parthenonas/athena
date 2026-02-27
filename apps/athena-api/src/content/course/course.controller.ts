@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -69,7 +70,7 @@ export class CourseController {
   @Get(":id")
   @RequirePermission(Permission.COURSES_READ)
   async findOne(
-    @Param("id") id: string,
+    @Param("id", new ParseUUIDPipe()) id: string,
     @CurrentUser("sub") ownerId: string,
     @Req() req: Request,
   ): Promise<ReadCourseDto> {
@@ -103,7 +104,7 @@ export class CourseController {
   @RequirePolicy(Policy.OWN_ONLY)
   async update(
     @CurrentUser("sub") userId: string,
-    @Param("id") id: string,
+    @Param("id", new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateCourseDto,
     @Req() req: Request,
   ): Promise<ReadCourseDto> {
@@ -122,7 +123,11 @@ export class CourseController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission(Permission.COURSES_DELETE)
   @RequirePolicy(Policy.OWN_ONLY)
-  async softDelete(@CurrentUser("sub") userId: string, @Param("id") id: string, @Req() req: Request): Promise<void> {
+  async softDelete(
+    @CurrentUser("sub") userId: string,
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @Req() req: Request,
+  ): Promise<void> {
     const appliedPolicies = req.appliedPolicies || [];
     await this.service.softDelete(id, userId, appliedPolicies);
   }

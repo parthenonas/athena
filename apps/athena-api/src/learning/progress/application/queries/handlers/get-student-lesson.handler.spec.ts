@@ -113,19 +113,16 @@ describe("GetStudentLessonHandler", () => {
           },
         },
         {
-          blockId: "quiz-block",
-          type: BlockType.Quiz,
+          blockId: "quiz-question-block",
+          type: BlockType.QuizQuestion,
           requiredAction: BlockRequiredAction.VIEW,
           content: {
-            questions: [
-              {
-                question: "2+2?",
-                correctAnswerText: "4",
-                options: [
-                  { text: "3", isCorrect: false },
-                  { text: "4", isCorrect: true },
-                ],
-              },
+            question: { json: { text: "2+2?" } },
+            correctAnswerText: "4",
+            explanation: "Because math",
+            options: [
+              { text: "3", isCorrect: false },
+              { text: "4", isCorrect: true },
             ],
           },
         },
@@ -141,12 +138,12 @@ describe("GetStudentLessonHandler", () => {
     expect(codeBlock.content.outputData).toBeUndefined();
     expect(codeBlock.content.taskText).toBe("Write a loop");
 
-    const quizBlock = result.blocks.find((b: any) => b.blockId === "quiz-block") as any;
-    const question = quizBlock.content.questions[0]!;
-    expect(question.correctAnswerText).toBeUndefined();
-    expect(question.options[0].isCorrect).toBeUndefined();
-    expect(question.options[1].isCorrect).toBeUndefined();
-    expect(question.options[0].text).toBe("3");
+    const quizBlock = result.blocks.find((b: any) => b.blockId === "quiz-question-block") as any;
+    expect(quizBlock.content.correctAnswerText).toBeUndefined();
+    expect(quizBlock.content.explanation).toBeUndefined();
+    expect(quizBlock.content.options[0].isCorrect).toBeUndefined();
+    expect(quizBlock.content.options[1].isCorrect).toBeUndefined();
+    expect(quizBlock.content.options[0].text).toBe("3");
   });
 
   it("should truncate future blocks if an interactive block is NOT completed", async () => {
@@ -158,9 +155,9 @@ describe("GetStudentLessonHandler", () => {
         { blockId: "text-1", type: BlockType.Text, requiredAction: BlockRequiredAction.VIEW, content: {} },
         {
           blockId: "quiz-1",
-          type: BlockType.Quiz,
+          type: BlockType.QuizQuestion,
           requiredAction: BlockRequiredAction.PASS,
-          content: { questions: [] },
+          content: { question: { json: {} } },
         },
         { blockId: "text-2", type: BlockType.Text, requiredAction: BlockRequiredAction.VIEW, content: {} },
       ],
@@ -193,9 +190,9 @@ describe("GetStudentLessonHandler", () => {
         { blockId: "text-1", type: BlockType.Text, requiredAction: BlockRequiredAction.VIEW, content: {} },
         {
           blockId: "quiz-1",
-          type: BlockType.Quiz,
+          type: BlockType.QuizQuestion,
           requiredAction: BlockRequiredAction.PASS,
-          content: { questions: [] },
+          content: { question: { json: {} } },
         },
         { blockId: "text-2", type: BlockType.Text, requiredAction: BlockRequiredAction.VIEW, content: {} },
       ],

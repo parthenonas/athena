@@ -3,6 +3,7 @@ import { BlockType, BlockRequiredAction, type BlockResponse, type UpdateBlockReq
 
 import StudioInspectorCode from '~/components/studio/inspector/Code.vue'
 import StudioInspectorText from '~/components/studio/inspector/Text.vue'
+import StudioLibrarySaveModal from '~/components/studio/LibrarySaveModal.vue'
 
 const props = defineProps<{
   block: BlockResponse & { content: BlockContent }
@@ -14,6 +15,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { createLibraryBlock } = useStudio()
 
 const settingsComponent = computed(() => {
   switch (props.block.type) {
@@ -54,6 +56,25 @@ const updateContent = (keyOrPayload: string | Record<string, unknown>, value?: u
 
 const updateRoot = (key: keyof BlockResponse, value: unknown) => {
   emit('update', props.block.id, { [key]: value })
+}
+
+const isSaveModalOpen = ref(false)
+const isSavingTemplate = ref(false)
+
+const onSaveTemplate = async (tags: string[]) => {
+  isSavingTemplate.value = true
+  try {
+    await createLibraryBlock({
+      type: props.block.type,
+      content: props.block.content,
+      tags: tags
+    })
+    isSaveModalOpen.value = false
+  } catch (e) {
+    console.error('Failed to save template', e)
+  } finally {
+    isSavingTemplate.value = false
+  }
 }
 </script>
 
@@ -110,13 +131,28 @@ const updateRoot = (key: keyof BlockResponse, value: unknown) => {
       <USeparator />
 
       <UButton
+        color="primary"
+        variant="soft"
+        icon="i-lucide-book-plus"
+        :label="$t('pages.studio.builder.inspector.save-template')"
+        block
+        @click="isSaveModalOpen = true"
+      />
+
+      <UButton
         color="error"
-        variant="ghost"
+        variant="soft"
         icon="i-lucide-trash-2"
         :label="$t('common.delete')"
         block
         @click="emit('delete', block.id)"
       />
     </div>
+
+    <StudioLibrarySaveModal
+      v-model="isSaveModalOpen"
+      :loading="isSavingTemplate"
+      @save="onSaveTemplate"
+    />
   </div>
 </template>

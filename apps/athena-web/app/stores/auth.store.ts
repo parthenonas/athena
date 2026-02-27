@@ -1,10 +1,25 @@
 import { defineStore } from 'pinia'
-import type { AccountResponse, LoginRequest, TokenResponse } from '@athena/types'
+import type { AccessTokenPayload, AccountResponse, LoginRequest, TokenResponse } from '@athena/types'
+import { jwtDecode } from 'jwt-decode'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = useCookie('athena_access_token', {
     maxAge: 60 * 60 * 24 * 7,
     path: '/'
+  })
+
+  const tokenInfo = computed<AccessTokenPayload | null>(() => {
+    if (token.value) {
+      let result: AccessTokenPayload | null = null
+      try {
+        result = jwtDecode<AccessTokenPayload>(token.value)
+      } catch (e) {
+        console.error(e)
+      }
+      return result
+    } else {
+      return null
+    }
   })
 
   const user = ref<AccountResponse | null>(null)
@@ -60,7 +75,8 @@ export const useAuthStore = defineStore('auth', () => {
     isLogged,
     login,
     logout,
-    getMe
+    getMe,
+    tokenInfo
   }
 }, {
   persist: {

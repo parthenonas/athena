@@ -130,19 +130,24 @@ const onReorderLessons = async (event: SortableEvent) => {
   if (newIndex === oldIndex) return
 }
 
-const onAddBlock = async (type: BlockType) => {
+const onAddBlock = async (type: BlockType, prefilledContent?: BlockContent) => {
   if (!activeLessonId.value) return
 
-  let content = {} as BlockContent
-  if (type === BlockType.Text) {
-    content = { json: { type: 'doc', content: [{ type: 'paragraph' }] } } as TextBlockContent
-  }
-  if (type === BlockType.Code) {
-    content = {
-      language: 'python',
-      initialCode: '',
-      taskText: { json: { type: 'doc', content: [{ type: 'paragraph' }] } } as TextBlockContent,
-      executionMode: CodeExecutionMode.IoCheck } as CodeBlockContent
+  let content = prefilledContent
+
+  if (!content) {
+    if (type === BlockType.Text) {
+      content = { json: { type: 'doc', content: [{ type: 'paragraph' }] } } as TextBlockContent
+    } else if (type === BlockType.Code) {
+      content = {
+        language: 'python',
+        initialCode: '',
+        taskText: { json: { type: 'doc', content: [{ type: 'paragraph' }] } } as TextBlockContent,
+        executionMode: CodeExecutionMode.IoCheck
+      } as CodeBlockContent
+    } else {
+      content = {} as BlockContent
+    }
   }
 
   const newBlock = await createBlock({
@@ -268,7 +273,6 @@ const onRunCode = async (blockId: string, code: string) => {
 
   try {
     const payload: BlockDryRunRequest = {
-      lessonId: activeLessonId.value,
       blockId: blockId,
       socketId: socketId.value,
       content: contentPayload

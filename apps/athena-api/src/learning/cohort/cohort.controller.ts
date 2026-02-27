@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -69,7 +70,7 @@ export class CohortController {
   @Get(":id")
   @RequirePermission(Permission.COHORTS_READ)
   async findOne(
-    @Param("id") id: string,
+    @Param("id", new ParseUUIDPipe()) id: string,
     @CurrentUser("sub") userId: string,
     @Req() req: Request,
   ): Promise<ReadCohortDto> {
@@ -102,7 +103,7 @@ export class CohortController {
   @RequirePermission(Permission.COHORTS_UPDATE)
   @RequirePolicy(Policy.OWN_ONLY)
   async update(
-    @Param("id") id: string,
+    @Param("id", new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateCohortDto,
     @CurrentUser("sub") userId: string,
     @Req() req: Request,
@@ -122,7 +123,11 @@ export class CohortController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermission(Permission.COHORTS_DELETE)
   @RequirePolicy(Policy.OWN_ONLY)
-  async delete(@Param("id") id: string, @CurrentUser("sub") userId: string, @Req() req: Request): Promise<void> {
+  async delete(
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @CurrentUser("sub") userId: string,
+    @Req() req: Request,
+  ): Promise<void> {
     const appliedPolicies = req.appliedPolicies || [];
     await this.service.delete(id, userId, appliedPolicies);
   }
