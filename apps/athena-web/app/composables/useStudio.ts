@@ -384,28 +384,32 @@ export const useStudio = () => {
     }
   }
 
-  const updateLibraryBlock = async (id: string, payload: UpdateLibraryBlockRequest) => {
+  const updateLibraryBlock = async (id: string, payload: UpdateLibraryBlockRequest, silent: boolean = false) => {
     try {
       const data = await $api<LibraryBlockResponse>(`/api/blocks/library/${id}`, {
         method: 'PATCH',
         body: payload
       })
 
-      toast.add({
-        title: t('common.success'),
-        description: t('toasts.library.updated'),
-        color: 'success',
-        icon: 'i-lucide-check-circle'
-      })
+      if (!silent) {
+        toast.add({
+          title: t('common.success'),
+          description: t('toasts.library.updated'),
+          color: 'success',
+          icon: 'i-lucide-check-circle'
+        })
+      }
       return data
     } catch (error: unknown) {
       console.error(error)
-      toast.add({
-        title: t('common.error'),
-        description: t('toasts.library.update-error'),
-        color: 'error',
-        icon: 'i-lucide-alert-circle'
-      })
+      if (!silent) {
+        toast.add({
+          title: t('common.error'),
+          description: t('toasts.library.update-error'),
+          color: 'error',
+          icon: 'i-lucide-alert-circle'
+        })
+      }
       throw error
     }
   }

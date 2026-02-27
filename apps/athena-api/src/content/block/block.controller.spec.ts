@@ -203,7 +203,6 @@ describe("BlockController", () => {
 
   describe("dryRun", () => {
     const dryRunDto: BlockDryRunDto = {
-      lessonId: LESSON_ID,
       socketId: "socket-abc-123",
       blockId: "block-123",
       content: {
@@ -214,25 +213,12 @@ describe("BlockController", () => {
       },
     };
 
-    it("should call dryRun service method with extracted policies", async () => {
-      const policies = [Policy.OWN_ONLY];
-      const req = { appliedPolicies: policies } as unknown as Request;
-
+    it("should call dryRun service method without policies", async () => {
       service.dryRun.mockResolvedValue(undefined);
 
-      await controller.dryRun(dryRunDto, USER_ID, req);
+      await controller.dryRun(dryRunDto, USER_ID);
 
-      expect(service.dryRun).toHaveBeenCalledWith(dryRunDto, USER_ID, policies);
-    });
-
-    it("should default appliedPolicies to empty array", async () => {
-      const req = {} as Request;
-
-      service.dryRun.mockResolvedValue(undefined);
-
-      await controller.dryRun(dryRunDto, USER_ID, req);
-
-      expect(service.dryRun).toHaveBeenCalledWith(dryRunDto, USER_ID, []);
+      expect(service.dryRun).toHaveBeenCalledWith(dryRunDto, USER_ID);
     });
   });
 
@@ -255,7 +241,7 @@ describe("BlockController", () => {
 
   describe("findLibraryBlocks", () => {
     it("should find library blocks with pagination", async () => {
-      const dto: FilterLibraryBlockDto = { page: 1, limit: 10 };
+      const dto: FilterLibraryBlockDto = { page: 1, limit: 10 } as any;
       const expectedResponse: Pageable<ReadLibraryBlockDto> = {
         data: [mockReadLibraryBlock],
         meta: { total: 1, page: 1, limit: 10, pages: 1 },

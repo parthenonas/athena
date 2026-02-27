@@ -5,12 +5,14 @@ import { nextTick, defineComponent } from 'vue'
 import { BlockType, Permission } from '@athena/types'
 import { flushPromises } from '@vue/test-utils'
 
-const { fetchLibraryBlocksMock, deleteLibraryBlockMock, refreshMock, mockPush, canMock } = vi.hoisted(() => ({
+const { fetchLibraryBlocksMock, deleteLibraryBlockMock, createLibraryBlockMock, refreshMock, mockPush, canMock, mockToastAdd } = vi.hoisted(() => ({
   fetchLibraryBlocksMock: vi.fn(),
   deleteLibraryBlockMock: vi.fn(),
+  createLibraryBlockMock: vi.fn(),
   refreshMock: vi.fn(),
   mockPush: vi.fn(),
-  canMock: vi.fn().mockReturnValue(true)
+  canMock: vi.fn().mockReturnValue(true),
+  mockToastAdd: vi.fn()
 }))
 
 mockNuxtImport('useRouter', () => {
@@ -20,10 +22,17 @@ mockNuxtImport('useRouter', () => {
   })
 })
 
+mockNuxtImport('useToast', () => {
+  return () => ({
+    add: mockToastAdd
+  })
+})
+
 vi.mock('~/composables/useStudio', () => ({
   useStudio: () => ({
     fetchLibraryBlocks: fetchLibraryBlocksMock,
-    deleteLibraryBlock: deleteLibraryBlockMock
+    deleteLibraryBlock: deleteLibraryBlockMock,
+    createLibraryBlock: createLibraryBlockMock
   })
 }))
 
@@ -168,6 +177,30 @@ describe('Library Blocks Page', () => {
     await editButton?.trigger('click')
 
     expect(mockPush).toHaveBeenCalledWith('/studio/library/1')
+  })
+
+  it('should call createLibraryBlock and navigate to new block on Copy button click', async () => {
+    const wrapper = await mountSuspended(LibraryPage, defaultMocks)
+
+    createLibraryBlockMock.mockResolvedValueOnce({ id: 'new-copy-id' })
+
+    const copyButton = wrapper.findAllComponents(UButtonStub)
+      .find(b => b.props('icon') === 'i-lucide-copy')
+
+    expect(copyButton).toBeDefined()
+    await copyButton?.trigger('click')
+
+    await flushPromises()
+
+    expect(createLibraryBlockMock).toHaveBeenCalledWith({
+      type: BlockType.Text,
+      tags: ['theory'],
+      content: { json: { text: 'Text block' } }
+    })
+
+    expect(mockToastAdd).toHaveBeenCalled()
+
+    expect(mockPush).toHaveBeenCalledWith('/studio/library/new-copy-id')
   })
 
   it('should update filters on form submit', async () => {

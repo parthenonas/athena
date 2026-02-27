@@ -229,9 +229,7 @@ export class BlockController {
   @Post("dry-run")
   @HttpCode(HttpStatus.ACCEPTED)
   @RequirePermission(Permission.BLOCKS_EXECUTE)
-  @RequirePolicy(Policy.OWN_ONLY)
-  async dryRun(@Body() dto: BlockDryRunDto, @CurrentUser("sub") userId: string, @Req() req: Request): Promise<void> {
-    const appliedPolicies = req.appliedPolicies || [];
-    return this.service.dryRun(dto, userId, appliedPolicies);
+  async dryRun(@Body() dto: BlockDryRunDto, @CurrentUser("sub") userId: string): Promise<void> {
+    return this.service.dryRun(dto, userId);
   }
 }

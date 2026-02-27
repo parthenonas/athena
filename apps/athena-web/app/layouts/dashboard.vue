@@ -7,6 +7,9 @@ const toggleLang = () => {
   setLocale(locale.value === 'ru' ? 'en' : 'ru')
 }
 
+const slots = useSlots()
+const hasRightSidebar = computed(() => !!slots.right)
+
 const authStore = useAuthStore()
 const { can } = useAcl()
 
@@ -302,10 +305,25 @@ const footerMenuItems = computed(() => [
       </template>
     </UDashboardSidebar>
 
-    <div class="flex flex-col items-start flex-1 min-w-0 overflow-auto">
-      <div class="w-full max-w-4xl">
-        <NuxtPage />
+    <UDashboardPanel>
+      <div
+        :class="hasRightSidebar ? 'flex flex-col flex-1 h-full min-h-0' : 'w-full max-w-4xl p-4'"
+      >
+        <slot />
       </div>
-    </div>
+    </UDashboardPanel>
+
+    <UDashboardSidebar
+      v-if="hasRightSidebar"
+      side="right"
+      resizable
+      collapsible
+      :min-size="20"
+      :default-size="25"
+      :max-size="40"
+      class="bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800"
+    >
+      <slot name="right" />
+    </UDashboardSidebar>
   </UDashboardGroup>
 </template>

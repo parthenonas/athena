@@ -334,7 +334,6 @@ describe("BlockService", () => {
 
   describe("dryRun", () => {
     const dryRunDto: BlockDryRunDto = {
-      lessonId: LESSON_ID,
       content: {
         taskText: { json: {} },
         language: ProgrammingLanguage.Python,
@@ -345,37 +344,26 @@ describe("BlockService", () => {
       blockId: "block-123",
     };
 
-    it("should initiate dry run if allowed", async () => {
-      lessonRepo.findOne.mockResolvedValue(mockLesson);
-      identityService.checkAbility.mockReturnValue(true);
+    it("should initiate dry run successfully without needing a lesson", async () => {
       submissionQueue.sendForExecution.mockResolvedValue({ submissionId: "uuid", status: "queued" });
 
-      await service.dryRun(dryRunDto, USER_ID, [Policy.OWN_ONLY]);
-
-      expect(lessonRepo.findOne).toHaveBeenCalledWith({ where: { id: LESSON_ID }, relations: ["course"] });
-      expect(identityService.checkAbility).toHaveBeenCalledWith(Policy.OWN_ONLY, USER_ID, mockCourse);
+      await service.dryRun(dryRunDto, USER_ID);
 
       expect(submissionQueue.sendForExecution).toHaveBeenCalledWith(
         expect.objectContaining({
           content: dryRunDto.content,
           metadata: expect.objectContaining({
             socketId: dryRunDto.socketId,
-            lessonId: LESSON_ID,
+            blockId: dryRunDto.blockId,
           }),
         }),
       );
     });
 
-    it("should throw NotFoundException if lesson missing", async () => {
-      lessonRepo.findOne.mockResolvedValue(null);
-      await expect(service.dryRun(dryRunDto, USER_ID)).rejects.toThrow(NotFoundException);
-    });
+    it("should throw BadRequestException if sending to execution queue fails", async () => {
+      submissionQueue.sendForExecution.mockRejectedValue(new Error("Queue error"));
 
-    it("should throw ForbiddenException if ACL fails", async () => {
-      lessonRepo.findOne.mockResolvedValue(mockLesson);
-      identityService.checkAbility.mockReturnValue(false);
-
-      await expect(service.dryRun(dryRunDto, USER_ID, [Policy.OWN_ONLY])).rejects.toThrow(ForbiddenException);
+      await expect(service.dryRun(dryRunDto, USER_ID)).rejects.toThrow(BadRequestException);
     });
   });
 });

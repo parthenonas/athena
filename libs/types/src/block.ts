@@ -55,7 +55,6 @@ export interface CreateBlockRequest {
 }
 
 export interface BlockDryRunRequest {
-  lessonId: string;
   content: CodeBlockContent;
   socketId: string;
   blockId: string;

@@ -12,7 +12,8 @@ definePageMeta({
 const router = useRouter()
 const { t } = useI18n()
 const { can } = useAcl()
-const { fetchLibraryBlocks, deleteLibraryBlock } = useStudio()
+const toast = useToast()
+const { fetchLibraryBlocks, deleteLibraryBlock, createLibraryBlock } = useStudio()
 
 const schema = z.object({
   search: z.string().optional(),
@@ -32,7 +33,7 @@ const filters = reactive<FilterLibraryBlockRequest>({
   page: 1,
   limit: 10,
   sortBy: 'createdAt',
-  sortOrder: 'ASC',
+  sortOrder: 'DESC',
   search: undefined,
   type: undefined,
   tags: undefined
@@ -88,6 +89,31 @@ const openCreate = () => {
 
 const openEdit = (template: LibraryBlockResponse) => {
   router.push(`/studio/library/${template.id}`)
+}
+
+const copyLoading = ref<string | null>(null)
+
+const openCopy = async (template: LibraryBlockResponse) => {
+  copyLoading.value = template.id
+  try {
+    const newTemplate = await createLibraryBlock({
+      type: template.type,
+      tags: [...(template.tags || [])],
+      content: template.content
+    })
+
+    toast.add({
+      title: t('common.success'),
+      description: t('toasts.library.created'),
+      color: 'success'
+    })
+
+    router.push(`/studio/library/${newTemplate.id}`)
+  } catch (e) {
+    console.error('Failed to copy template', e)
+  } finally {
+    copyLoading.value = null
+  }
 }
 
 const isDeleteOpen = ref(false)
@@ -248,6 +274,17 @@ const onConfirmDelete = async () => {
           v-if="can(Permission.LESSONS_UPDATE)"
           class="flex justify-end gap-2"
         >
+          <UTooltip :text="$t('common.copy')">
+            <UButton
+              icon="i-lucide-copy"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+              :loading="copyLoading === row.original.id"
+              @click="openCopy(row.original)"
+            />
+          </UTooltip>
+
           <UTooltip :text="$t('common.edit')">
             <UButton
               icon="i-lucide-pencil"
@@ -271,10 +308,7 @@ const onConfirmDelete = async () => {
       </template>
     </UTable>
 
-    <div
-      v-if="total > filters.limit"
-      class="flex justify-end p-4 border-t border-gray-200 dark:border-gray-800"
-    >
+    <div class="flex justify-end p-4 border-t border-gray-200 dark:border-gray-800">
       <UPagination
         v-model="filters.page"
         :total="total"

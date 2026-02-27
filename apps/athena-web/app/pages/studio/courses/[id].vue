@@ -273,7 +273,6 @@ const onRunCode = async (blockId: string, code: string) => {
 
   try {
     const payload: BlockDryRunRequest = {
-      lessonId: activeLessonId.value,
       blockId: blockId,
       socketId: socketId.value,
       content: contentPayload

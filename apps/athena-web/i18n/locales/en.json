@@ -651,6 +651,16 @@
         "tags": "Tags",
         "updated-at": "Last Updated"
       },
+      "editor": {
+        "title-create": "Create Template",
+        "title-edit": "Edit Template",
+        "select-type": "Select block type",
+        "select-type-desc": "The selected type cannot be changed later.",
+        "settings": "Template Settings",
+        "tags": "Tags (press Enter)",
+        "run-mock-title": "Code Execution",
+        "run-mock-desc": "Running code is only available when the block is inside a lesson."
+      },
       "delete-title": "Delete Template",
       "delete-confirm": "Are you sure you want to delete this template from the library? This action cannot be undone."
     }

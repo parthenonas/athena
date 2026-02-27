@@ -345,31 +345,14 @@ export class BlockService extends BaseService<Block> {
     }
   }
 
-  async dryRun(dto: BlockDryRunDto, userId: string, appliedPolicies: Policy[] = []): Promise<void> {
-    this.logger.log(`dryRun() | lessonId=${dto.lessonId}, userId=${userId}`);
-
+  async dryRun(dto: BlockDryRunDto, userId: string): Promise<void> {
+    this.logger.log(`dryRun() | userId=${userId}`);
     try {
-      const lesson = await this.lessonRepo.findOne({
-        where: { id: dto.lessonId },
-        relations: ["course"],
-      });
-
-      if (!lesson) {
-        throw new NotFoundException(`Lesson with ID ${dto.lessonId} not found`);
-      }
-
-      for (const policy of appliedPolicies) {
-        if (!this.identityService.checkAbility(policy, userId, lesson.course)) {
-          throw new ForbiddenException("You are not allowed to run code in this lesson context");
-        }
-      }
-
       await this.submissionQueue.sendForExecution({
         submissionId: uuid(),
         content: dto.content,
         metadata: {
           socketId: dto.socketId,
-          lessonId: dto.lessonId,
           blockId: dto.blockId,
         },
       });
