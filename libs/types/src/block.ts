@@ -141,3 +141,13 @@ export interface FilterLibraryBlockRequest {
 export type UpdateBlockRequest = Partial<CreateBlockRequest>;
 
 export type BlockContent = CodeBlockContent | TextBlockContent | QuizQuestionContent | QuizExamContent;
+
+export interface CheckQuizQuestionRequest {
+  selectedOptionIds?: string[];
+  textAnswer?: string;
+}
+
+export interface CheckQuizQuestionResponse {
+  isCorrect: boolean;
+  explanation?: string;
+}
