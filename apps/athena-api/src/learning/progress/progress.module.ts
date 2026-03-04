@@ -9,6 +9,7 @@ import { DeleteProgressHandler } from "./application/commands/handlers/delete-pr
 import { GradeBlockHandler } from "./application/commands/handlers/grade-block.handler";
 import { InitializeProgressHandler } from "./application/commands/handlers/initialize-progress.handler";
 import { SubmitAssignmentHandler } from "./application/commands/handlers/submit-assignment.handler";
+import { SubmitQuizHandler } from "./application/commands/handlers/submit-quiz.handler";
 import { BlockCompletedHandler } from "./application/events/handlers/block-completed.handler";
 import { CourseCompletedHandler } from "./application/events/handlers/course-completed.handler";
 import { LessonCompletedHandler } from "./application/events/handlers/lesson-completed.handler";
@@ -48,6 +49,7 @@ import { GradingListener } from "./presentation/grading.listener";
     InitializeProgressHandler,
     DeleteProgressHandler,
     SubmitAssignmentHandler,
+    SubmitQuizHandler,
     CompleteBlockSyncHandler,
     ProgressInitializedHandler,
     BlockCompletedHandler,

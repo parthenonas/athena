@@ -8,7 +8,9 @@ import { RequirePermission } from "../../../identity/acl/decorators/require-perm
 import { CurrentUser } from "../../../shared/decorators/current-user.decorator";
 import { CompleteBlockSyncCommand } from "../application/commands/complete-block-sync.command";
 import { SubmitAssignmentCommand } from "../application/commands/submit-assignment.command";
+import { SubmitQuizCommand } from "../application/commands/submit-quiz.command";
 import { StudentSubmissionDto } from "../application/dto/student-submission.dto";
+import { SubmitQuizDto } from "../application/dto/submit-quiz.dto";
 import { GetStudentDashboardQuery } from "../application/queries/get-student-dashboard.query";
 import { GetStudentLessonQuery } from "../application/queries/get-student-lesson.query";
 import { GetStudentProgressQuery } from "../application/queries/get-student-progress.query";
@@ -71,6 +73,23 @@ export class ProgressController {
     await this.commandBus.execute(new CompleteBlockSyncCommand(userId, courseId, lessonId, blockId, score));
 
     return { status: "completed", score };
+  }
+
+  /**
+   * Submit Quiz Question Answer
+   * Returns 200 OK with isCorrect flag and explanation
+   */
+  @Post(":courseId/lessons/:lessonId/blocks/:blockId/quiz")
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission(Permission.ENROLLMENTS_READ)
+  async submitQuiz(
+    @Param("courseId", new ParseUUIDPipe()) courseId: string,
+    @Param("lessonId", new ParseUUIDPipe()) lessonId: string,
+    @Param("blockId", new ParseUUIDPipe()) blockId: string,
+    @Body() dto: SubmitQuizDto,
+    @CurrentUser("sub") userId: string,
+  ) {
+    return this.commandBus.execute(new SubmitQuizCommand(userId, courseId, lessonId, blockId, dto));
   }
 
   /**

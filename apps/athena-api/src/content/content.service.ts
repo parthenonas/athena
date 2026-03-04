@@ -4,6 +4,7 @@ import { DataSource } from "typeorm";
 
 import { BlockService } from "./block/block.service";
 import { CodeBlockContentDto } from "./block/dto/content-payload.dto";
+import { Block } from "./block/entities/block.entity";
 import { CourseService } from "./course/course.service";
 import { CreateCourseDto } from "./course/dto/create.dto";
 import { ReadCourseDto } from "./course/dto/read.dto";
@@ -75,5 +76,9 @@ export class ContentService {
 
   getLessonsByCourseId(courseId: string): Promise<Lesson[]> {
     return this.lessonService.findAllInternal(courseId);
+  }
+
+  getBlockInternal(blockId: string): Promise<Block> {
+    return this.blockService.findOneInternal(blockId);
   }
 }

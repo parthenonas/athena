@@ -7,7 +7,9 @@ import { JwtAuthGuard } from "../../../identity/account/guards/jwt.guard";
 import { AclGuard } from "../../../identity/acl/acl.guard";
 import { CompleteBlockSyncCommand } from "../application/commands/complete-block-sync.command";
 import { SubmitAssignmentCommand } from "../application/commands/submit-assignment.command";
+import { SubmitQuizCommand } from "../application/commands/submit-quiz.command";
 import { StudentSubmissionDto } from "../application/dto/student-submission.dto";
+import { SubmitQuizDto } from "../application/dto/submit-quiz.dto";
 import { GetStudentDashboardQuery } from "../application/queries/get-student-dashboard.query";
 import { GetStudentLessonQuery } from "../application/queries/get-student-lesson.query";
 import { GetStudentProgressQuery } from "../application/queries/get-student-progress.query";
@@ -73,6 +75,24 @@ describe("ProgressController", () => {
         new CompleteBlockSyncCommand(USER_ID, COURSE_ID, LESSON_ID, BLOCK_ID, 100),
       );
       expect(result).toEqual({ status: "completed", score: 100 });
+    });
+  });
+
+  describe("submitQuiz (POST .../quiz)", () => {
+    it("should dispatch SubmitQuizCommand and return result", async () => {
+      const dto: SubmitQuizDto = {
+        selectedOptionIds: ["opt-1", "opt-2"],
+      };
+
+      const expectedResponse = { isCorrect: true, explanation: "Good job!" };
+      mockCommandBus.execute.mockResolvedValue(expectedResponse);
+
+      const result = await controller.submitQuiz(COURSE_ID, LESSON_ID, BLOCK_ID, dto, USER_ID);
+
+      expect(mockCommandBus.execute).toHaveBeenCalledWith(
+        new SubmitQuizCommand(USER_ID, COURSE_ID, LESSON_ID, BLOCK_ID, dto),
+      );
+      expect(result).toEqual(expectedResponse);
     });
   });
 
