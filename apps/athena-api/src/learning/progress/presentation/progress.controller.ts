@@ -7,6 +7,7 @@ import { AclGuard } from "../../../identity/acl/acl.guard";
 import { RequirePermission } from "../../../identity/acl/decorators/require-permission.decorator";
 import { CurrentUser } from "../../../shared/decorators/current-user.decorator";
 import { CompleteBlockSyncCommand } from "../application/commands/complete-block-sync.command";
+import { StartExamCommand } from "../application/commands/start-exam.command";
 import { SubmitAssignmentCommand } from "../application/commands/submit-assignment.command";
 import { SubmitQuizCommand } from "../application/commands/submit-quiz.command";
 import { StudentSubmissionDto } from "../application/dto/student-submission.dto";
@@ -121,5 +122,20 @@ export class ProgressController {
     @CurrentUser("sub") userId: string,
   ) {
     return this.queryBus.execute(new GetStudentLessonQuery(userId, courseId, lessonId));
+  }
+
+  /**
+   * Starts a new Quiz Exam attempt or returns an existing active one.
+   */
+  @Post(":courseId/lessons/:lessonId/blocks/:blockId/exam/start")
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission(Permission.ENROLLMENTS_READ)
+  async startExam(
+    @Param("courseId", new ParseUUIDPipe()) courseId: string,
+    @Param("lessonId", new ParseUUIDPipe()) lessonId: string,
+    @Param("blockId", new ParseUUIDPipe()) blockId: string,
+    @CurrentUser("sub") userId: string,
+  ) {
+    return this.commandBus.execute(new StartExamCommand(userId, courseId, lessonId, blockId));
   }
 }

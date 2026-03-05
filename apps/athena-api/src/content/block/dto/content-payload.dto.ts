@@ -3,6 +3,7 @@ import {
   CodeExecutionMode,
   ProgrammingLanguage,
   QuizExamContent,
+  QuizExamSource,
   QuizOption,
   QuizQuestionContent,
   QuizQuestionType,
@@ -211,11 +212,21 @@ export class QuizQuestionContentDto implements QuizQuestionContent {
  * @class QuizExamSourceDto
  * @description Configuration for where to pull questions from for an exam.
  */
-class QuizExamSourceDto {
+class QuizExamSourceDto implements QuizExamSource {
   @IsArray()
   @IsString({ each: true })
   @ArrayMinSize(1)
-  tags!: string[];
+  includeTags!: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  excludeTags?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  mandatoryTags?: string[];
 
   @IsInt()
   @Min(1)

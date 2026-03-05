@@ -8,6 +8,7 @@ import { SubmissionQueueModule } from "../../submission-queue";
 import { DeleteProgressHandler } from "./application/commands/handlers/delete-progress.handler";
 import { GradeBlockHandler } from "./application/commands/handlers/grade-block.handler";
 import { InitializeProgressHandler } from "./application/commands/handlers/initialize-progress.handler";
+import { StartExamHandler } from "./application/commands/handlers/start-exam.handler";
 import { SubmitAssignmentHandler } from "./application/commands/handlers/submit-assignment.handler";
 import { SubmitQuizHandler } from "./application/commands/handlers/submit-quiz.handler";
 import { BlockCompletedHandler } from "./application/events/handlers/block-completed.handler";
@@ -30,12 +31,13 @@ import { CompleteBlockSyncHandler } from "./application/commands/handlers/comple
 import { ProgressController } from "./presentation/progress.controller";
 import { Enrollment } from "../enrollment/entities/enrollment.entity";
 import { GetStudentDashboardHandler } from "./application/queries/handlers/get-student-dashboard.handler";
+import { QuizAttemptOrmEntity } from "./infrastructure/persistence/entities/quiz-attempt.orm.entity";
 import { GradingListener } from "./presentation/grading.listener";
 
 @Module({
   imports: [
     CqrsModule,
-    TypeOrmModule.forFeature([ProgressOrmEntity, Enrollment]),
+    TypeOrmModule.forFeature([ProgressOrmEntity, Enrollment, QuizAttemptOrmEntity]),
     MongooseModule.forFeature([{ name: StudentDashboard.name, schema: StudentDashboardSchema }]),
     SubmissionQueueModule,
     ContentModule,
@@ -50,6 +52,7 @@ import { GradingListener } from "./presentation/grading.listener";
     DeleteProgressHandler,
     SubmitAssignmentHandler,
     SubmitQuizHandler,
+    StartExamHandler,
     CompleteBlockSyncHandler,
     ProgressInitializedHandler,
     BlockCompletedHandler,

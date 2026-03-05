@@ -6,6 +6,7 @@ import { ProgressController } from "./progress.controller";
 import { JwtAuthGuard } from "../../../identity/account/guards/jwt.guard";
 import { AclGuard } from "../../../identity/acl/acl.guard";
 import { CompleteBlockSyncCommand } from "../application/commands/complete-block-sync.command";
+import { StartExamCommand } from "../application/commands/start-exam.command";
 import { SubmitAssignmentCommand } from "../application/commands/submit-assignment.command";
 import { SubmitQuizCommand } from "../application/commands/submit-quiz.command";
 import { StudentSubmissionDto } from "../application/dto/student-submission.dto";
@@ -129,6 +130,20 @@ describe("ProgressController", () => {
 
       expect(mockQueryBus.execute).toHaveBeenCalledWith(new GetStudentLessonQuery(USER_ID, COURSE_ID, LESSON_ID));
       expect(result).toEqual(mockResult);
+    });
+  });
+
+  describe("startExam (POST .../exam/start)", () => {
+    it("should dispatch StartExamCommand and return the attempt payload", async () => {
+      const expectedResponse = { id: "attempt-1", status: "IN_PROGRESS", questions: [] };
+      mockCommandBus.execute.mockResolvedValue(expectedResponse);
+
+      const result = await controller.startExam(COURSE_ID, LESSON_ID, BLOCK_ID, USER_ID);
+
+      expect(mockCommandBus.execute).toHaveBeenCalledWith(
+        new StartExamCommand(USER_ID, COURSE_ID, LESSON_ID, BLOCK_ID),
+      );
+      expect(result).toEqual(expectedResponse);
     });
   });
 });

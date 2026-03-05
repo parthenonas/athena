@@ -92,14 +92,18 @@ export interface QuizQuestionContent {
   explanation?: string;
 }
 
+export interface QuizExamSource {
+  includeTags: string[];
+  excludeTags?: string[];
+  mandatoryTags?: string[];
+  count: number;
+}
+
 export interface QuizExamContent {
   title: string;
   timeLimitMinutes?: number;
   passPercentage: number;
-  source: {
-    tags: string[];
-    count: number;
-  };
+  source: QuizExamSource;
 }
 
 export interface QuizQuestionBlockResponse extends BlockResponse {
