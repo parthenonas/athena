@@ -10,6 +10,7 @@ import { GradeBlockHandler } from "./application/commands/handlers/grade-block.h
 import { InitializeProgressHandler } from "./application/commands/handlers/initialize-progress.handler";
 import { StartExamHandler } from "./application/commands/handlers/start-exam.handler";
 import { SubmitAssignmentHandler } from "./application/commands/handlers/submit-assignment.handler";
+import { SubmitExamHandler } from "./application/commands/handlers/submit-exam.handler";
 import { SubmitQuizHandler } from "./application/commands/handlers/submit-quiz.handler";
 import { BlockCompletedHandler } from "./application/events/handlers/block-completed.handler";
 import { CourseCompletedHandler } from "./application/events/handlers/course-completed.handler";
@@ -53,6 +54,7 @@ import { GradingListener } from "./presentation/grading.listener";
     SubmitAssignmentHandler,
     SubmitQuizHandler,
     StartExamHandler,
+    SubmitExamHandler,
     CompleteBlockSyncHandler,
     ProgressInitializedHandler,
     BlockCompletedHandler,

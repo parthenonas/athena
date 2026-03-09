@@ -8,8 +8,10 @@ import { AclGuard } from "../../../identity/acl/acl.guard";
 import { CompleteBlockSyncCommand } from "../application/commands/complete-block-sync.command";
 import { StartExamCommand } from "../application/commands/start-exam.command";
 import { SubmitAssignmentCommand } from "../application/commands/submit-assignment.command";
+import { SubmitExamCommand } from "../application/commands/submit-exam.command";
 import { SubmitQuizCommand } from "../application/commands/submit-quiz.command";
 import { StudentSubmissionDto } from "../application/dto/student-submission.dto";
+import { SubmitExamDto } from "../application/dto/submit-exam.dto";
 import { SubmitQuizDto } from "../application/dto/submit-quiz.dto";
 import { GetStudentDashboardQuery } from "../application/queries/get-student-dashboard.query";
 import { GetStudentLessonQuery } from "../application/queries/get-student-lesson.query";
@@ -142,6 +144,24 @@ describe("ProgressController", () => {
 
       expect(mockCommandBus.execute).toHaveBeenCalledWith(
         new StartExamCommand(USER_ID, COURSE_ID, LESSON_ID, BLOCK_ID),
+      );
+      expect(result).toEqual(expectedResponse);
+    });
+  });
+
+  describe("submitExam (POST .../exam/submit)", () => {
+    it("should dispatch SubmitExamCommand and return score result", async () => {
+      const dto: SubmitExamDto = {
+        answers: [{ questionId: "q-1", selectedOptionIds: ["opt-1"] }],
+      };
+
+      const expectedResponse = { passed: true, score: 100 };
+      mockCommandBus.execute.mockResolvedValue(expectedResponse);
+
+      const result = await controller.submitExam(COURSE_ID, LESSON_ID, BLOCK_ID, dto, USER_ID);
+
+      expect(mockCommandBus.execute).toHaveBeenCalledWith(
+        new SubmitExamCommand(USER_ID, COURSE_ID, LESSON_ID, BLOCK_ID, dto),
       );
       expect(result).toEqual(expectedResponse);
     });

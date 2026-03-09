@@ -155,3 +155,22 @@ export interface CheckQuizQuestionResponse {
   isCorrect: boolean;
   explanation?: string;
 }
+
+export interface ExamQuestionAnswer {
+  questionId: string;
+  selectedOptionIds?: string[];
+  textAnswer?: string;
+}
+
+export interface SubmitExamRequest {
+  answers: ExamQuestionAnswer[];
+}
+
+export interface SubmitExamResponse {
+  attemptId: string;
+  score: number;
+  passed: boolean;
+  passPercentage: number;
+  correctAnswers: number;
+  totalQuestions: number;
+}

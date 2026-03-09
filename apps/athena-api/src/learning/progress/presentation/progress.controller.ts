@@ -9,8 +9,10 @@ import { CurrentUser } from "../../../shared/decorators/current-user.decorator";
 import { CompleteBlockSyncCommand } from "../application/commands/complete-block-sync.command";
 import { StartExamCommand } from "../application/commands/start-exam.command";
 import { SubmitAssignmentCommand } from "../application/commands/submit-assignment.command";
+import { SubmitExamCommand } from "../application/commands/submit-exam.command";
 import { SubmitQuizCommand } from "../application/commands/submit-quiz.command";
 import { StudentSubmissionDto } from "../application/dto/student-submission.dto";
+import { SubmitExamDto } from "../application/dto/submit-exam.dto";
 import { SubmitQuizDto } from "../application/dto/submit-quiz.dto";
 import { GetStudentDashboardQuery } from "../application/queries/get-student-dashboard.query";
 import { GetStudentLessonQuery } from "../application/queries/get-student-lesson.query";
@@ -91,6 +93,23 @@ export class ProgressController {
     @CurrentUser("sub") userId: string,
   ) {
     return this.commandBus.execute(new SubmitQuizCommand(userId, courseId, lessonId, blockId, dto));
+  }
+
+  /**
+   * Submits an active Quiz Exam attempt.
+   * Calculates score and syncs with Progress if passed.
+   */
+  @Post(":courseId/lessons/:lessonId/blocks/:blockId/exam/submit")
+  @HttpCode(HttpStatus.OK)
+  @RequirePermission(Permission.ENROLLMENTS_READ)
+  async submitExam(
+    @Param("courseId", new ParseUUIDPipe()) courseId: string,
+    @Param("lessonId", new ParseUUIDPipe()) lessonId: string,
+    @Param("blockId", new ParseUUIDPipe()) blockId: string,
+    @Body() dto: SubmitExamDto,
+    @CurrentUser("sub") userId: string,
+  ) {
+    return this.commandBus.execute(new SubmitExamCommand(userId, courseId, lessonId, blockId, dto));
   }
 
   /**
