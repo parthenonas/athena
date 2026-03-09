@@ -79,7 +79,7 @@ describe("StartExamHandler", () => {
     mockContentService.generateExamQuestions.mockResolvedValue(mockGeneratedQuestions);
 
     mockAttemptRepo.create.mockImplementation(ent => ({ ...ent, id: "new-attempt", startedAt: new Date() }));
-    mockAttemptRepo.save.mockImplementation(async ent => ent);
+    mockAttemptRepo.save.mockImplementation(ent => ent);
 
     const result = await handler.execute(CMD);
 

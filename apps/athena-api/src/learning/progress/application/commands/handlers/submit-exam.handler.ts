@@ -1,3 +1,4 @@
+import type { IEventBus } from "@athena/common";
 import { BlockType, QuizAttemptStatus, QuizExamContent, QuizQuestionType } from "@athena/types";
 import { BadRequestException, Inject, Logger } from "@nestjs/common";
 import { CommandHandler, EventPublisher, ICommandHandler } from "@nestjs/cqrs";
@@ -5,6 +6,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { ContentService } from "../../../../../content/content.service";
+import { AthenaEvent, ExamForceClosedEvent } from "../../../../../shared/events/types";
 import { PROGRESS_REPOSITORY, type IProgressRepository } from "../../../domain/repository/progress.repository";
 import { QuizAttemptOrmEntity } from "../../../infrastructure/persistence/entities/quiz-attempt.orm.entity";
 import { SubmitExamCommand } from "../submit-exam.command";
@@ -22,10 +24,11 @@ export class SubmitExamHandler implements ICommandHandler<SubmitExamCommand> {
     private readonly progressRepo: IProgressRepository,
     private readonly contentService: ContentService,
     private readonly publisher: EventPublisher,
+    @Inject("IEventBus") private readonly eventBus: IEventBus,
   ) {}
 
   async execute(command: SubmitExamCommand) {
-    const { userId, courseId, lessonId, blockId, payload } = command;
+    const { userId, courseId, lessonId, blockId, payload, isAutoSubmit } = command;
     this.logger.log(`Submitting exam | user=${userId}, block=${blockId}`);
 
     const attempt = await this.attemptRepo.findOne({
@@ -33,6 +36,7 @@ export class SubmitExamHandler implements ICommandHandler<SubmitExamCommand> {
     });
 
     if (!attempt) {
+      if (isAutoSubmit) return;
       throw new BadRequestException("No active exam attempt found");
     }
 
@@ -42,7 +46,7 @@ export class SubmitExamHandler implements ICommandHandler<SubmitExamCommand> {
     }
     const examConfig = block.content as QuizExamContent;
 
-    if (attempt.timeLimitMinutes) {
+    if (attempt.timeLimitMinutes && !isAutoSubmit) {
       const now = new Date();
       const deadline = new Date(attempt.startedAt.getTime() + attempt.timeLimitMinutes * 60000);
       const graceDeadline = new Date(deadline.getTime() + this.GRACED_DEADLINE_EPSILON_MS);
@@ -103,6 +107,16 @@ export class SubmitExamHandler implements ICommandHandler<SubmitExamCommand> {
         await this.progressRepo.save(progressModel);
         progressModel.commit();
       }
+    }
+
+    if (isAutoSubmit) {
+      const eventPayload: ExamForceClosedEvent = {
+        userId,
+        blockId,
+        score,
+        passed,
+      };
+      await this.eventBus.publish(AthenaEvent.EXAM_FORCE_CLOSED, eventPayload);
     }
 
     return {

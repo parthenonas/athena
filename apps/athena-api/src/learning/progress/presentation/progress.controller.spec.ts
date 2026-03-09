@@ -13,6 +13,7 @@ import { SubmitQuizCommand } from "../application/commands/submit-quiz.command";
 import { StudentSubmissionDto } from "../application/dto/student-submission.dto";
 import { SubmitExamDto } from "../application/dto/submit-exam.dto";
 import { SubmitQuizDto } from "../application/dto/submit-quiz.dto";
+import { GetActiveExamQuery } from "../application/queries/get-active-exam.query";
 import { GetStudentDashboardQuery } from "../application/queries/get-student-dashboard.query";
 import { GetStudentLessonQuery } from "../application/queries/get-student-lesson.query";
 import { GetStudentProgressQuery } from "../application/queries/get-student-progress.query";
@@ -162,6 +163,20 @@ describe("ProgressController", () => {
 
       expect(mockCommandBus.execute).toHaveBeenCalledWith(
         new SubmitExamCommand(USER_ID, COURSE_ID, LESSON_ID, BLOCK_ID, dto),
+      );
+      expect(result).toEqual(expectedResponse);
+    });
+  });
+
+  describe("getActiveExam (GET .../exam/active)", () => {
+    it("should execute GetActiveExamQuery", async () => {
+      const expectedResponse = { id: "attempt-1" };
+      mockQueryBus.execute.mockResolvedValue(expectedResponse);
+
+      const result = await controller.getActiveExam(COURSE_ID, LESSON_ID, BLOCK_ID, USER_ID);
+
+      expect(mockQueryBus.execute).toHaveBeenCalledWith(
+        new GetActiveExamQuery(USER_ID, COURSE_ID, LESSON_ID, BLOCK_ID),
       );
       expect(result).toEqual(expectedResponse);
     });

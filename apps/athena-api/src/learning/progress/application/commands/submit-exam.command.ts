@@ -16,7 +16,7 @@ import { SubmitExamDto } from "../dto/submit-exam.dto";
  * Triggered by:
  * - ProgressController (when a student clicks "Submit Exam" or the timer runs out).
  */
-export class SubmitExamCommand extends Command<SubmitExamResponse> {
+export class SubmitExamCommand extends Command<SubmitExamResponse | void> {
   constructor(
     /**
      * The Student's Account ID.
@@ -42,6 +42,11 @@ export class SubmitExamCommand extends Command<SubmitExamResponse> {
      * The student's submitted answers payload.
      */
     public readonly payload: SubmitExamDto,
+
+    /**
+     * Flag indicates if auto submit
+     */
+    public readonly isAutoSubmit: boolean = false,
   ) {
     super();
   }

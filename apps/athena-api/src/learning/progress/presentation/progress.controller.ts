@@ -14,6 +14,7 @@ import { SubmitQuizCommand } from "../application/commands/submit-quiz.command";
 import { StudentSubmissionDto } from "../application/dto/student-submission.dto";
 import { SubmitExamDto } from "../application/dto/submit-exam.dto";
 import { SubmitQuizDto } from "../application/dto/submit-quiz.dto";
+import { GetActiveExamQuery } from "../application/queries/get-active-exam.query";
 import { GetStudentDashboardQuery } from "../application/queries/get-student-dashboard.query";
 import { GetStudentLessonQuery } from "../application/queries/get-student-lesson.query";
 import { GetStudentProgressQuery } from "../application/queries/get-student-progress.query";
@@ -141,6 +142,21 @@ export class ProgressController {
     @CurrentUser("sub") userId: string,
   ) {
     return this.queryBus.execute(new GetStudentLessonQuery(userId, courseId, lessonId));
+  }
+
+  /**
+   * Gets an active Quiz Exam attempt if it exists.
+   * Returns null if there is no active attempt (meaning the student hasn't started or already finished).
+   */
+  @Get(":courseId/lessons/:lessonId/blocks/:blockId/exam/active")
+  @RequirePermission(Permission.ENROLLMENTS_READ)
+  async getActiveExam(
+    @Param("courseId", new ParseUUIDPipe()) courseId: string,
+    @Param("lessonId", new ParseUUIDPipe()) lessonId: string,
+    @Param("blockId", new ParseUUIDPipe()) blockId: string,
+    @CurrentUser("sub") userId: string,
+  ) {
+    return this.queryBus.execute(new GetActiveExamQuery(userId, courseId, lessonId, blockId));
   }
 
   /**

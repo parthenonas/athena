@@ -6,6 +6,7 @@ import { getRepositoryToken } from "@nestjs/typeorm";
 
 import { SubmitExamHandler } from "./submit-exam.handler";
 import { ContentService } from "../../../../../content/content.service";
+import { AthenaEvent } from "../../../../../shared/events/types";
 import { PROGRESS_REPOSITORY } from "../../../domain/repository/progress.repository";
 import { QuizAttemptOrmEntity } from "../../../infrastructure/persistence/entities/quiz-attempt.orm.entity";
 import { SubmitExamCommand } from "../submit-exam.command";
@@ -32,6 +33,10 @@ const mockPublisher = {
 const mockAggregate = {
   completeBlockSync: jest.fn(),
   commit: jest.fn(),
+};
+
+const mockEventBus = {
+  publish: jest.fn(),
 };
 
 describe("SubmitExamHandler", () => {
@@ -68,6 +73,7 @@ describe("SubmitExamHandler", () => {
         { provide: PROGRESS_REPOSITORY, useValue: mockProgressRepo },
         { provide: ContentService, useValue: mockContentService },
         { provide: EventPublisher, useValue: mockPublisher },
+        { provide: "IEventBus", useValue: mockEventBus },
       ],
     }).compile();
 
@@ -81,6 +87,22 @@ describe("SubmitExamHandler", () => {
       answers: [],
     });
     await expect(handler.execute(cmd)).rejects.toThrow(BadRequestException);
+  });
+
+  it("should ignore missing attempt if isAutoSubmit is true", async () => {
+    mockAttemptRepo.findOne.mockResolvedValue(null);
+    const cmd = new SubmitExamCommand(
+      CMD_BASE.userId,
+      CMD_BASE.courseId,
+      CMD_BASE.lessonId,
+      CMD_BASE.blockId,
+      { answers: [] },
+      true,
+    );
+
+    const result = await handler.execute(cmd);
+
+    expect(result).toBeUndefined();
   });
 
   it("should fail the student automatically if time limit exceeded by more than 10 seconds", async () => {
@@ -99,7 +121,7 @@ describe("SubmitExamHandler", () => {
     const cmd = new SubmitExamCommand(CMD_BASE.userId, CMD_BASE.courseId, CMD_BASE.lessonId, CMD_BASE.blockId, {
       answers: [],
     });
-    const result = await handler.execute(cmd);
+    const result = (await handler.execute(cmd)) as any;
 
     expect(result.passed).toBe(false);
     expect(result.score).toBe(0);
@@ -131,7 +153,7 @@ describe("SubmitExamHandler", () => {
       ],
     });
 
-    const result = await handler.execute(cmd);
+    const result = (await handler.execute(cmd)) as any;
 
     expect(result.passed).toBe(true);
     expect(result.score).toBe(100);
@@ -146,6 +168,7 @@ describe("SubmitExamHandler", () => {
       score: 100,
     });
     expect(mockProgressRepo.save).toHaveBeenCalledWith(mockAggregate);
+    expect(mockEventBus.publish).not.toHaveBeenCalled();
   });
 
   it("should NOT sync progress if score is below passPercentage", async () => {
@@ -168,7 +191,7 @@ describe("SubmitExamHandler", () => {
       ],
     });
 
-    const result = await handler.execute(cmd);
+    const result = (await handler.execute(cmd)) as any;
 
     expect(result.passed).toBe(false);
     expect(result.score).toBe(50);
@@ -177,5 +200,40 @@ describe("SubmitExamHandler", () => {
       expect.objectContaining({ status: QuizAttemptStatus.COMPLETED, score: 50 }),
     );
     expect(mockProgressRepo.findByUserAndCourse).not.toHaveBeenCalled();
+  });
+
+  it("should push to event bus if isAutoSubmit is true", async () => {
+    const recentDate = new Date();
+    mockAttemptRepo.findOne.mockResolvedValue({
+      id: "attempt-1",
+      timeLimitMinutes: 10,
+      startedAt: recentDate,
+      questionsSnapshot: mockQuestionsSnapshot,
+    });
+    mockContentService.getBlockInternal.mockResolvedValue({
+      type: BlockType.QuizExam,
+      content: { passPercentage: 100 },
+    });
+
+    const cmd = new SubmitExamCommand(
+      CMD_BASE.userId,
+      CMD_BASE.courseId,
+      CMD_BASE.lessonId,
+      CMD_BASE.blockId,
+      { answers: [] },
+      true,
+    );
+
+    const result = (await handler.execute(cmd)) as any;
+
+    expect(result.passed).toBe(false);
+    expect(result.score).toBe(0);
+
+    expect(mockEventBus.publish).toHaveBeenCalledWith(AthenaEvent.EXAM_FORCE_CLOSED, {
+      userId: CMD_BASE.userId,
+      blockId: CMD_BASE.blockId,
+      score: 0,
+      passed: false,
+    });
   });
 });

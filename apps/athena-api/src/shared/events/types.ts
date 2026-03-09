@@ -4,7 +4,7 @@ export enum AthenaEvent {
   ROLE_DELETED = "role.deleted",
   SUBMISSION_COMPLETED = "submission.completed",
   ENROLLMENT_CREATED = "enrollment.created",
-  ENROLLMENT_DELETED = "ENROLLMENT_DELETED",
+  ENROLLMENT_DELETED = "enrollment.deleted",
   PROFILE_UPDATED = "profile.updated",
   LESSON_CREATED = "lesson.created",
   LESSON_UPDATED = "lesson.updated",
@@ -13,28 +13,33 @@ export enum AthenaEvent {
   BLOCK_UPDATED = "block.updated",
   BLOCK_REORDERED = "block.reordered",
   BLOCK_DELETED = "block.deleted",
+  EXAM_FORCE_CLOSED = "exam.force_closed",
 }
 
-export interface SubmissionCompletedEvent {
-  result: SubmissionResult;
+export class SubmissionCompletedEvent {
+  constructor(public readonly result: SubmissionResult) {}
 }
 
-export interface RoleDeletedEvent {
-  name: string;
+export class RoleDeletedEvent {
+  constructor(public readonly name: string) {}
 }
 
-export interface EnrollmentCreatedEvent {
-  id: string;
-  userId: string;
-  cohortId: string;
-  courseId: string;
+export class EnrollmentCreatedEvent {
+  constructor(
+    public readonly id: string,
+    public readonly userId: string,
+    public readonly cohortId: string,
+    public readonly courseId: string,
+  ) {}
 }
 
-export interface EnrollmentDeletedEvent {
-  id: string;
-  userId: string;
-  cohortId: string;
-  courseId: string;
+export class EnrollmentDeletedEvent {
+  constructor(
+    public readonly id: string,
+    public readonly userId: string,
+    public readonly cohortId: string,
+    public readonly courseId: string,
+  ) {}
 }
 
 export class LessonCreatedEvent {
@@ -95,5 +100,14 @@ export class BlockDeletedEvent {
   constructor(
     public readonly blockId: string,
     public readonly lessonId: string,
+  ) {}
+}
+
+export class ExamForceClosedEvent {
+  constructor(
+    public readonly userId: string,
+    public readonly blockId: string,
+    public readonly score: number,
+    public readonly passed: boolean,
   ) {}
 }
