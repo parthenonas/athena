@@ -13,7 +13,6 @@ export enum AthenaEvent {
   BLOCK_UPDATED = "block.updated",
   BLOCK_REORDERED = "block.reordered",
   BLOCK_DELETED = "block.deleted",
-  EXAM_FORCE_CLOSED = "exam.force_closed",
 }
 
 export class SubmissionCompletedEvent {
@@ -100,14 +99,5 @@ export class BlockDeletedEvent {
   constructor(
     public readonly blockId: string,
     public readonly lessonId: string,
-  ) {}
-}
-
-export class ExamForceClosedEvent {
-  constructor(
-    public readonly userId: string,
-    public readonly blockId: string,
-    public readonly score: number,
-    public readonly passed: boolean,
   ) {}
 }

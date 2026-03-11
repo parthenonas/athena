@@ -6,7 +6,6 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { ContentService } from "../../../../../content/content.service";
-import { AthenaEvent, ExamForceClosedEvent } from "../../../../../shared/events/types";
 import { PROGRESS_REPOSITORY, type IProgressRepository } from "../../../domain/repository/progress.repository";
 import { QuizAttemptOrmEntity } from "../../../infrastructure/persistence/entities/quiz-attempt.orm.entity";
 import { SubmitExamCommand } from "../submit-exam.command";
@@ -107,16 +106,6 @@ export class SubmitExamHandler implements ICommandHandler<SubmitExamCommand> {
         await this.progressRepo.save(progressModel);
         progressModel.commit();
       }
-    }
-
-    if (isAutoSubmit) {
-      const eventPayload: ExamForceClosedEvent = {
-        userId,
-        blockId,
-        score,
-        passed,
-      };
-      await this.eventBus.publish(AthenaEvent.EXAM_FORCE_CLOSED, eventPayload);
     }
 
     return {

@@ -201,39 +201,4 @@ describe("SubmitExamHandler", () => {
     );
     expect(mockProgressRepo.findByUserAndCourse).not.toHaveBeenCalled();
   });
-
-  it("should push to event bus if isAutoSubmit is true", async () => {
-    const recentDate = new Date();
-    mockAttemptRepo.findOne.mockResolvedValue({
-      id: "attempt-1",
-      timeLimitMinutes: 10,
-      startedAt: recentDate,
-      questionsSnapshot: mockQuestionsSnapshot,
-    });
-    mockContentService.getBlockInternal.mockResolvedValue({
-      type: BlockType.QuizExam,
-      content: { passPercentage: 100 },
-    });
-
-    const cmd = new SubmitExamCommand(
-      CMD_BASE.userId,
-      CMD_BASE.courseId,
-      CMD_BASE.lessonId,
-      CMD_BASE.blockId,
-      { answers: [] },
-      true,
-    );
-
-    const result = (await handler.execute(cmd)) as any;
-
-    expect(result.passed).toBe(false);
-    expect(result.score).toBe(0);
-
-    expect(mockEventBus.publish).toHaveBeenCalledWith(AthenaEvent.EXAM_FORCE_CLOSED, {
-      userId: CMD_BASE.userId,
-      blockId: CMD_BASE.blockId,
-      score: 0,
-      passed: false,
-    });
-  });
 });

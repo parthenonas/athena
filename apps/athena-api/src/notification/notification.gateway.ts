@@ -3,7 +3,7 @@ import { OnEvent } from "@nestjs/event-emitter";
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 
-import { AthenaEvent, type ExamForceClosedEvent, type SubmissionCompletedEvent } from "../shared/events/types";
+import { AthenaEvent, type SubmissionCompletedEvent } from "../shared/events/types";
 
 /**
  * @class NotificationGateway
@@ -65,28 +65,5 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
 
       this.server.to(result.metadata.socketId).emit("execution_result", result);
     }
-  }
-
-  /**
-   * Event listener for the internal 'exam.force_closed' event.
-   * This method is triggered when a student's exam attempt expires (time limit reached)
-   * and is automatically submitted by the background worker (ExamReaperProcessor).
-   *
-   * @param event - The payload containing the user ID and their final exam result.
-   * @description
-   * 1. Uses the `userId` to target the specific student's Socket.IO room.
-   * 2. Emits the 'exam_force_closed' WS event to notify the frontend that the exam
-   * was forcibly closed, providing the final score and passing status.
-   */
-  @OnEvent(AthenaEvent.EXAM_FORCE_CLOSED)
-  handleExamForceClosed(event: ExamForceClosedEvent) {
-    this.logger.log(`Sending exam.force_closed to user: ${event.userId}`);
-
-    this.server.to(event.userId).emit("exam_force_closed", {
-      blockId: event.blockId,
-      score: event.score,
-      passed: event.passed,
-      message: "timeout",
-    });
   }
 }

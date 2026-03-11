@@ -128,3 +128,10 @@ export interface QuizAttemptResponse {
   startedAt: Date;
   finishedAt?: Date;
 }
+
+export interface ExamForceClosedResult {
+  userId: string;
+  blockId: string;
+  score: number;
+  passed: boolean;
+}
