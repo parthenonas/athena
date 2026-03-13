@@ -10,6 +10,8 @@
     "./libs/*"
   ],
   "scripts": {
+    "dev:all": "concurrently -n \"WEB,API,RUNNER\" -c \"cyan,green,yellow\" --kill-others \"npm run dev:web\" \"npm run dev:api\" \"npm run dev:runner\"",
+    "dev:base": "concurrently -n \"WEB,API\" -c \"cyan,green\" --kill-others \"npm run dev:web\" \"npm run dev:api\"",
     "dev:api": "npm --workspace apps/athena-api run start:dev",
     "dev:runner": "npm --workspace apps/athena-runner run start:dev",
     "dev:web": "npm --workspace apps/athena-web run dev",
@@ -46,6 +48,7 @@
     "@testcontainers/postgresql": "^11.8.1",
     "@types/cookie-parser": "^1.4.10",
     "@types/jest": "^30.0.0",
+    "concurrently": "^9.2.1",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^10.0.0",
     "eslint-import-resolver-typescript": "^4.4.4",

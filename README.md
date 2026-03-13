@@ -104,7 +104,22 @@ Migrate databases if needed:
 npm run migration:run
 ```
 
-Then run services in separate terminals:
+### Combined Commands (Recommended)
+
+Run multiple services in a single terminal. Start everything (Web, API, and Runner):
+
+```bash
+npm run dev:all
+```
+
+Or start only Web and API (without Runner):
+```bash
+npm run dev:base
+```
+
+### Individual Services
+
+If you prefer to run services in separate terminals:
 
 ```bash
 # Start backend (API):
